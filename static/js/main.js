@@ -194,6 +194,7 @@
   async function renderStudentTableFromApi(filter) {
     const tbody = document.getElementById('studentTableBody');
     if (!tbody) return;
+    showTableSkeleton('studentTableBody', 7, 5);
     if (!state.apiOnline) {
       tbody.innerHTML =
         '<tr><td colspan="7">Start the Flask server to load students from the database.</td></tr>';
@@ -301,6 +302,9 @@
   }
 
   async function loadDirectoryAdmin() {
+    showTableSkeleton('adminTeachersBody', 4, 3);
+    showTableSkeleton('adminParentsBody', 3, 2);
+    showTableSkeleton('adminStudentsBody', 4, 4);
     if (!state.apiOnline) return;
     try {
       const [teachers, parents, students] = await Promise.all([
@@ -354,6 +358,8 @@
   }
 
   async function loadFeesAdmin() {
+    showTableSkeleton('feeStructureBody', 4, 3);
+    showTableSkeleton('feePaymentsBody', 4, 3);
     if (!state.apiOnline) return;
     try {
       const structs = await apiJson('/api/finance/fee-structures');
@@ -391,6 +397,7 @@
   }
 
   async function loadSalaryAdmin() {
+    showTableSkeleton('salaryBody', 5, 3);
     if (!state.apiOnline) return;
     try {
       const salaries = await apiJson('/api/finance/salaries');
@@ -452,6 +459,7 @@
   async function loadStudentMarks() {
     const tbody = document.getElementById('studentMarksBody');
     if (!tbody) return;
+    showTableSkeleton('studentMarksBody', 5, 3);
     if (!state.apiOnline) {
       tbody.innerHTML = '<tr><td colspan="5">Start the server to load marks.</td></tr>';
       return;
@@ -476,6 +484,7 @@
   async function loadParentFees() {
     const tbody = document.getElementById('parentFeeBody');
     if (!tbody) return;
+    showTableSkeleton('parentFeeBody', 4, 3);
     if (!state.apiOnline) {
       tbody.innerHTML = '<tr><td colspan="4">Start the server to load payments.</td></tr>';
       return;
@@ -593,9 +602,133 @@
     }
   }
 
+  function showTableSkeleton(tbodyId, columnsCount, rowsCount = 3) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    let html = '';
+    for (let r = 0; r < rowsCount; r++) {
+      html += '<tr>';
+      for (let c = 0; c < columnsCount; c++) {
+        html += `<td class="skeleton-row-cell"><span class="skeleton ${c === 0 ? 'skeleton-avatar' : 'skeleton-text'}"></span></td>`;
+      }
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+    refreshIcons();
+  }
+
+  const SIM_DATA = {
+    admin: {
+      title: 'Administrator Command Center',
+      badge: 'System Owner',
+      stats: [
+        { val: '2,847', lbl: 'Students Enrolled' },
+        { val: '156', lbl: 'Active Faculty' },
+        { val: '94.2%', lbl: 'Avg Placement' }
+      ],
+      features: [
+        'Create and manage complete campus structures & fee heads.',
+        'Real-time college-wide insights and automated AI performance predictions.',
+        'Map coordinate-bounded GPS boundary restrictions for geo-fencing.'
+      ]
+    },
+    teacher: {
+      title: 'Faculty Workspace & Roster',
+      badge: 'Educator Portal',
+      stats: [
+        { val: 'CS101', lbl: 'Active Course' },
+        { val: '45', lbl: 'Enrolled Students' },
+        { val: '93.3%', lbl: 'Today\'s Attendance' }
+      ],
+      features: [
+        'Mark instant present/absent student attendance rosters digitally.',
+        'Grade, review, and release marks directly to student/parent feeds.',
+        'Upload dynamic digital curriculum plans and homework instructions.'
+      ]
+    },
+    student: {
+      title: 'Academic Progress Hub',
+      badge: 'Student Portal',
+      stats: [
+        { val: '8.7', lbl: 'Current CGPA' },
+        { val: '92.5%', lbl: 'Subject Attendance' },
+        { val: '5', lbl: 'Pending Tasks' }
+      ],
+      features: [
+        'Mark coordinate-validated GPS attendance via Face Recognition directly on your phone.',
+        'Inspect academic marks history and grade cards immediately.',
+        'Access digital calendars, exam schedules, and curriculum resources.'
+      ]
+    },
+    parent: {
+      title: 'Family Progress Dashboard',
+      badge: 'Parent Portal',
+      stats: [
+        { val: '95.2%', lbl: 'Child Attendance' },
+        { val: '8.4', lbl: 'Child CGPA' },
+        { val: '0', lbl: 'Child Unpaid Fees' }
+      ],
+      features: [
+        'Real-time alerts regarding child attendance trends or critical dips.',
+        'Check exam scores, grades, and teacher notes dynamically.',
+        'Safe payment tracking for academic years and tuition structures.'
+      ]
+    }
+  };
+
+  function renderSimPane(role) {
+    const pane = document.getElementById('simulatorPane');
+    if (!pane) return;
+    const data = SIM_DATA[role];
+    if (!data) return;
+    pane.innerHTML = `
+      <div class="simulator-pane-layout">
+        <div class="simulator-pane-header">
+          <h3>${escapeHtml(data.title)}</h3>
+          <span class="sim-badge">${escapeHtml(data.badge)}</span>
+        </div>
+        <div class="simulator-mock-grid">
+          ${data.stats.map(s => `
+            <div class="simulator-mock-card">
+              <div class="sim-val">${escapeHtml(s.val)}</div>
+              <div class="sim-lbl">${escapeHtml(s.lbl)}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="simulator-features-list">
+          ${data.features.map(f => `
+            <div class="sim-feature-item">
+              <i data-lucide="check-circle-2"></i>
+              <span>${escapeHtml(f)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    refreshIcons();
+  }
+
+  function showLanding() {
+    if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
+    document.body.classList.add('auth-login');
+    document.getElementById('landingScreen')?.classList.remove('hidden');
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    document.getElementById('mainDashboard')?.classList.add('hidden');
+    document.getElementById('notificationPanel')?.classList.add('hidden');
+    destroyCharts();
+    ['adminDashboard', 'teacherDashboard', 'studentDashboard', 'parentDashboard'].forEach((id) => {
+      document.getElementById(id)?.classList.add('hidden');
+    });
+    state.user = null;
+    state.role = null;
+    refreshIcons();
+    renderSimPane('admin');
+  }
+
   function showLogin() {
     if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
     document.body.classList.add('auth-login');
+    document.getElementById('landingScreen')?.classList.add('hidden');
     document.getElementById('loginScreen')?.classList.remove('hidden');
     document.getElementById('mainDashboard')?.classList.add('hidden');
     document.getElementById('notificationPanel')?.classList.add('hidden');
@@ -610,6 +743,7 @@
 
   function showDashboard(role, user) {
     document.body.classList.remove('auth-login');
+    document.getElementById('landingScreen')?.classList.add('hidden');
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainDashboard')?.classList.remove('hidden');
     state.role = role;
@@ -680,6 +814,8 @@
     const me = await tryApi();
     if (me.user) {
       showDashboard(me.user.role, me.user);
+    } else {
+      showLanding();
     }
 
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
@@ -1013,6 +1149,21 @@
     document.querySelectorAll('.modal').forEach((modal) => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.add('hidden');
+      });
+    });
+
+    // Landing Screen Listeners
+    document.getElementById('launchPortalNavBtn')?.addEventListener('click', showLogin);
+    document.getElementById('enterPortalBtn')?.addEventListener('click', showLogin);
+    document.getElementById('backToLandingBtn')?.addEventListener('click', showLanding);
+    document.getElementById('scrollFeaturesBtn')?.addEventListener('click', () => {
+      document.getElementById('featuresSection')?.scrollIntoView({ behavior: 'smooth' });
+    });
+    document.querySelectorAll('.simulator-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.simulator-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderSimPane(tab.dataset.sim);
       });
     });
 

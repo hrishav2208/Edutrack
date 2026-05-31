@@ -9,6 +9,113 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <!-- Landing Screen -->
+    <div id="landingScreen" class="landing-screen">
+        <!-- Floating Glass Nav -->
+        <nav class="landing-nav">
+            <div class="landing-nav-container">
+                <div class="logo">
+                    <i data-lucide="graduation-cap"></i>
+                    <span>EduTrack</span>
+                </div>
+                <button class="btn btn-primary" id="launchPortalNavBtn">
+                    Launch Portal
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="landing-hero">
+            <div class="landing-badge">
+                <i data-lucide="sparkles"></i>
+                <span>Introducing EduTrack v2.0 MVP Showcase</span>
+            </div>
+            <h1>Empowering <span>Next-Gen</span> Campus Operations</h1>
+            <p class="tagline">
+                An all-in-one institutional workflow system. Seamlessly connect administrators, teachers, students, and parents with advanced biometrics, real-time analytics, and instant notifications.
+            </p>
+            <div class="landing-cta-group">
+                <button class="btn-landing-primary" id="enterPortalBtn">
+                    Proceed to Login Portal
+                    <i data-lucide="chevron-right"></i>
+                </button>
+                <button class="btn-landing-secondary" id="scrollFeaturesBtn">
+                    Explore Platform Features
+                    <i data-lucide="arrow-down"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 4 Pillars Grid -->
+        <section class="landing-pillars" id="featuresSection">
+            <div class="pillar-card">
+                <div class="pillar-icon-wrapper blue">
+                    <i data-lucide="scan-face"></i>
+                </div>
+                <h3>Smart Biometrics</h3>
+                <p>Verify attendance instantly using coordinate-bounded GPS geo-fencing combined with high-accuracy Face Recognition biometrics.</p>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-icon-wrapper indigo">
+                    <i data-lucide="users"></i>
+                </div>
+                <h3>Unified Portals</h3>
+                <p>Tailored access roles for Admins, Teachers, Students, and Parents. Direct data channels connect performance and status updates seamlessly.</p>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-icon-wrapper green">
+                    <i data-lucide="line-chart"></i>
+                </div>
+                <h3>Real-Time Analytics</h3>
+                <p>Interactive attendance trends, subject performance grids, placement rate metrics, and active automated notifications.</p>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-icon-wrapper purple">
+                    <i data-lucide="wallet"></i>
+                </div>
+                <h3>Seamless Finance</h3>
+                <p>Transparent digital pipelines for recording child term fee structure deposits and salary disbursements to teaching staff.</p>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section class="simulator-section">
+            <div class="simulator-title-group">
+                <h2>Interactive Portal Simulator</h2>
+                <p>Click the roles below to preview how EduTrack transforms their experience</p>
+            </div>
+            
+            <div class="simulator-box">
+                <div class="simulator-sidebar">
+                    <button class="simulator-tab active" data-sim="admin">
+                        <i data-lucide="shield-check"></i>
+                        Administrator
+                    </button>
+                    <button class="simulator-tab" data-sim="teacher">
+                        <i data-lucide="presentation"></i>
+                        Teacher
+                    </button>
+                    <button class="simulator-tab" data-sim="student">
+                        <i data-lucide="user"></i>
+                        Student
+                    </button>
+                    <button class="simulator-tab" data-sim="parent">
+                        <i data-lucide="heart"></i>
+                        Parent
+                    </button>
+                </div>
+                
+                <div class="simulator-content-pane" id="simulatorPane">
+                    <!-- Dynamic simulator preview content will be injected by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -68,6 +175,11 @@
                 <button type="button" id="biometricBtn" class="btn-link">
                     <i data-lucide="fingerprint"></i>
                     Use Biometric Login
+                </button>
+                
+                <button type="button" id="backToLandingBtn" class="login-back-btn">
+                    <i data-lucide="arrow-left"></i>
+                    Back to Introduction & Showcase
                 </button>
             </form>
             
