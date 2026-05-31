@@ -109,6 +109,11 @@
     const pc = document.getElementById('performanceChart');
     if (!ac || !pc || typeof Chart === 'undefined') return;
     destroyCharts();
+
+    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+
     attendanceChart = new Chart(ac.getContext('2d'), {
       type: 'line',
       data: {
@@ -129,7 +134,18 @@
         maintainAspectRatio: true,
         aspectRatio: 2,
         plugins: { legend: { display: false } },
-        scales: { y: { min: 70, max: 100, ticks: { callback: (v) => v + '%' } } },
+        scales: {
+          y: {
+            min: 70,
+            max: 100,
+            grid: { color: gridColor },
+            ticks: { color: textColor, callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { color: gridColor },
+            ticks: { color: textColor }
+          }
+        },
       },
     });
     performanceChart = new Chart(pc.getContext('2d'), {
@@ -149,7 +165,18 @@
         maintainAspectRatio: true,
         aspectRatio: 2,
         plugins: { legend: { display: false } },
-        scales: { y: { min: 0, max: 100, ticks: { callback: (v) => v + '%' } } },
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            grid: { color: gridColor },
+            ticks: { color: textColor, callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { color: gridColor },
+            ticks: { color: textColor }
+          }
+        },
       },
     });
     refreshIcons();
@@ -1166,6 +1193,51 @@
         renderSimPane(tab.dataset.sim);
       });
     });
+
+    // FAQ Accordion Click Listeners
+    document.querySelectorAll('.faq-header').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.faq-card');
+        const content = card.querySelector('.faq-content');
+        const isActive = card.classList.contains('active');
+        
+        // Close all other FAQs
+        document.querySelectorAll('.faq-card').forEach(c => {
+          c.classList.remove('active');
+          const otherContent = c.querySelector('.faq-content');
+          if (otherContent) otherContent.style.maxHeight = null;
+        });
+        
+        if (!isActive) {
+          card.classList.add('active');
+          if (content) content.style.maxHeight = content.scrollHeight + "px";
+        }
+      });
+    });
+
+    // Footer link scroll triggers
+    document.getElementById('footerEnterPortal')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLogin();
+    });
+    document.getElementById('footerStats')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('.landing-stats-banner')?.scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('footerSim')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('.simulator-section')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Listen for OS theme changes to redrawn chart grids
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        const activeSection = document.querySelector('.app-section:not(.hidden)');
+        if (activeSection && activeSection.id === 'admin-view-home' && state.role === 'admin') {
+          initAdminCharts();
+        }
+      });
+    }
 
     refreshIcons();
   });

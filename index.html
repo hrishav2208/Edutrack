@@ -114,6 +114,192 @@
                 </div>
             </div>
         </section>
+
+        <!-- Dynamic Stats Banner -->
+        <section class="landing-stats-banner">
+            <div class="stats-banner-container">
+                <div class="stat-banner-item">
+                    <h4>99.9%</h4>
+                    <p>System Uptime Guaranteed</p>
+                </div>
+                <div class="stat-banner-item">
+                    <h4>15,000+</h4>
+                    <p>Active Daily Users</p>
+                </div>
+                <div class="stat-banner-item">
+                    <h4>40%</h4>
+                    <p>Administrative Time Saved</p>
+                </div>
+                <div class="stat-banner-item">
+                    <h4>100%</h4>
+                    <p>Location Authenticated</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="testimonials-section">
+            <div class="testimonial-title-group">
+                <h2>Loved by College Administrators</h2>
+                <p>See how EduTrack is reforming workflows and attendance on campuses</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "The GPS and Face Recognition biometrics solved our attendance leaks completely. We now save over 12 hours of manual ledger checks every week."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SC</div>
+                        <div class="testimonial-info">
+                            <h5>Dr. Sarah Chen</h5>
+                            <p>Head of Computer Science</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "Having a unified fee status and marks tracking interface has decreased parent inquiries by 50%. The platform transparency is remarkable."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">RS</div>
+                        <div class="testimonial-info">
+                            <h5>Dr. Rajesh Sharma</h5>
+                            <p>Dean of Academics</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "Checking my grades, midterm marks, and daily class schedule directly on my mobile is incredibly fast. I always know exactly where my classes are."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">AK</div>
+                        <div class="testimonial-info">
+                            <h5>Alex Kumar</h5>
+                            <p>B.Tech CS Student</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Accordion Section -->
+        <section class="faq-section">
+            <div class="faq-title-group">
+                <h2>Frequently Asked Questions</h2>
+                <p>Got questions? We have answers regarding the EduTrack system architecture</p>
+            </div>
+            
+            <div class="faq-container">
+                <div class="faq-card">
+                    <button class="faq-header" type="button">
+                        <span>How does the coordinate-bounded GPS geo-fencing work?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-content-inner">
+                            EduTrack checks your mobile's coordinate position at the exact instant you mark attendance. If your position is within the college campus's radius boundary set by the Administrator (e.g., 500 meters), the verification is successful. Otherwise, it safely notifies you that you are outside campus boundaries.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <button class="faq-header" type="button">
+                        <span>Is student biometric/face data stored safely?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-content-inner">
+                            Yes, security is our primary focus. Face recognition parameters are converted into local mathematically encrypted hashes. The actual images are never stored in plain text, ensuring student privacy and full compliance with student data regulations.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <button class="faq-header" type="button">
+                        <span>Can parents track multiple children registered in different years?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-content-inner">
+                            Absolutely. The Parent Dashboard supports multi-child registration. Parents can dynamically switch profiles via a drop-down selector to inspect attendance, class logs, active marks, and outstanding fee heads for each child instantly.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-card">
+                    <button class="faq-header" type="button">
+                        <span>Does the platform support database backups for administration?</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        <div class="faq-content-inner">
+                            Yes. The database structures (running on SQLite locally or PostgreSQL in production) support automated transaction rollbacks, daily backup configurations, and full migrations data packages to prevent data loss under any operational environment.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Campus Contact & Premium Footer -->
+        <footer class="landing-footer">
+            <div class="footer-container">
+                <div class="footer-brand">
+                    <h4>
+                        <i data-lucide="graduation-cap"></i>
+                        <span>EduTrack</span>
+                    </h4>
+                    <p>A unified digital college management ecosystem providing biometric, academic, and financial automation keys.</p>
+                </div>
+                
+                <div class="footer-links-col">
+                    <h5>Platform Map</h5>
+                    <ul>
+                        <li><a href="#featuresSection">Core Features</a></li>
+                        <li><a href="#" id="footerEnterPortal">Login Portal</a></li>
+                        <li><a href="#" id="footerStats">Stats Banner</a></li>
+                        <li><a href="#" id="footerSim">Role Simulator</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links-col">
+                    <h5>Campus Contact Info</h5>
+                    <div class="footer-contact-info">
+                        <div class="footer-contact-item">
+                            <i data-lucide="map-pin"></i>
+                            <span>
+                                <strong>St. Andrew's College Campus</strong><br>
+                                Sector 12, Academic Block A,<br>
+                                New Delhi, DL 110075, India
+                            </span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i data-lucide="phone"></i>
+                            <span>+91 (11) 2766-9000 (Admissions)</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i data-lucide="mail"></i>
+                            <span>admissions@standrews.edu.in</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i data-lucide="clock"></i>
+                            <span>Mon - Sat: 9:00 AM - 5:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 EduTrack College Management. All rights reserved.</p>
+                <div class="footer-socials">
+                    <a href="#" class="footer-social-btn"><i data-lucide="twitter"></i></a>
+                    <a href="#" class="footer-social-btn"><i data-lucide="linkedin"></i></a>
+                    <a href="#" class="footer-social-btn"><i data-lucide="github"></i></a>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Navigation -->
