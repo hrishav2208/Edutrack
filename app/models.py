@@ -1,0 +1,127 @@
+"""SQLAlchemy models — single SQLite file in instance/ (no per-machine edits)."""
+
+from datetime import date, datetime
+
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import UniqueConstraint
+
+db = SQLAlchemy()
+
+
+class User(db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(256), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # admin | teacher | student | parent
+    display_name = db.Column(db.String(120), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey("parents.id"), nullable=True)
+
+
+class Teacher(db.Model):
+    __tablename__ = "teachers"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    department = db.Column(db.String(80), nullable=False, default="General")
+    monthly_salary = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Parent(db.Model):
+    __tablename__ = "parents"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(40), default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Student(db.Model):
+    __tablename__ = "students"
+    id = db.Column(db.Integer, primary_key=True)
+    roll_no = db.Column(db.String(40), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), default="")
+    department = db.Column(db.String(80), nullable=False, default="CSE")
+    parent_id = db.Column(db.Integer, db.ForeignKey("parents.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CampusSettings(db.Model):
+    __tablename__ = "campus_settings"
+    id = db.Column(db.Integer, primary_key=True, default=1)
+    lat = db.Column(db.Float, nullable=False)
+    lng = db.Column(db.Float, nullable=False)
+    radius_m = db.Column(db.Float, nullable=False, default=500.0)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AttendanceRecord(db.Model):
+    __tablename__ = "attendance_records"
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
+    course_code = db.Column(db.String(40), nullable=False, default="GEN101")
+    session_date = db.Column(db.Date, nullable=False, default=date.today)
+    present = db.Column(db.Boolean, nullable=False, default=True)
+    method = db.Column(db.String(24), nullable=False, default="manual")  # manual | face | qr | gps | biometric
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (UniqueConstraint("student_id", "course_code", "session_date", name="uq_attendance_day"),)
+
+
+class Mark(db.Model):
+    __tablename__ = "marks"
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=True)
+    course_code = db.Column(db.String(40), nullable=False)
+    exam_title = db.Column(db.String(120), nullable=False)
+    score = db.Column(db.Float, nullable=False)
+    max_score = db.Column(db.Float, nullable=False, default=100.0)
+    graded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class FeeStructure(db.Model):
+    __tablename__ = "fee_structures"
+    id = db.Column(db.Integer, primary_key=True)
+    program = db.Column(db.String(120), nullable=False)
+    item_name = db.Column(db.String(120), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    academic_year = db.Column(db.String(20), nullable=False, default="2025-26")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class FeePayment(db.Model):
+    __tablename__ = "fee_payments"
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
+    structure_id = db.Column(db.Integer, db.ForeignKey("fee_structures.id"), nullable=True)
+    amount_paid = db.Column(db.Float, nullable=False)
+    paid_on = db.Column(db.Date, nullable=False, default=date.today)
+    remarks = db.Column(db.String(200), default="")
+
+
+class SalaryDisbursement(db.Model):
+    __tablename__ = "salary_disbursements"
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=False)
+    period_label = db.Column(db.String(40), nullable=False)  # e.g. 2026-01
+    gross = db.Column(db.Float, nullable=False)
+    deductions = db.Column(db.Float, nullable=False, default=0.0)
+    net = db.Column(db.Float, nullable=False)
+    paid_on = db.Column(db.Date, nullable=False, default=date.today)
+    notes = db.Column(db.String(200), default="")
+
+
+class Notification(db.Model):
+    __tablename__ = "notifications"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    title = db.Column(db.String(120), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    type = db.Column(db.String(40), default="info") # info, success, warning, danger
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

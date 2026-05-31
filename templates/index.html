@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack - College Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i data-lucide="graduation-cap"></i>
+                    <span>EduTrack</span>
+                </div>
+                <span class="nav-subtitle">College Management System</span>
+            </div>
+            <div class="nav-right">
+                <button class="nav-icon-btn" id="notificationBtn">
+                    <i data-lucide="bell"></i>
+                    <span class="nav-badge">3</span>
+                </button>
+                <div class="user-menu">
+                    <div class="user-avatar">AD</div>
+                    <span class="user-name" id="currentUser">Admin User</span>
+                    <button class="btn-link" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <div class="login-header">
+                <i data-lucide="graduation-cap" class="login-icon"></i>
+                <h1>EduTrack</h1>
+                <p>College Management System</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="userRole">
+                        <option value="admin">Admin</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                        <option value="parent">Parent</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                
+                <button type="button" id="biometricBtn" class="btn-link">
+                    <i data-lucide="fingerprint"></i>
+                    Use Biometric Login
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Demo: admin@edutrack.com / Password: demo123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainDashboard" class="main-dashboard hidden">
+        
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="hidden">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Admin Dashboard</h1>
+                    <p>College-wide insights and management</p>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Total Students</p>
+                                <p class="stat-value">2,847</p>
+                            </div>
+                            <div class="stat-icon primary">
+                                <i data-lucide="users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Active Teachers</p>
+                                <p class="stat-value">156</p>
+                            </div>
+                            <div class="stat-icon success">
+                                <i data-lucide="user-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Avg Attendance</p>
+                                <p class="stat-value">87.3%</p>
+                            </div>
+                            <div class="stat-icon secondary">
+                                <i data-lucide="bar-chart-2"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Defaulters</p>
+                                <p class="stat-value">23</p>
+                            </div>
+                            <div class="stat-icon danger">
+                                <i data-lucide="alert-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Placement Rate</p>
+                                <p class="stat-value">94.2%</p>
+                            </div>
+                            <div class="stat-icon primary">
+                                <i data-lucide="target"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="action-grid">
+                    <button class="action-card danger" id="viewDefaultersBtn">
+                        <i data-lucide="alert-triangle"></i>
+                        <h3>View Defaulters</h3>
+                        <p>Students below 75%</p>
+                    </button>
+                    
+                    <button class="action-card primary" id="academicCalendarBtn">
+                        <i data-lucide="calendar"></i>
+                        <h3>Academic Calendar</h3>
+                        <p>Events & Deadlines</p>
+                    </button>
+                    
+                    <button class="action-card success" id="examScheduleBtn">
+                        <i data-lucide="clipboard-list"></i>
+                        <h3>Exam Schedule</h3>
+                        <p>Upcoming Exams</p>
+                    </button>
+                    
+                    <button class="action-card secondary" id="placementStatsBtn">
+                        <i data-lucide="briefcase"></i>
+                        <h3>Placement Stats</h3>
+                        <p>Company Visits</p>
+                    </button>
+                </div>
+                
+                <!-- Charts -->
+                <div class="chart-grid">
+                    <div class="card">
+                        <h3 class="card-title">Attendance Trends</h3>
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Department Performance</h3>
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- AI Insights -->
+                <div class="card">
+                    <h3 class="card-title">
+                        <i data-lucide="brain"></i>
+                        AI Insights & Predictions
+                    </h3>
+                    <div class="insights-grid">
+                        <div class="alert alert-danger">
+                            <h4>High Risk Students</h4>
+                            <p>23 students predicted to fail due to low attendance</p>
+                            <button class="btn btn-sm btn-danger">View Details</button>
+                        </div>
+                        <div class="alert alert-warning">
+                            <h4>Curriculum Gaps</h4>
+                            <p>5 courses need updated materials</p>
+                            <button class="btn btn-sm btn-warning">Review</button>
+                        </div>
+                        <div class="alert alert-success">
+                            <h4>Top Performers</h4>
+                            <p>Computer Science dept leading with 94% attendance</p>
+                            <button class="btn btn-sm btn-success">Celebrate</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teacher Dashboard -->
+        <div id="teacherDashboard" class="hidden">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Teacher Dashboard</h1>
+                    <p>Manage your classes and curriculum</p>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="action-grid">
+                    <button class="action-card primary" id="takeAttendanceBtn">
+                        <i data-lucide="clipboard-check"></i>
+                        <h3>Take Attendance</h3>
+                        <p>Mark today's attendance</p>
+                    </button>
+                    
+                    <button class="action-card success" id="uploadCurriculumBtn">
+                        <i data-lucide="upload"></i>
+                        <h3>Upload Curriculum</h3>
+                        <p>Add resources</p>
+                    </button>
+                    
+                    <button class="action-card secondary" id="viewReportsBtn">
+                        <i data-lucide="file-text"></i>
+                        <h3>View Reports</h3>
+                        <p>Class analytics</p>
+                    </button>
+                    
+                    <button class="action-card danger" id="teacherDefaultersBtn">
+                        <i data-lucide="user-x"></i>
+                        <h3>Defaulter List</h3>
+                        <p>Students below 75%</p>
+                    </button>
+                </div>
+
+                <!-- Student List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>My Students - Computer Science 101</h3>
+                        <div class="card-actions">
+                            <select id="attendanceFilter" class="select">
+                                <option value="all">All Students</option>
+                                <option value="excellent">Excellent (≥90%)</option>
+                                <option value="good">Good (75-89%)</option>
+                                <option value="warning">Warning (60-74%)</option>
+                                <option value="defaulter">Defaulters (under 60%)</option>
+                            </select>
+                            <button id="exportAttendanceBtn" class="btn btn-secondary">
+                                <i data-lucide="download"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Roll No.</th>
+                                    <th>Student Name</th>
+                                    <th>Attendance %</th>
+                                    <th>Classes</th>
+                                    <th>Status</th>
+                                    <th>Last Seen</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Today's Schedule -->
+                <div class="card">
+                    <h3 class="card-title">Today's Schedule</h3>
+                    <div class="schedule-list">
+                        <div class="schedule-item completed">
+                            <div class="schedule-content">
+                                <h4>Computer Science 101</h4>
+                                <p>9:00 AM - 10:30 AM • Room 204 • 45 students</p>
+                                <p class="schedule-status">
+                                    <i data-lucide="check-circle"></i>
+                                    Attendance: 42/45 students (93.3%)
+                                </p>
+                            </div>
+                            <button class="btn btn-secondary">View Details</button>
+                        </div>
+                        
+                        <div class="schedule-item upcoming">
+                            <div class="schedule-content">
+                                <h4>Data Structures Lab</h4>
+                                <p>2:00 PM - 4:00 PM • Lab 301 • 30 students</p>
+                                <p class="schedule-status">
+                                    <i data-lucide="clock"></i>
+                                    Upcoming class
+                                </p>
+                            </div>
+                            <button class="btn btn-secondary">Prepare</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Dashboard -->
+        <div id="studentDashboard" class="hidden">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Student Dashboard</h1>
+                    <p>Track your academic progress</p>
+                </div>
+                
+                <!-- Student Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Attendance Rate</p>
+                                <p class="stat-value success">92.5%</p>
+                            </div>
+                            <div class="stat-icon success">
+                                <i data-lucide="check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Current CGPA</p>
+                                <p class="stat-value primary">8.7</p>
+                            </div>
+                            <div class="stat-icon primary">
+                                <i data-lucide="award"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Credits Earned</p>
+                                <p class="stat-value secondary">142</p>
+                            </div>
+                            <div class="stat-icon secondary">
+                                <i data-lucide="book-open"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Pending Tasks</p>
+                                <p class="stat-value warning">5</p>
+                            </div>
+                            <div class="stat-icon warning">
+                                <i data-lucide="list-todo"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance & Attendance -->
+                <div class="chart-grid">
+                    <div class="card">
+                        <h3 class="card-title">Semester Performance</h3>
+                        <div class="performance-list">
+                            <div class="performance-item excellent">
+                                <span class="subject">Data Structures</span>
+                                <span class="grade">A+ (9.5)</span>
+                            </div>
+                            <div class="performance-item good">
+                                <span class="subject">Computer Networks</span>
+                                <span class="grade">A (8.8)</span>
+                            </div>
+                            <div class="performance-item good">
+                                <span class="subject">Database Systems</span>
+                                <span class="grade">A (8.5)</span>
+                            </div>
+                            <div class="performance-item warning">
+                                <span class="subject">Software Engineering</span>
+                                <span class="grade">B+ (7.8)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Attendance by Subject</h3>
+                        <div class="attendance-list">
+                            <div class="attendance-item">
+                                <span class="subject-name">Data Structures</span>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill success" style="width: 95%"></div>
+                                    </div>
+                                    <span class="percentage success">95%</span>
+                                </div>
+                            </div>
+                            <div class="attendance-item">
+                                <span class="subject-name">Computer Networks</span>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill primary" style="width: 88%"></div>
+                                    </div>
+                                    <span class="percentage primary">88%</span>
+                                </div>
+                            </div>
+                            <div class="attendance-item">
+                                <span class="subject-name">Database Systems</span>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill success" style="width: 92%"></div>
+                                    </div>
+                                    <span class="percentage success">92%</span>
+                                </div>
+                            </div>
+                            <div class="attendance-item">
+                                <span class="subject-name">Software Engineering</span>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill warning" style="width: 78%"></div>
+                                    </div>
+                                    <span class="percentage warning">78%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Today's Schedule -->
+                <div class="card">
+                    <h3 class="card-title">Today's Schedule</h3>
+                    <div class="schedule-list">
+                        <div class="schedule-item completed">
+                            <div class="schedule-content">
+                                <h4>Data Structures</h4>
+                                <p>9:00 AM - 10:30 AM • Prof. Johnson • Room 204</p>
+                            </div>
+                            <span class="badge badge-success">Present</span>
+                        </div>
+                        
+                        <div class="schedule-item active">
+                            <div class="schedule-content">
+                                <h4>Database Lab</h4>
+                                <p>2:00 PM - 4:00 PM • Dr. Smith • Lab 301</p>
+                            </div>
+                            <button id="markAttendanceBtn" class="btn btn-primary">Mark Attendance</button>
+                        </div>
+
+                        <div class="schedule-item upcoming">
+                            <div class="schedule-content">
+                                <h4>Software Engineering</h4>
+                                <p>4:30 PM - 6:00 PM • Prof. Wilson • Room 105</p>
+                            </div>
+                            <span class="badge badge-secondary">Upcoming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Parent Dashboard -->
+        <div id="parentDashboard" class="hidden">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Parent Dashboard</h1>
+                    <p>Monitor your child's academic progress</p>
+                </div>
+                
+                <!-- Child Selection -->
+                <div class="card">
+                    <h3 class="card-title">Select Child</h3>
+                    <select class="select">
+                        <option>Arjun Sharma - B.Tech CSE 3rd Year</option>
+                        <option>Priya Sharma - B.Tech ECE 1st Year</option>
+                    </select>
+                </div>
+                
+                <!-- Child's Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Attendance</p>
+                                <p class="stat-value success">95.2%</p>
+                            </div>
+                            <div class="stat-icon success">
+                                <i data-lucide="calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Current CGPA</p>
+                                <p class="stat-value primary">8.4</p>
+                            </div>
+                            <div class="stat-icon primary">
+                                <i data-lucide="trending-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Semester Rank</p>
+                                <p class="stat-value secondary">12</p>
+                            </div>
+                            <div class="stat-icon secondary">
+                                <i data-lucide="trophy"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-info">
+                                <p class="stat-label">Missed Classes</p>
+                                <p class="stat-value warning">2</p>
+                            </div>
+                            <div class="stat-icon warning">
+                                <i data-lucide="alert-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance & Alerts -->
+                <div class="chart-grid">
+                    <div class="card">
+                        <h3 class="card-title">Subject-wise Performance</h3>
+                        <div class="performance-list">
+                            <div class="performance-item excellent">
+                                <div>
+                                    <p class="subject">Data Structures & Algorithms</p>
+                                    <p class="details">Attendance: 96% | Grade: A+</p>
+                                </div>
+                                <span class="grade">9.2</span>
+                            </div>
+                            <div class="performance-item good">
+                                <div>
+                                    <p class="subject">Database Management Systems</p>
+                                    <p class="details">Attendance: 92% | Grade: A</p>
+                                </div>
+                                <span class="grade">8.8</span>
+                            </div>
+                            <div class="performance-item warning">
+                                <div>
+                                    <p class="subject">Software Engineering</p>
+                                    <p class="details">Attendance: 78% | Grade: B+</p>
+                                </div>
+                                <span class="grade">7.5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Fee & Placement Status</h3>
+                        <div class="status-list">
+                            <div class="alert alert-success">
+                                <h4>Fee Status</h4>
+                                <p>All fees paid for current semester</p>
+                                <p class="small">Next due: Jan 15, 2024</p>
+                            </div>
+                            <div class="alert alert-info">
+                                <h4>Placement Preparation</h4>
+                                <p>Registered for campus placements</p>
+                                <p class="small">Mock interviews: 3 completed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Alerts -->
+                <div class="card">
+                    <h3 class="card-title">Recent Alerts & Notifications</h3>
+                    <div class="alert-list">
+                        <div class="alert alert-success">
+                            <i data-lucide="check-circle"></i>
+                            <div>
+                                <p class="alert-title">Excellent Performance</p>
+                                <p>Arjun scored 95% in Database Systems mid-term exam</p>
+                                <p class="small">2 hours ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i data-lucide="alert-triangle"></i>
+                            <div>
+                                <p class="alert-title">Attendance Warning</p>
+                                <p>Software Engineering attendance dropped to 78%. Needs improvement.</p>
+                                <p class="small">1 day ago</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i data-lucide="file-check"></i>
+                            <div>
+                                <p class="alert-title">Assignment Submitted</p>
+                                <p>Database project submitted on time with excellent quality</p>
+                                <p class="small">3 days ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Modal -->
+    <div id="attendanceModal" class="modal hidden">
+        <div class="modal-content modal-sm">
+            <h2 class="modal-title">Mark Attendance</h2>
+            
+            <div class="attendance-methods">
+                <button id="faceRecognitionBtn" class="method-card primary">
+                    <i data-lucide="camera"></i>
+                    <div class="method-info">
+                        <h4>Face Recognition</h4>
+                        <p>Scan your face</p>
+                    </div>
+                </button>
+                
+                <button id="qrCodeBtn" class="method-card success">
+                    <i data-lucide="qr-code"></i>
+                    <div class="method-info">
+                        <h4>QR Code Scan</h4>
+                        <p>Scan classroom code</p>
+                    </div>
+                </button>
+                
+                <button id="geolocationBtn" class="method-card secondary">
+                    <i data-lucide="map-pin"></i>
+                    <div class="method-info">
+                        <h4>Location Verification</h4>
+                        <p>Verify classroom location</p>
+                    </div>
+                </button>
+            </div>
+            
+            <button id="closeAttendanceModal" class="btn btn-secondary btn-block">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Defaulter Modal -->
+    <div id="defaulterModal" class="modal hidden">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i data-lucide="alert-triangle"></i>
+                    Defaulter List - Students Below 75%
+                </h2>
+                <button id="closeDefaulterModal" class="modal-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <div class="modal-filters">
+                <select id="departmentFilter" class="select">
+                    <option value="all">All Departments</option>
+                    <option value="cse">Computer Science</option>
+                    <option value="ece">Electronics</option>
+                    <option value="me">Mechanical</option>
+                    <option value="ce">Civil</option>
+                </select>
+                <select id="severityFilter" class="select">
+                    <option value="all">All Severity</option>
+                    <option value="critical">Critical (under 50%)</option>
+                    <option value="high">High (50–60%)</option>
+                    <option value="medium">Medium (60–75%)</option>
+                </select>
+                <button id="exportDefaultersBtn" class="btn btn-danger">
+                    <i data-lucide="download"></i>
+                    Export Report
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Attendance %</th>
+                            <th>Classes Missed</th>
+                            <th>Severity</th>
+                            <th>Parent Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defaulterTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="modal hidden">
+        <div class="modal-content modal-md">
+            <h2 class="modal-title">Face Recognition</h2>
+            
+            <div class="camera-preview">
+                <video id="cameraVideo" autoplay muted></video>
+            </div>
+            
+            <p id="cameraStatus" class="camera-status">Position your face in the frame</p>
+            
+            <div class="modal-actions">
+                <button id="captureBtn" class="btn btn-primary">Capture</button>
+                <button id="closeCameraModal" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div id="notificationPanel" class="notification-panel hidden">
+        <h3>Notifications</h3>
+        <div class="notification-list">
+            <div class="notification-item danger">
+                <p class="notification-title">Attendance Alert</p>
+                <p class="notification-text">23 students below 75% attendance threshold</p>
+            </div>
+            <div class="notification-item info">
+                <p class="notification-title">New curriculum uploaded</p>
+                <p class="notification-text">Database Systems - Advanced Queries</p>
+            </div>
+            <div class="notification-item success">
+                <p class="notification-title">Placement Update</p>
+                <p class="notification-text">TechCorp visiting campus next week</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

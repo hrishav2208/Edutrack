@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=prod
+      - DATABASE_URL=postgresql://postgres:edutracksecretpassword@db:5432/edutrack
+      - SECRET_KEY=edutrack-production-secret-key-change-this
+      - SESSION_COOKIE_SECURE=False # Change to True if running behind HTTPS proxy in production
+    depends_on:
+      - db
+    volumes:
+      - ./instance:/app/instance
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=edutracksecretpassword
+      - POSTGRES_DB=edutrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

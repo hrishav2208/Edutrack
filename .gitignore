@@ -1,0 +1,30 @@
+# Environments and configuration
+.env
+.env.local
+.env.*.local
+
+# Databases and instance files
+instance/
+*.db
+*.sqlite3
+
+# Python caches and compiles
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE / System configs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
