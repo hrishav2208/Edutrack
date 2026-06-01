@@ -13,10 +13,12 @@ from app.config import config_by_name, BASE_DIR, INSTANCE_DIR
 from app.models import (
     db,
     CampusSettings,
+    ClassSession,
     FeeStructure,
     Mark,
     Parent,
     SalaryDisbursement,
+    SessionCheckIn,
     Student,
     Teacher,
     User,

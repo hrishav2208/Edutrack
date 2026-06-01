@@ -1,6 +1,12 @@
 (function () {
   'use strict';
 
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/js/sw.js').catch(err => console.error('SW reg failed', err));
+    });
+  }
+
   const NAV = {
     admin: [
       { id: 'admin-view-home', label: 'Home', icon: 'layout-dashboard' },
@@ -43,6 +49,9 @@
   let performanceChart = null;
   let cameraStream = null;
   let state = { user: null, apiOnline: false, role: null };
+  let activeSessionId = null;
+  let sessionPollInterval = null;
+  let randomPingInterval = null;
 
   function refreshIcons() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -310,8 +319,10 @@
     if (sectionId === 'teacher-view-attendance') {
       const d = document.getElementById('manualAttDate');
       if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
+      fetchActiveSessionStatus();
     }
     if (sectionId === 'teacher-view-marks') loadMarkStudentSelect();
+    if (sectionId === 'student-view-home') checkActiveSessionStudent();
     if (sectionId === 'student-view-marks') loadStudentMarks();
     if (sectionId === 'parent-view-fees') loadParentFees();
   }
@@ -326,6 +337,170 @@
     document.getElementById('appSidebar')?.classList.remove('open');
     document.getElementById('sidebarBackdrop')?.classList.add('hidden');
     document.getElementById('sidebarToggle')?.setAttribute('aria-expanded', 'false');
+  }
+
+  // ===================================================================
+  // GPS LIVE SESSION LOGIC
+  // ===================================================================
+
+  function getCurrentPosition() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => reject(new Error('Could not read GPS. Ensure location permissions are granted.')),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+  }
+
+  async function startClassSession() {
+    try {
+      const pos = await getCurrentPosition();
+      const course_code = document.getElementById('sessionCourseCode')?.value || 'CS101';
+      const room_name = document.getElementById('sessionRoomName')?.value || 'Classroom';
+      const radius_m = parseFloat(document.getElementById('sessionRadius')?.value) || 20;
+
+      const res = await apiJson('/api/attendance/session/start', {
+        method: 'POST',
+        body: { lat: pos.lat, lng: pos.lng, course_code, room_name, radius_m }
+      });
+
+      if (res.ok) {
+        activeSessionId = res.session_id;
+        fetchActiveSessionStatus();
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function endClassSession() {
+    if (!activeSessionId) return;
+    try {
+      const res = await apiJson('/api/attendance/session/end', {
+        method: 'POST',
+        body: { session_id: activeSessionId }
+      });
+      if (res.ok) {
+        alert(`Session ended. ${res.total_checkins} students checked in. Duration: ${res.duration_minutes} min.`);
+        activeSessionId = null;
+        fetchActiveSessionStatus();
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function fetchActiveSessionStatus() {
+    // Stop polling if navigating away
+    if (state.role !== 'teacher') return;
+    
+    try {
+      const res = await apiJson('/api/attendance/session/active');
+      const activeDiv = document.getElementById('sessionActive');
+      const inactiveDiv = document.getElementById('sessionInactive');
+      
+      if (res.active && res.sessions.length > 0) {
+        const s = res.sessions[0];
+        activeSessionId = s.session_id;
+        document.getElementById('sessionActiveCourse').textContent = s.course_code;
+        document.getElementById('sessionActiveRoom').textContent = s.room_name;
+        document.getElementById('sessionActiveRadius').textContent = `${s.radius_m}m radius`;
+        document.getElementById('sessionCheckedInCount').textContent = s.checked_in_count;
+        
+        const durationMin = Math.floor((new Date() - new Date(s.started_at)) / 60000);
+        document.getElementById('sessionDuration').textContent = durationMin;
+        
+        inactiveDiv.classList.add('hidden');
+        activeDiv.classList.remove('hidden');
+      } else {
+        activeSessionId = null;
+        inactiveDiv.classList.remove('hidden');
+        activeDiv.classList.add('hidden');
+      }
+    } catch (e) {
+      console.error('Error fetching session status:', e);
+    }
+  }
+
+  async function checkActiveSessionStudent() {
+    if (state.role !== 'student') return;
+    try {
+      const res = await apiJson('/api/attendance/session/active');
+      const banner = document.getElementById('studentSessionBanner');
+      
+      if (res.active && res.sessions.length > 0) {
+        const s = res.sessions[0];
+        activeSessionId = s.session_id;
+        document.getElementById('sessionBannerInfo').textContent = `${s.course_code} — ${s.room_name}`;
+        
+        const statusBadge = document.getElementById('sessionBannerStatus');
+        const checkinBtn = document.getElementById('btnSessionCheckin');
+        
+        if (s.already_checked_in) {
+          statusBadge.textContent = 'Attendance Verified';
+          statusBadge.className = 'badge badge-success';
+          checkinBtn.classList.add('hidden');
+          
+          // Start background pings if they aren't running already
+          if (!randomPingInterval) startRandomPings(s.session_id);
+        } else {
+          statusBadge.textContent = 'Not checked in';
+          statusBadge.className = 'badge badge-warning';
+          checkinBtn.classList.remove('hidden');
+          stopRandomPings();
+        }
+        banner.classList.remove('hidden');
+      } else {
+        activeSessionId = null;
+        banner.classList.add('hidden');
+        stopRandomPings();
+      }
+    } catch (e) {
+      console.error('Student session check error:', e);
+    }
+  }
+
+  function startRandomPings(sessionId) {
+    if (randomPingInterval) return; // Already running
+    
+    function scheduleNext() {
+      // Random interval between 2 to 5 minutes
+      const delay = 120000 + Math.floor(Math.random() * 180000);
+      randomPingInterval = setTimeout(async () => {
+        if (!activeSessionId) {
+          stopRandomPings();
+          return;
+        }
+        
+        try {
+          const pos = await getCurrentPosition();
+          const res = await apiJson('/api/attendance/session/ping', {
+            method: 'POST',
+            body: { session_id: sessionId, lat: pos.lat, lng: pos.lng }
+          });
+          
+          if (!res.active) {
+            stopRandomPings(); // Session ended
+            checkActiveSessionStudent(); // update UI banner
+            return;
+          }
+        } catch (e) {
+          console.error('Ping failed:', e);
+        }
+        
+        scheduleNext(); // Schedule the next one
+      }, delay);
+    }
+    scheduleNext();
+  }
+
+  function stopRandomPings() {
+    if (randomPingInterval) {
+      clearTimeout(randomPingInterval);
+      randomPingInterval = null;
+    }
   }
 
   async function loadDirectoryAdmin() {
@@ -1016,6 +1191,19 @@
       }
     });
 
+    document.getElementById('btnStartSession')?.addEventListener('click', startClassSession);
+    document.getElementById('btnEndSession')?.addEventListener('click', endClassSession);
+    
+    document.getElementById('btnSessionCheckin')?.addEventListener('click', async () => {
+      try {
+        const pos = await getCurrentPosition();
+        pendingLocation = pos;
+        await openCameraModal();
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
     document.getElementById('btnLoadManualAttendance')?.addEventListener('click', loadManualRoster);
     document.getElementById('btnSaveManualAttendance')?.addEventListener('click', saveManualRoster);
     document.getElementById('btnAddMark')?.addEventListener('click', async () => {
@@ -1152,17 +1340,34 @@
         }
         const fd = new FormData();
         fd.append('image', blob, 'capture.jpg');
-        fd.append('course_code', 'CS101');
         fd.append('lat', pendingLocation.lat);
         fd.append('lng', pendingLocation.lng);
-        try {
-          const r = await fetch('/api/attendance/mark-combined', { method: 'POST', body: fd, credentials: 'same-origin' });
-          const data = await r.json().catch(() => ({}));
-          if (!r.ok) throw new Error(data.reason || data.error || 'Combined verify failed');
-          alert('GPS + Face attendance successfully recorded.');
-          fetchNotifications(); // Refresh notifications
-        } catch (e) {
-          alert(e.message);
+
+        if (activeSessionId) {
+          // New Live Session check-in flow
+          fd.append('session_id', activeSessionId);
+          try {
+            const r = await fetch('/api/attendance/session/checkin', { method: 'POST', body: fd, credentials: 'same-origin' });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.reason || data.error || 'Check-in failed');
+            alert('Attendance marked! Background verification started.');
+            fetchNotifications();
+            checkActiveSessionStudent(); // Refresh the banner UI
+          } catch (e) {
+            alert(e.message);
+          }
+        } else {
+          // Old combined attendance flow (campus-wide)
+          fd.append('course_code', 'CS101');
+          try {
+            const r = await fetch('/api/attendance/mark-combined', { method: 'POST', body: fd, credentials: 'same-origin' });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.reason || data.error || 'Combined verify failed');
+            alert('GPS + Face attendance successfully recorded.');
+            fetchNotifications(); // Refresh notifications
+          } catch (e) {
+            alert(e.message);
+          }
         }
         closeCameraModal();
       }, 'image/jpeg', 0.85);

@@ -125,3 +125,36 @@ class Notification(db.Model):
     type = db.Column(db.String(40), default="info") # info, success, warning, danger
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ClassSession(db.Model):
+    """Represents an active class session started by a teacher with GPS geofence."""
+    __tablename__ = "class_sessions"
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=False)
+    course_code = db.Column(db.String(40), nullable=False)
+    room_name = db.Column(db.String(80), default="")
+    # GPS center of the classroom
+    lat = db.Column(db.Float, nullable=False)
+    lng = db.Column(db.Float, nullable=False)
+    radius_m = db.Column(db.Float, nullable=False, default=20.0)
+    # Session lifecycle
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    # Attendance summary (populated on end)
+    total_checkins = db.Column(db.Integer, default=0)
+
+
+class SessionCheckIn(db.Model):
+    """Logs each GPS check-in (initial or random ping) from a student during a session."""
+    __tablename__ = "session_checkins"
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey("class_sessions.id"), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
+    lat = db.Column(db.Float, nullable=False)
+    lng = db.Column(db.Float, nullable=False)
+    inside_radius = db.Column(db.Boolean, nullable=False)
+    distance_m = db.Column(db.Float, nullable=False)
+    check_type = db.Column(db.String(20), default="ping")  # initial | ping
+    checked_at = db.Column(db.DateTime, default=datetime.utcnow)

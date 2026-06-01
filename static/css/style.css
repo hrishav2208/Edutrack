@@ -2129,6 +2129,110 @@ textarea:focus {
 }
 
 /* ===================================
+   GPS SESSION UI
+   =================================== */
+.session-card {
+    border: 1px solid var(--primary-200);
+    background: linear-gradient(180deg, var(--primary-50) 0%, white 100%);
+    margin-bottom: var(--space-4);
+}
+
+.session-card .card-title {
+    color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.session-status-card {
+    background: white;
+    border: 1px solid var(--success-200);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
+}
+
+.session-pulse-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--space-3);
+    color: var(--success-600);
+    font-size: 16px;
+}
+
+.pulse-dot {
+    width: 12px;
+    height: 12px;
+    background-color: var(--success-500);
+    border-radius: 50%;
+    position: relative;
+}
+
+.pulse-dot::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    background-color: rgba(16, 185, 129, 0.4);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+.session-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-600);
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.session-banner {
+    background: white;
+    border: 1px solid var(--success-200);
+    border-left: 4px solid var(--success-500);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    box-shadow: var(--shadow-sm);
+}
+
+.session-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.session-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.session-banner-left p {
+    margin: 4px 0 0 0;
+    color: var(--gray-600);
+    font-size: 14px;
+}
+
+.session-banner-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+
+/* ===================================
    SYSTEM DARK MODE OVERRIDES
    =================================== */
 @media (prefers-color-scheme: dark) {
@@ -2361,4 +2465,20 @@ textarea:focus {
         background: #374151 !important;
         border-color: #4b5563 !important;
     }
+
+    .session-card {
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+        border-color: #334155 !important;
+    }
+
+    .session-status-card {
+        background: #111827 !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+    }
+
+    .session-banner {
+        background: #111827 !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+    }
 }
+

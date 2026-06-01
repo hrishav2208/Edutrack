@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="static/css/style.css">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#4a6b8a">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -758,10 +761,58 @@
             <div id="teacher-view-attendance" class="app-section hidden">
                 <div class="container">
                     <div class="page-header">
-                        <h1>Manual attendance</h1>
-                        <p>Load the class roster, mark present/absent, save to the server.</p>
+                        <h1>Attendance</h1>
+                        <p>Start a live GPS session or use manual entry.</p>
                     </div>
+
+                    <!-- Live GPS Session Card -->
+                    <div class="card session-card">
+                        <h3 class="card-title">
+                            <i data-lucide="radio"></i>
+                            Live GPS Classroom Session
+                        </h3>
+                        <div id="sessionInactive">
+                            <p style="color:var(--gray-600); margin-bottom:16px;">Start a session to create a GPS geofence around your classroom. Students will be notified and can mark attendance using their location + selfie.</p>
+                            <div class="form-row">
+                                <div class="form-group"><label>Course code</label><input type="text" id="sessionCourseCode" value="CS101"></div>
+                                <div class="form-group"><label>Room name</label><input type="text" id="sessionRoomName" placeholder="Room 204"></div>
+                                <div class="form-group"><label>Radius (m)</label><input type="number" id="sessionRadius" value="20" min="10" max="100" step="5"></div>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btnStartSession">
+                                <i data-lucide="play"></i>
+                                Start Live Session
+                            </button>
+                        </div>
+                        <div id="sessionActive" class="hidden">
+                            <div class="session-status-card">
+                                <div class="session-pulse-row">
+                                    <span class="pulse-dot"></span>
+                                    <strong>Session Active</strong>
+                                </div>
+                                <div class="session-meta">
+                                    <span id="sessionActiveCourse">CS101</span>
+                                    <span>•</span>
+                                    <span id="sessionActiveRoom">Room 204</span>
+                                    <span>•</span>
+                                    <span id="sessionActiveRadius">20m radius</span>
+                                </div>
+                                <div class="session-meta">
+                                    <i data-lucide="users" style="width:16px;height:16px;"></i>
+                                    <span><strong id="sessionCheckedInCount">0</strong> students checked in</span>
+                                    <span>•</span>
+                                    <span>Running for <strong id="sessionDuration">0</strong> min</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-danger" id="btnEndSession" style="margin-top:16px;">
+                                <i data-lucide="square"></i>
+                                End Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Manual Attendance (existing) -->
                     <div class="card">
+                        <h3 class="card-title">Manual Attendance</h3>
                         <div class="form-row">
                             <div class="form-group"><label>Course code</label><input type="text" id="manualCourseCode" value="CS101" style="max-width:220px"></div>
                             <div class="form-group"><label>Session date</label><input type="date" id="manualAttDate"></div>
@@ -803,7 +854,27 @@
                     <h1>Student Dashboard</h1>
                     <p>Track your academic progress</p>
                 </div>
-                
+
+                <!-- Live Session Banner (shown when a class is active) -->
+                <div id="studentSessionBanner" class="session-banner hidden">
+                    <div class="session-banner-content">
+                        <div class="session-banner-left">
+                            <span class="pulse-dot"></span>
+                            <div>
+                                <strong>Class in Progress</strong>
+                                <p id="sessionBannerInfo">CS101 — Room 204</p>
+                            </div>
+                        </div>
+                        <div class="session-banner-right">
+                            <span id="sessionBannerStatus" class="badge badge-warning">Not checked in</span>
+                            <button id="btnSessionCheckin" class="btn btn-primary btn-sm">
+                                <i data-lucide="camera" style="width:16px;height:16px;"></i>
+                                Mark Attendance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Student Stats -->
                 <div class="stats-grid">
                     <div class="stat-card">
