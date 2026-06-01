@@ -122,8 +122,8 @@
           {
             label: 'Attendance %',
             data: [82, 85, 84, 88, 87, 87.3],
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            borderColor: '#3b6582',
+            backgroundColor: 'rgba(59, 101, 130, 0.1)',
             fill: true,
             tension: 0.35,
           },
@@ -156,7 +156,7 @@
           {
             label: 'Avg attendance %',
             data: [94, 86, 81, 79, 88],
-            backgroundColor: ['#2563eb', '#64748b', '#16a34a', '#f59e0b', '#3b82f6'],
+            backgroundColor: ['#3b6582', '#687787', '#3b9b58', '#cda174', '#5a84a6'],
           },
         ],
       },
