@@ -517,20 +517,20 @@
         tb.innerHTML = teachers
           .map(
             (t) =>
-              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td></tr>`
+              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td></tr>`
           )
           .join('');
       const pb = document.getElementById('adminParentsBody');
       if (pb)
         pb.innerHTML = parents
-          .map((p) => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email)}</td><td>${escapeHtml(p.phone || '')}</td></tr>`)
+          .map((p) => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email)}</td><td>${escapeHtml(p.phone || '')}</td><td><code>${escapeHtml(p.uid || '—')}</code></td></tr>`)
           .join('');
       const sb = document.getElementById('adminStudentsBody');
       if (sb)
         sb.innerHTML = students
           .map(
             (s) =>
-              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td></tr>`
+              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td></tr>`
           )
           .join('');
       const sel = document.getElementById('formStudentParentId');
@@ -1056,22 +1056,28 @@
 
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail')?.value?.trim() || '';
+      const identifier = document.getElementById('loginEmail')?.value?.trim() || '';
       const password = document.getElementById('loginPassword')?.value || '';
-      if (!email) {
-        alert('Please enter your email.');
+      if (!identifier) {
+        alert('Please enter your Portal ID or email.');
         return;
       }
-      const roleSelect = document.getElementById('userRole')?.value || 'admin';
+
+      // Auto-detect role from UID prefix
+      let roleSelect = document.getElementById('userRole')?.value || 'admin';
+      if (identifier.toUpperCase().startsWith('STU-')) roleSelect = 'student';
+      else if (identifier.toUpperCase().startsWith('EMP-')) roleSelect = 'teacher';
+      else if (identifier.toUpperCase().startsWith('PAR-')) roleSelect = 'parent';
+
       if (!state.apiOnline) {
-        showDashboard(roleSelect, { id: 1, role: roleSelect, email: email, display_name: email.split('@')[0] });
+        showDashboard(roleSelect, { id: 1, role: roleSelect, email: identifier, display_name: identifier.split('@')[0] });
         return;
       }
       try {
-        const data = await apiJson('/api/auth/login', { method: 'POST', body: { email, password } });
+        const data = await apiJson('/api/auth/login', { method: 'POST', body: { identifier, password } });
         showDashboard(data.user.role, data.user);
       } catch (err) {
-        alert(err.message || 'Login failed. Try admin@edutrack.com / demo123');
+        alert(err.message || 'Login failed. Check your Portal ID / email and password.');
       }
     });
 
@@ -1084,18 +1090,22 @@
     });
 
     document.getElementById('biometricBtn')?.addEventListener('click', async () => {
-      const email = document.getElementById('loginEmail')?.value?.trim() || '';
-      if (!email) {
-        alert('Enter your email first, then use biometric login.');
+      const identifier = document.getElementById('loginEmail')?.value?.trim() || '';
+      if (!identifier) {
+        alert('Enter your Portal ID or email first, then use biometric login.');
         return;
       }
-      const roleSelect = document.getElementById('userRole')?.value || 'admin';
+      let roleSelect = document.getElementById('userRole')?.value || 'admin';
+      if (identifier.toUpperCase().startsWith('STU-')) roleSelect = 'student';
+      else if (identifier.toUpperCase().startsWith('EMP-')) roleSelect = 'teacher';
+      else if (identifier.toUpperCase().startsWith('PAR-')) roleSelect = 'parent';
+
       if (!state.apiOnline) {
-        showDashboard(roleSelect, { id: 1, role: roleSelect, email: email, display_name: email.split('@')[0] });
+        showDashboard(roleSelect, { id: 1, role: roleSelect, email: identifier, display_name: identifier.split('@')[0] });
         return;
       }
       try {
-        const data = await apiJson('/api/auth/biometric/login', { method: 'POST', body: { email } });
+        const data = await apiJson('/api/auth/biometric/login', { method: 'POST', body: { identifier } });
         showDashboard(data.user.role, data.user);
       } catch (err) {
         alert(err.message || 'Biometric login failed');
@@ -1104,40 +1114,50 @@
 
     document.getElementById('btnAddTeacher')?.addEventListener('click', async () => {
       try {
-        await apiJson('/api/directory/teachers', {
+        const data = await apiJson('/api/directory/teachers', {
           method: 'POST',
           body: {
             name: document.getElementById('formTeacherName').value,
             email: document.getElementById('formTeacherEmail').value,
             department: document.getElementById('formTeacherDept').value,
             monthly_salary: document.getElementById('formTeacherSalary').value,
+            password: document.getElementById('formTeacherPassword')?.value || '',
           },
         });
         loadDirectoryAdmin();
-        alert('Teacher saved.');
+        const banner = document.getElementById('teacherUidResult');
+        if (banner && data.uid) {
+          banner.innerHTML = `✅ Teacher saved! &nbsp; <strong>Portal ID (Employee ID):</strong> <code style="font-size:1.1em; letter-spacing:0.05em;">${data.uid}</code> &nbsp; <button onclick="navigator.clipboard.writeText('${data.uid}')" class="btn btn-sm btn-secondary">Copy</button>`;
+          banner.classList.remove('hidden');
+        }
       } catch (e) {
         alert(e.message);
       }
     });
     document.getElementById('btnAddParent')?.addEventListener('click', async () => {
       try {
-        await apiJson('/api/directory/parents', {
+        const data = await apiJson('/api/directory/parents', {
           method: 'POST',
           body: {
             name: document.getElementById('formParentName').value,
             email: document.getElementById('formParentEmail').value,
             phone: document.getElementById('formParentPhone').value,
+            password: document.getElementById('formParentPassword')?.value || '',
           },
         });
         loadDirectoryAdmin();
-        alert('Parent saved.');
+        const banner = document.getElementById('parentUidResult');
+        if (banner && data.uid) {
+          banner.innerHTML = `✅ Parent saved! &nbsp; <strong>Portal ID (Guardian ID):</strong> <code style="font-size:1.1em; letter-spacing:0.05em;">${data.uid}</code> &nbsp; <button onclick="navigator.clipboard.writeText('${data.uid}')" class="btn btn-sm btn-secondary">Copy</button>`;
+          banner.classList.remove('hidden');
+        }
       } catch (e) {
         alert(e.message);
       }
     });
     document.getElementById('btnAddStudent')?.addEventListener('click', async () => {
       try {
-        await apiJson('/api/directory/students', {
+        const data = await apiJson('/api/directory/students', {
           method: 'POST',
           body: {
             roll_no: document.getElementById('formStudentRoll').value,
@@ -1147,11 +1167,16 @@
             parent_id: document.getElementById('formStudentParentId').value
               ? parseInt(document.getElementById('formStudentParentId').value, 10)
               : null,
+            password: document.getElementById('formStudentPassword')?.value || '',
           },
         });
         loadDirectoryAdmin();
         renderStudentTableFromApi('all');
-        alert('Student saved.');
+        const banner = document.getElementById('studentUidResult');
+        if (banner && data.uid) {
+          banner.innerHTML = `✅ Student saved! &nbsp; <strong>Portal ID (Student ID):</strong> <code style="font-size:1.1em; letter-spacing:0.05em;">${data.uid}</code> &nbsp; <button onclick="navigator.clipboard.writeText('${data.uid}')" class="btn btn-sm btn-secondary">Copy</button><br><span class="small">Share this ID + the password with the student so they can log in.</span>`;
+          banner.classList.remove('hidden');
+        }
       } catch (e) {
         alert(e.message);
       }

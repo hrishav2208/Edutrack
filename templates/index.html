@@ -44,17 +44,18 @@
             
             <form id="loginForm" class="login-form">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                    <label>Portal ID or Email</label>
+                    <input type="text" id="loginEmail" id="loginIdentifier" placeholder="e.g. STU-CSE26ADI001 or admin@edutrack.com" required autocomplete="username">
+                    <p class="small" style="margin-top:5px; color: var(--gray-500);">Students use their Portal ID (STU-...), Teachers use EMP-..., Parents use PAR-...</p>
                 </div>
                 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
                 </div>
                 
-                <div class="form-group">
-                    <label>Role</label>
+                <div class="form-group" id="roleSelectGroup">
+                    <label>Role <span class="small">(only needed for admin login)</span></label>
                     <select id="userRole">
                         <option value="admin">Admin</option>
                         <option value="teacher">Teacher</option>
@@ -72,9 +73,11 @@
             </form>
             
             <div class="login-footer">
-                <p>Demo: admin@edutrack.com / Password: demo123</p>
+                <p>Admin: admin@edutrack.com / demo123</p>
+                <p style="margin-top:4px;">Students/Teachers/Parents: use your Portal ID + password set by admin</p>
             </div>
         </div>
+
     </div>
 
     <!-- Main Dashboard -->

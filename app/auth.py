@@ -23,32 +23,44 @@ def require_login():
     return u, None
 
 
+def _user_dict(user):
+    """Serialize a User object for API responses."""
+    return {
+        "id": user.id,
+        "email": user.email,
+        "uid": user.uid,
+        "role": user.role,
+        "display_name": user.display_name,
+        "teacher_id": user.teacher_id,
+        "student_id": user.student_id,
+        "parent_id": user.parent_id,
+    }
+
+
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
+    # Accept 'identifier' (uid or email) or legacy 'email' field
+    identifier = (data.get("identifier") or data.get("email") or "").strip().lower()
     password = data.get("password") or ""
 
-    user = User.query.filter_by(email=email).first()
+    if not identifier:
+        return jsonify({"error": "Identifier (UID or email) is required"}), 400
+
+    # Try uid first, then fall back to email
+    user = User.query.filter(
+        db.or_(
+            db.func.lower(User.uid) == identifier,
+            User.email == identifier,
+        )
+    ).first()
+
     if not user or not check_password_hash(user.password_hash, password):
-        return jsonify({"error": "Invalid email or password"}), 401
+        return jsonify({"error": "Invalid credentials"}), 401
 
     session["user_id"] = user.id
     session["biometric_verified"] = False
-    return jsonify(
-        {
-            "ok": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "role": user.role,
-                "display_name": user.display_name,
-                "teacher_id": user.teacher_id,
-                "student_id": user.student_id,
-                "parent_id": user.parent_id,
-            },
-        }
-    )
+    return jsonify({"ok": True, "user": _user_dict(user)})
 
 
 @auth_bp.route("/logout", methods=["POST"])
@@ -62,20 +74,9 @@ def me():
     u = current_user()
     if not u:
         return jsonify({"user": None})
-    return jsonify(
-        {
-            "user": {
-                "id": u.id,
-                "email": u.email,
-                "role": u.role,
-                "display_name": u.display_name,
-                "teacher_id": u.teacher_id,
-                "student_id": u.student_id,
-                "parent_id": u.parent_id,
-                "biometric_verified": session.get("biometric_verified", False),
-            }
-        }
-    )
+    d = _user_dict(u)
+    d["biometric_verified"] = session.get("biometric_verified", False)
+    return jsonify({"user": d})
 
 
 @auth_bp.route("/biometric/challenge", methods=["POST"])
@@ -94,7 +95,6 @@ def biometric_verify():
     if err:
         return err
     data = request.get_json(silent=True) or {}
-    # Accept explicit demo flag from trusted UI, or pretend success on any POST after login
     if data.get("demo") is True or data.get("credential"):
         session["biometric_verified"] = True
         return jsonify({"ok": True, "verified": True})
@@ -104,25 +104,17 @@ def biometric_verify():
 
 @auth_bp.route("/biometric/login", methods=["POST"])
 def biometric_login():
-    """Passwordless demo: email must match a user; sets session without password."""
+    """Passwordless demo: identifier (uid or email) must match a user."""
     data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
-    user = User.query.filter_by(email=email).first()
+    identifier = (data.get("identifier") or data.get("email") or "").strip().lower()
+    user = User.query.filter(
+        db.or_(
+            db.func.lower(User.uid) == identifier,
+            User.email == identifier,
+        )
+    ).first()
     if not user:
         return jsonify({"error": "Unknown user"}), 404
     session["user_id"] = user.id
     session["biometric_verified"] = True
-    return jsonify(
-        {
-            "ok": True,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "role": user.role,
-                "display_name": user.display_name,
-                "teacher_id": user.teacher_id,
-                "student_id": user.student_id,
-                "parent_id": user.parent_id,
-            },
-        }
-    )
+    return jsonify({"ok": True, "user": _user_dict(user)})
