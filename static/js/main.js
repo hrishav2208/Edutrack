@@ -1569,14 +1569,49 @@
     document.getElementById('myProfileBtn')?.addEventListener('click', async () => {
       try {
         const p = await apiJson('/api/profile/me');
+        // Hidden plain text fields
         document.getElementById('profileName').textContent = p.display_name;
         document.getElementById('profileUid').textContent = p.uid;
         document.getElementById('profileEmail').textContent = p.email;
         document.getElementById('profileRole').textContent = p.role;
         
+        // Virtual ID Card
+        document.getElementById('virtualIdName').textContent = p.display_name;
+        document.getElementById('virtualIdRole').textContent = p.role;
+        document.getElementById('virtualIdUid').textContent = p.uid;
+        
+        const photoEl = document.getElementById('virtualIdPhoto');
+        if (p.profile_picture) {
+            photoEl.style.backgroundImage = `url(${p.profile_picture})`;
+            document.getElementById('virtualIdInitials').textContent = "";
+        } else {
+            photoEl.style.backgroundImage = "none";
+            document.getElementById('virtualIdInitials').textContent = p.display_name.charAt(0).toUpperCase();
+        }
+
+        // Navbar Avatar
+        const avatarEl = document.getElementById('userAvatar');
+        if (avatarEl) {
+            if (p.profile_picture) {
+                avatarEl.style.backgroundImage = `url(${p.profile_picture})`;
+                avatarEl.style.backgroundSize = "cover";
+                avatarEl.textContent = "";
+            } else {
+                avatarEl.style.backgroundImage = "none";
+                avatarEl.textContent = p.display_name.substring(0,2).toUpperCase();
+            }
+        }
+        
+        // Form Inputs
         document.getElementById('profilePrimaryPhone').value = p.primary_phone || '';
         document.getElementById('profileSecondaryPhone').value = p.secondary_phone || '';
         document.getElementById('profileGuardianPhone').value = p.guardian_phone || '';
+        document.getElementById('profileAddress').value = p.address || '';
+        document.getElementById('profileDob').value = p.dob || '';
+        document.getElementById('profileBloodGroup').value = p.blood_group || '';
+        document.getElementById('profilePicture').value = p.profile_picture || '';
+        document.getElementById('profileSecurityQuestion').value = p.security_question || '';
+        document.getElementById('profileSecurityAnswer').value = ''; // Don't populate password hash
         
         document.getElementById('profileModal')?.classList.remove('hidden');
       } catch (e) {
@@ -1593,11 +1628,20 @@
             primary_phone: document.getElementById('profilePrimaryPhone').value,
             secondary_phone: document.getElementById('profileSecondaryPhone').value,
             guardian_phone: document.getElementById('profileGuardianPhone').value,
+            address: document.getElementById('profileAddress').value,
+            dob: document.getElementById('profileDob').value,
+            blood_group: document.getElementById('profileBloodGroup').value,
+            profile_picture: document.getElementById('profilePicture').value,
+            security_question: document.getElementById('profileSecurityQuestion').value,
+            security_answer: document.getElementById('profileSecurityAnswer').value,
           }
         });
-        alert('Contact info updated successfully!');
+        alert('Profile details updated successfully!');
+        
+        // Refresh the profile to update the Virtual ID Card and Avatar
+        document.getElementById('myProfileBtn').click();
       } catch (e) {
-        alert('Error updating contact info: ' + e.message);
+        alert('Error updating profile: ' + e.message);
       }
     });
 

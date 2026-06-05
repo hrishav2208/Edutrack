@@ -19,6 +19,8 @@ class User(db.Model):
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=True)
     student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey("parents.id"), nullable=True)
+    security_question = db.Column(db.String(255), nullable=True)
+    security_answer_hash = db.Column(db.String(256), nullable=True)
 
 
 class Teacher(db.Model):
@@ -31,6 +33,10 @@ class Teacher(db.Model):
     primary_phone = db.Column(db.String(40), default="")
     secondary_phone = db.Column(db.String(40), default="")
     guardian_phone = db.Column(db.String(40), default="")
+    address = db.Column(db.String(255), default="")
+    dob = db.Column(db.Date, nullable=True)
+    blood_group = db.Column(db.String(10), default="")
+    profile_picture = db.Column(db.String(255), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -43,6 +49,10 @@ class Parent(db.Model):
     primary_phone = db.Column(db.String(40), default="")
     secondary_phone = db.Column(db.String(40), default="")
     guardian_phone = db.Column(db.String(40), default="")
+    address = db.Column(db.String(255), default="")
+    dob = db.Column(db.Date, nullable=True)
+    blood_group = db.Column(db.String(10), default="")
+    profile_picture = db.Column(db.String(255), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -57,6 +67,10 @@ class Student(db.Model):
     primary_phone = db.Column(db.String(40), default="")
     secondary_phone = db.Column(db.String(40), default="")
     guardian_phone = db.Column(db.String(40), default="")
+    address = db.Column(db.String(255), default="")
+    dob = db.Column(db.Date, nullable=True)
+    blood_group = db.Column(db.String(10), default="")
+    profile_picture = db.Column(db.String(255), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 

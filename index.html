@@ -1416,53 +1416,110 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- My Profile Modal -->
     <div id="profileModal" class="modal-overlay hidden">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
                 <h2>My Profile</h2>
                 <button class="icon-btn" onclick="closeProfileModal()"><i data-lucide="x"></i></button>
             </div>
-            <div class="modal-body">
-                <div class="profile-info">
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                
+                <!-- Virtual ID Card -->
+                <div class="virtual-id-card" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 12px; padding: 20px; color: white; display: flex; gap: 20px; align-items: center; margin-bottom: 24px; box-shadow: var(--shadow-md);">
+                    <div id="virtualIdPhoto" style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,255,255,0.2); background-size: cover; background-position: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">
+                        <span id="virtualIdInitials">?</span>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <h3 id="virtualIdName" style="margin: 0 0 4px 0; font-size: 1.2rem; color: white;">Name</h3>
+                        <p id="virtualIdRole" style="margin: 0 0 8px 0; font-size: 0.9rem; opacity: 0.9; text-transform: capitalize;">Role</p>
+                        <div style="background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block; font-family: monospace; letter-spacing: 1px;" id="virtualIdUid">UID</div>
+                    </div>
+                    <div style="flex-shrink: 0; text-align: right; opacity: 0.8;">
+                        <i data-lucide="qr-code" style="width: 48px; height: 48px;"></i>
+                    </div>
+                </div>
+
+                <div class="profile-info" style="display:none;">
                     <p><strong>Name:</strong> <span id="profileName"></span></p>
                     <p><strong>Portal ID:</strong> <span id="profileUid"></span></p>
                     <p><strong>Email:</strong> <span id="profileEmail"></span></p>
                     <p><strong>Role:</strong> <span id="profileRole"></span></p>
                 </div>
                 
-                <h3 style="margin-top:20px;margin-bottom:10px;">Contact Information</h3>
+                <h3 style="margin-top:20px;margin-bottom:10px;">Personal Details</h3>
                 <form id="profilePhoneForm">
-                    <div class="form-group">
-                        <label>Primary Phone</label>
-                        <input type="text" id="profilePrimaryPhone">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Profile Picture URL</label>
+                            <input type="url" id="profilePicture" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label>Date of Birth</label>
+                            <input type="date" id="profileDob">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Secondary Phone</label>
-                        <input type="text" id="profileSecondaryPhone">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Blood Group</label>
+                            <input type="text" id="profileBloodGroup" placeholder="e.g. O+">
+                        </div>
+                        <div class="form-group">
+                            <label>Home Address</label>
+                            <input type="text" id="profileAddress" placeholder="123 Main St...">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Guardian Phone</label>
-                        <input type="text" id="profileGuardianPhone">
+                    
+                    <h3 style="margin-top:20px;margin-bottom:10px;">Contact Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Primary Phone</label>
+                            <input type="text" id="profilePrimaryPhone">
+                        </div>
+                        <div class="form-group">
+                            <label>Secondary Phone</label>
+                            <input type="text" id="profileSecondaryPhone">
+                        </div>
+                        <div class="form-group">
+                            <label>Guardian Phone</label>
+                            <input type="text" id="profileGuardianPhone">
+                        </div>
                     </div>
+                    
+                    <h3 style="margin-top:20px;margin-bottom:10px;">Identity Verification (Security Question)</h3>
+                    <p class="text-muted" style="margin-bottom: 12px; font-size: 0.9em;">Set a security question to verify your identity if you ever lose access to your account.</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Security Question</label>
+                            <input type="text" id="profileSecurityQuestion" placeholder="e.g. What is your mother's maiden name?">
+                        </div>
+                        <div class="form-group">
+                            <label>Security Answer</label>
+                            <input type="password" id="profileSecurityAnswer" placeholder="Leave blank to keep unchanged">
+                        </div>
+                    </div>
+
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Update Contact Info</button>
+                        <button type="submit" class="btn btn-primary">Save Profile Details</button>
                     </div>
                 </form>
 
-                <h3 style="margin-top:20px;margin-bottom:10px;">Change Password</h3>
+                <h3 style="margin-top:30px;margin-bottom:10px;">Change Password</h3>
                 <form id="profilePasswordForm">
-                    <div class="form-group">
-                        <label>Current Password</label>
-                        <input type="password" id="profileCurrentPassword" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="profileCurrentPassword" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>New Password</label>
-                        <input type="password" id="profileNewPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm New Password</label>
-                        <input type="password" id="profileConfirmPassword" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="profileNewPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="profileConfirmPassword" required>
+                        </div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Change Password</button>
