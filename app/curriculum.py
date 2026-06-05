@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import os
 from werkzeug.utils import secure_filename
-from app.auth import login_required
+from app.auth import require_login
 
 curriculum_bp = Blueprint("curriculum", __name__)
 
@@ -9,8 +9,11 @@ UPLOAD_FOLDER = os.path.join("instance", "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @curriculum_bp.route("/upload", methods=["POST"])
-@login_required
 def upload_curriculum():
+    u, err = require_login()
+    if err:
+        return err
+
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     
