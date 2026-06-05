@@ -1112,71 +1112,69 @@
       }
     });
 
-    document.getElementById('btnAddTeacher')?.addEventListener('click', async () => {
+    document.getElementById('addTeacherForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
       try {
         const data = await apiJson('/api/directory/teachers', {
           method: 'POST',
           body: {
-            name: document.getElementById('formTeacherName').value,
-            email: document.getElementById('formTeacherEmail').value,
-            department: document.getElementById('formTeacherDept').value,
-            monthly_salary: document.getElementById('formTeacherSalary').value,
-            password: document.getElementById('formTeacherPassword')?.value || '',
+            name: document.getElementById('addTeacherName').value,
+            email: document.getElementById('addTeacherEmail').value,
+            department: document.getElementById('addTeacherDept').value,
+            monthly_salary: document.getElementById('addTeacherSalary').value,
+            primary_phone: document.getElementById('addTeacherPrimaryPhone').value,
+            secondary_phone: document.getElementById('addTeacherSecondaryPhone').value,
+            guardian_phone: document.getElementById('addTeacherGuardianPhone').value,
           },
         });
         loadDirectoryAdmin();
-        const banner = document.getElementById('teacherUidResult');
-        if (banner && data.uid) {
-          banner.innerHTML = `✅ Teacher saved! &nbsp; <strong>Portal ID (Employee ID):</strong> <code style="font-size:1.1em; letter-spacing:0.05em;">${data.uid}</code> &nbsp; <button onclick="navigator.clipboard.writeText('${data.uid}')" class="btn btn-sm btn-secondary">Copy</button>`;
-          banner.classList.remove('hidden');
-        }
+        closeAddModal();
+        alert(`✅ Teacher saved! Portal ID: ${data.uid}`);
       } catch (e) {
         alert(e.message);
       }
     });
-    document.getElementById('btnAddParent')?.addEventListener('click', async () => {
+
+    document.getElementById('addParentForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
       try {
         const data = await apiJson('/api/directory/parents', {
           method: 'POST',
           body: {
-            name: document.getElementById('formParentName').value,
-            email: document.getElementById('formParentEmail').value,
-            phone: document.getElementById('formParentPhone').value,
-            password: document.getElementById('formParentPassword')?.value || '',
+            name: document.getElementById('addParentName').value,
+            email: document.getElementById('addParentEmail').value,
+            primary_phone: document.getElementById('addParentPrimaryPhone').value,
+            secondary_phone: document.getElementById('addParentSecondaryPhone').value,
+            guardian_phone: document.getElementById('addParentGuardianPhone').value,
           },
         });
         loadDirectoryAdmin();
-        const banner = document.getElementById('parentUidResult');
-        if (banner && data.uid) {
-          banner.innerHTML = `✅ Parent saved! &nbsp; <strong>Portal ID (Guardian ID):</strong> <code style="font-size:1.1em; letter-spacing:0.05em;">${data.uid}</code> &nbsp; <button onclick="navigator.clipboard.writeText('${data.uid}')" class="btn btn-sm btn-secondary">Copy</button>`;
-          banner.classList.remove('hidden');
-        }
+        closeAddModal();
+        alert(`✅ Parent saved! Portal ID: ${data.uid}`);
       } catch (e) {
         alert(e.message);
       }
     });
-    document.getElementById('btnAddStudent')?.addEventListener('click', async () => {
+
+    document.getElementById('addStudentForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
       try {
         const data = await apiJson('/api/directory/students', {
           method: 'POST',
           body: {
-            roll_no: document.getElementById('formStudentRoll').value,
-            name: document.getElementById('formStudentName').value,
-            email: document.getElementById('formStudentEmail').value,
-            department: document.getElementById('formStudentDept').value,
-            parent_id: document.getElementById('formStudentParentId').value
-              ? parseInt(document.getElementById('formStudentParentId').value, 10)
-              : null,
-            password: document.getElementById('formStudentPassword')?.value || '',
+            roll_no: document.getElementById('addStudentRoll').value,
+            name: document.getElementById('addStudentName').value,
+            email: document.getElementById('addStudentEmail').value,
+            department: document.getElementById('addStudentDept').value,
+            primary_phone: document.getElementById('addStudentPrimaryPhone').value,
+            secondary_phone: document.getElementById('addStudentSecondaryPhone').value,
+            guardian_phone: document.getElementById('addStudentGuardianPhone').value,
           },
         });
         loadDirectoryAdmin();
         renderStudentTableFromApi('all');
-        const banner = document.getElementById('studentUidResult');
-        if (banner && data.uid) {
-          banner.innerHTML = `✅ Student saved! &nbsp; <strong>Portal ID (Student ID):</strong> <code style="font-size:1.1em; letter-spacing:0.05em;">${data.uid}</code> &nbsp; <button onclick="navigator.clipboard.writeText('${data.uid}')" class="btn btn-sm btn-secondary">Copy</button><br><span class="small">Share this ID + the password with the student so they can log in.</span>`;
-          banner.classList.remove('hidden');
-        }
+        closeAddModal();
+        alert(`✅ Student saved! Portal ID: ${data.uid}`);
       } catch (e) {
         alert(e.message);
       }
@@ -1564,5 +1562,77 @@
     }
 
     refreshIcons();
+    window.closeProfileModal = function () {
+      document.getElementById('profileModal')?.classList.add('hidden');
+    };
+
+    document.getElementById('myProfileBtn')?.addEventListener('click', async () => {
+      try {
+        const p = await apiJson('/api/profile/me');
+        document.getElementById('profileName').textContent = p.display_name;
+        document.getElementById('profileUid').textContent = p.uid;
+        document.getElementById('profileEmail').textContent = p.email;
+        document.getElementById('profileRole').textContent = p.role;
+        
+        document.getElementById('profilePrimaryPhone').value = p.primary_phone || '';
+        document.getElementById('profileSecondaryPhone').value = p.secondary_phone || '';
+        document.getElementById('profileGuardianPhone').value = p.guardian_phone || '';
+        
+        document.getElementById('profileModal')?.classList.remove('hidden');
+      } catch (e) {
+        alert("Could not load profile: " + e.message);
+      }
+    });
+
+    document.getElementById('profilePhoneForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await apiJson('/api/profile/me', {
+          method: 'PUT',
+          body: {
+            primary_phone: document.getElementById('profilePrimaryPhone').value,
+            secondary_phone: document.getElementById('profileSecondaryPhone').value,
+            guardian_phone: document.getElementById('profileGuardianPhone').value,
+          }
+        });
+        alert('Contact info updated successfully!');
+      } catch (e) {
+        alert('Error updating contact info: ' + e.message);
+      }
+    });
+
+    document.getElementById('profilePasswordForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const current = document.getElementById('profileCurrentPassword').value;
+      const newPass = document.getElementById('profileNewPassword').value;
+      const confirmPass = document.getElementById('profileConfirmPassword').value;
+
+      if (newPass !== confirmPass) {
+        alert("New passwords do not match!");
+        return;
+      }
+
+      try {
+        await apiJson('/api/profile/change-password', {
+          method: 'POST',
+          body: { current_password: current, new_password: newPass }
+        });
+        alert('Password changed successfully!');
+        document.getElementById('profilePasswordForm').reset();
+      } catch (e) {
+        alert('Error changing password: ' + e.message);
+      }
+    });
+
+    window.generateMissingCredentials = async function () {
+      if (!confirm("Are you sure you want to generate missing Portal IDs and set the default password 'Welcome@123' for profiles without accounts?")) return;
+      try {
+        const res = await apiJson('/api/directory/generate-missing-credentials', { method: 'POST' });
+        alert(`Successfully generated credentials for ${res.generated_count} users!`);
+        loadDirectoryAdmin();
+      } catch (e) {
+        alert("Error generating credentials: " + e.message);
+      }
+    };
   });
 })();

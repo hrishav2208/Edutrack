@@ -28,6 +28,9 @@ class Teacher(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     department = db.Column(db.String(80), nullable=False, default="General")
     monthly_salary = db.Column(db.Float, nullable=False, default=0.0)
+    primary_phone = db.Column(db.String(40), default="")
+    secondary_phone = db.Column(db.String(40), default="")
+    guardian_phone = db.Column(db.String(40), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -37,6 +40,9 @@ class Parent(db.Model):
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(40), default="")
+    primary_phone = db.Column(db.String(40), default="")
+    secondary_phone = db.Column(db.String(40), default="")
+    guardian_phone = db.Column(db.String(40), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -48,6 +54,9 @@ class Student(db.Model):
     email = db.Column(db.String(120), default="")
     department = db.Column(db.String(80), nullable=False, default="CSE")
     parent_id = db.Column(db.Integer, db.ForeignKey("parents.id"), nullable=True)
+    primary_phone = db.Column(db.String(40), default="")
+    secondary_phone = db.Column(db.String(40), default="")
+    guardian_phone = db.Column(db.String(40), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 

@@ -123,6 +123,9 @@ def add_teacher():
     department = (data.get("department") or "General").strip()
     monthly_salary = float(data.get("monthly_salary") or 0)
     password = (data.get("password") or DEFAULT_PASSWORD).strip()
+    primary_phone = (data.get("primary_phone") or "").strip()
+    secondary_phone = (data.get("secondary_phone") or "").strip()
+    guardian_phone = (data.get("guardian_phone") or "").strip()
 
     if not name:
         return jsonify({"error": "name is required"}), 400
@@ -139,7 +142,10 @@ def add_teacher():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email already used by another account"}), 400
 
-    t = Teacher(name=name, email=email, department=department, monthly_salary=monthly_salary)
+    t = Teacher(
+        name=name, email=email, department=department, monthly_salary=monthly_salary,
+        primary_phone=primary_phone, secondary_phone=secondary_phone, guardian_phone=guardian_phone
+    )
     db.session.add(t)
     db.session.flush()
 
@@ -193,6 +199,9 @@ def add_parent():
     email = (data.get("email") or "").strip().lower()
     phone = (data.get("phone") or "").strip()
     password = (data.get("password") or DEFAULT_PASSWORD).strip()
+    primary_phone = (data.get("primary_phone") or "").strip()
+    secondary_phone = (data.get("secondary_phone") or "").strip()
+    guardian_phone = (data.get("guardian_phone") or "").strip()
 
     if not name:
         return jsonify({"error": "name is required"}), 400
@@ -207,7 +216,10 @@ def add_parent():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email already used by another account"}), 400
 
-    p = Parent(name=name, email=email, phone=phone)
+    p = Parent(
+        name=name, email=email, phone=phone,
+        primary_phone=primary_phone, secondary_phone=secondary_phone, guardian_phone=guardian_phone
+    )
     db.session.add(p)
     db.session.flush()
 
@@ -266,6 +278,9 @@ def add_student():
     parent_id = data.get("parent_id")
     parent_id = int(parent_id) if parent_id else None
     password = (data.get("password") or DEFAULT_PASSWORD).strip()
+    primary_phone = (data.get("primary_phone") or "").strip()
+    secondary_phone = (data.get("secondary_phone") or "").strip()
+    guardian_phone = (data.get("guardian_phone") or "").strip()
 
     if not name:
         return jsonify({"error": "name is required"}), 400
@@ -283,7 +298,10 @@ def add_student():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email already used by another account"}), 400
 
-    s = Student(roll_no=roll, name=name, email=email, department=department, parent_id=parent_id)
+    s = Student(
+        roll_no=roll, name=name, email=email, department=department, parent_id=parent_id,
+        primary_phone=primary_phone, secondary_phone=secondary_phone, guardian_phone=guardian_phone
+    )
     db.session.add(s)
     db.session.flush()
 
@@ -299,3 +317,48 @@ def add_student():
     db.session.commit()
 
     return jsonify({"ok": True, "id": s.id, "uid": uid, "email": email})
+
+
+@directory_bp.route("/generate-missing-credentials", methods=["POST"])
+def generate_missing_credentials():
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Forbidden"}), 403
+
+    generated_count = 0
+    password_hash = generate_password_hash(DEFAULT_PASSWORD)
+
+    # Teachers without User
+    for t in Teacher.query.all():
+        if not User.query.filter_by(teacher_id=t.id).first():
+            uid = generate_teacher_uid(t.name, t.department)
+            db.session.add(User(
+                email=t.email, uid=uid, password_hash=password_hash,
+                role="teacher", display_name=t.name, teacher_id=t.id
+            ))
+            generated_count += 1
+
+    # Parents without User
+    for p in Parent.query.all():
+        if not User.query.filter_by(parent_id=p.id).first():
+            uid = generate_parent_uid(p.name)
+            db.session.add(User(
+                email=p.email, uid=uid, password_hash=password_hash,
+                role="parent", display_name=p.name, parent_id=p.id
+            ))
+            generated_count += 1
+
+    # Students without User
+    for s in Student.query.all():
+        if not User.query.filter_by(student_id=s.id).first():
+            uid = generate_student_uid(s.name, s.department)
+            db.session.add(User(
+                email=s.email, uid=uid, password_hash=password_hash,
+                role="student", display_name=s.name, student_id=s.id
+            ))
+            generated_count += 1
+
+    db.session.commit()
+    return jsonify({"ok": True, "generated_count": generated_count})
