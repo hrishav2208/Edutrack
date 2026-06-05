@@ -95,9 +95,7 @@
       return r.json();
     } catch (e) {
       state.apiOnline = false;
-      setApiBanner(
-        'Data server not reachable. From this project folder run: python app.py then open the same URL (e.g. http://127.0.0.1:5000 or http://THIS-PC-IP:5000 on your phone).'
-      );
+      setApiBanner('');
       return { user: null };
     }
   }
@@ -233,7 +231,7 @@
     showTableSkeleton('studentTableBody', 7, 5);
     if (!state.apiOnline) {
       tbody.innerHTML =
-        '<tr><td colspan="7">Start the Flask server to load students from the database.</td></tr>';
+        '<tr><td colspan="7">Demo Mode: No database connected.</td></tr>';
       return;
     }
     try {
@@ -663,7 +661,7 @@
     if (!tbody) return;
     showTableSkeleton('studentMarksBody', 5, 3);
     if (!state.apiOnline) {
-      tbody.innerHTML = '<tr><td colspan="5">Start the server to load marks.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5">Demo Mode: No database connected.</td></tr>';
       return;
     }
     try {
@@ -688,7 +686,7 @@
     if (!tbody) return;
     showTableSkeleton('parentFeeBody', 4, 3);
     if (!state.apiOnline) {
-      tbody.innerHTML = '<tr><td colspan="4">Start the server to load payments.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4">Demo Mode: No database connected.</td></tr>';
       return;
     }
     try {
@@ -1028,8 +1026,9 @@
         alert('Please enter your email.');
         return;
       }
+      const roleSelect = document.getElementById('userRole')?.value || 'admin';
       if (!state.apiOnline) {
-        alert('Start the server first: python app.py');
+        showDashboard(roleSelect, { id: 1, role: roleSelect, email: email, display_name: email.split('@')[0] });
         return;
       }
       try {
@@ -1054,8 +1053,9 @@
         alert('Enter your email first, then use biometric login.');
         return;
       }
+      const roleSelect = document.getElementById('userRole')?.value || 'admin';
       if (!state.apiOnline) {
-        alert('Start python app.py first.');
+        showDashboard(roleSelect, { id: 1, role: roleSelect, email: email, display_name: email.split('@')[0] });
         return;
       }
       try {
@@ -1290,7 +1290,7 @@
         return;
       }
       if (!state.apiOnline) {
-        alert('Start python app.py for attendance.');
+        alert('Running in Demo Mode: No backend server connected. Location will not be verified.');
         return;
       }
       navigator.geolocation.getCurrentPosition(
