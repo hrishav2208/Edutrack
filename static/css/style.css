@@ -2405,6 +2405,11 @@ textarea:focus {
         color: var(--gray-900) !important;
     }
 
+    .notification-panel, .app-sidebar, .bottom-nav {
+        background: #111827 !important;
+        border-color: #1f2937 !important;
+    }
+
     .user-avatar {
         background: var(--primary-600) !important;
     }
