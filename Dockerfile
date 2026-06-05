@@ -5,6 +5,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=prod
+ENV FLASK_APP=wsgi.py
 
 WORKDIR /app
 
@@ -24,5 +25,8 @@ COPY . .
 # Expose port 5000 for server binding
 EXPOSE 5000
 
-# Run Gunicorn using our configuration file
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]
+# Create a startup script that runs migrations then starts the server
+RUN echo '#!/bin/sh\nflask db upgrade\nexec gunicorn -c gunicorn.conf.py wsgi:app' > /app/start.sh && chmod +x /app/start.sh
+
+# Run migrations then start Gunicorn
+CMD ["/app/start.sh"]
