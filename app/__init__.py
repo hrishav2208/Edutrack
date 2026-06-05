@@ -161,6 +161,7 @@ def create_app(config_name=None):
     from app.finance import finance_bp
     from app.marks import marks_bp
     from app.notifications import notifications_bp
+    from app.curriculum import curriculum_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(attendance_bp, url_prefix="/api/attendance")
@@ -168,6 +169,7 @@ def create_app(config_name=None):
     app.register_blueprint(finance_bp, url_prefix="/api/finance")
     app.register_blueprint(marks_bp, url_prefix="/api/marks")
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+    app.register_blueprint(curriculum_bp, url_prefix="/api/curriculum")
 
     @app.route("/")
     def index():

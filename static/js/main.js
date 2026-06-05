@@ -1260,10 +1260,47 @@
     document.getElementById('severityFilter')?.addEventListener('change', renderDefaulterTable);
     document.getElementById('exportDefaultersBtn')?.addEventListener('click', () => alert('Export CSV can be added to the API.'));
 
-    ['academicCalendarBtn', 'examScheduleBtn', 'placementStatsBtn', 'uploadCurriculumBtn', 'viewReportsBtn'].forEach((id) => {
+    ['academicCalendarBtn', 'examScheduleBtn', 'placementStatsBtn', 'viewReportsBtn'].forEach((id) => {
       document.getElementById(id)?.addEventListener('click', () => {
         alert('Placeholder — connect your backend workflow when ready.');
       });
+    });
+
+    document.getElementById('uploadCurriculumBtn')?.addEventListener('click', () => {
+      document.getElementById('curriculumFileInput')?.click();
+    });
+
+    document.getElementById('curriculumFileInput')?.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!state.apiOnline) {
+        alert('Demo Mode: File selected but no backend is connected.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await apiFetch('/api/curriculum/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          alert('Upload successful: ' + data.filename);
+        } else {
+          const data = await res.json();
+          alert('Upload failed: ' + (data.error || res.statusText));
+        }
+      } catch (err) {
+        alert('Upload error: ' + err.message);
+      }
+      
+      // Clear the input
+      e.target.value = '';
     });
 
     document.getElementById('takeAttendanceBtn')?.addEventListener('click', () => {
