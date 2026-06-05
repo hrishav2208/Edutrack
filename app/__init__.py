@@ -13,12 +13,10 @@ from app.config import config_by_name, BASE_DIR, INSTANCE_DIR
 from app.models import (
     db,
     CampusSettings,
-    ClassSession,
     FeeStructure,
     Mark,
     Parent,
     SalaryDisbursement,
-    SessionCheckIn,
     Student,
     Teacher,
     User,
@@ -184,8 +182,8 @@ def create_app(config_name=None):
             
             # --- AUTO-MIGRATE MISSING COLUMNS ---
             try:
-                from sqlalchemy import text
-                inspector = db.inspect(db.engine)
+                from sqlalchemy import text, inspect
+                inspector = inspect(db.engine)
                 # Ensure users table exists before checking columns
                 if 'users' in inspector.get_table_names():
                     columns = [col['name'] for col in inspector.get_columns('users')]
