@@ -318,6 +318,7 @@ textarea,
     font-size: 14px;
     transition: all 0.2s;
     background: white;
+    color: var(--gray-800);
 }
 
 input:focus,
@@ -425,6 +426,7 @@ textarea:focus {
     border: 1px solid var(--gray-200);
     padding: var(--space-3);
     margin-bottom: var(--space-3);
+    color: var(--gray-800);
 }
 
 .card-title {

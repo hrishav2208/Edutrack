@@ -964,9 +964,45 @@
     closeMobileSidebar();
     refreshIcons();
 
+    if (role === 'student') {
+        loadStudentCurriculum();
+    }
+
     fetchNotifications();
     if (!notifInterval) {
       notifInterval = setInterval(fetchNotifications, 10000); // poll every 10s
+    }
+  }
+
+  async function loadStudentCurriculum() {
+    const listBody = document.getElementById('curriculumListBody');
+    if (!listBody) return;
+    
+    if (!state.apiOnline) {
+      listBody.innerHTML = '<p class="small">Demo Mode: No backend connected to fetch curriculum.</p>';
+      return;
+    }
+    
+    try {
+      const curriculums = await apiJson('/api/curriculum/list');
+      if (curriculums.length === 0) {
+        listBody.innerHTML = '<p class="small">No curriculum files uploaded yet.</p>';
+        return;
+      }
+      
+      listBody.innerHTML = curriculums.map(c => `
+        <div class="schedule-item">
+            <div class="schedule-content">
+                <h4>${escapeHtml(c.filename)}</h4>
+            </div>
+            <a href="/api/curriculum/download/${encodeURIComponent(c.filename)}" class="btn btn-sm btn-secondary" target="_blank" download>
+                <i data-lucide="download"></i> Download
+            </a>
+        </div>
+      `).join('');
+      refreshIcons();
+    } catch (e) {
+      listBody.innerHTML = '<p class="small alert-danger">Failed to load curriculum files.</p>';
     }
   }
 
