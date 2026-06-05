@@ -1610,8 +1610,6 @@
         document.getElementById('profileDob').value = p.dob || '';
         document.getElementById('profileBloodGroup').value = p.blood_group || '';
         document.getElementById('profilePicture').value = p.profile_picture || '';
-        document.getElementById('profileSecurityQuestion').value = p.security_question || '';
-        document.getElementById('profileSecurityAnswer').value = ''; // Don't populate password hash
         
         document.getElementById('profileModal')?.classList.remove('hidden');
       } catch (e) {
@@ -1632,8 +1630,6 @@
             dob: document.getElementById('profileDob').value,
             blood_group: document.getElementById('profileBloodGroup').value,
             profile_picture: document.getElementById('profilePicture').value,
-            security_question: document.getElementById('profileSecurityQuestion').value,
-            security_answer: document.getElementById('profileSecurityAnswer').value,
           }
         });
         alert('Profile details updated successfully!');

@@ -23,8 +23,7 @@ def get_profile():
         "address": "",
         "dob": "",
         "blood_group": "",
-        "profile_picture": "",
-        "security_question": u.security_question or ""
+        "profile_picture": ""
     }
 
     if u.role == "teacher" and u.teacher_id:
@@ -77,14 +76,6 @@ def update_profile():
     dob_str = (data.get("dob") or "").strip()
     blood_group = (data.get("blood_group") or "").strip()
     
-    # Allow saving security question info on user
-    sec_q = (data.get("security_question") or "").strip()
-    sec_a = (data.get("security_answer") or "").strip()
-    
-    if sec_q and sec_a:
-        u.security_question = sec_q
-        u.security_answer_hash = generate_password_hash(sec_a)
-        
     from datetime import datetime
     dob_date = None
     if dob_str:
