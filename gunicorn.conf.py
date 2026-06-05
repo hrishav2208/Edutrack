@@ -8,9 +8,9 @@ port = os.environ.get("PORT", "5000")
 bind = f"0.0.0.0:{port}"
 
 # Performance tuning: workers and threads
-# Recommended worker count formula: 2 workers per CPU core + 1
-workers = multiprocessing.cpu_count() * 2 + 1
-threads = 2
+# Render free tier has a 512MB memory limit, so we hardcode to 2 workers to prevent Out-Of-Memory crashes.
+workers = 2
+threads = 4
 
 # Connection safety limits
 timeout = 120
