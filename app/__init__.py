@@ -32,7 +32,11 @@ def seed_database(app):
 
     ph = generate_password_hash("demo123")
 
-    parent = Parent(name="Mrs. Sharma", email="parent@edutrack.com", phone="+91 90000 00001")
+    parent = Parent(
+        name="Mrs. Sharma",
+        email="parent@edutrack.com",
+        phone="+91 90000 00001",
+    )
     db.session.add(parent)
     db.session.flush()
 
@@ -144,8 +148,10 @@ def create_app(config_name=None):
 
     # static_folder is resolved relative to this app package
     static_folder_path = os.path.join(BASE_DIR, "static")
-    app = Flask(__name__, static_folder=static_folder_path, static_url_path="/static")
-    
+    app = Flask(
+        __name__, static_folder=static_folder_path, static_url_path="/static"
+    )
+
     app.config.from_object(config_by_name[config_name])
     os.makedirs(INSTANCE_DIR, exist_ok=True)
 
@@ -160,6 +166,7 @@ def create_app(config_name=None):
     from app.marks import marks_bp
     from app.notifications import notifications_bp
     from app.curriculum import curriculum_bp
+    from app.reports import reports_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(attendance_bp, url_prefix="/api/attendance")
@@ -168,6 +175,7 @@ def create_app(config_name=None):
     app.register_blueprint(marks_bp, url_prefix="/api/marks")
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
     app.register_blueprint(curriculum_bp, url_prefix="/api/curriculum")
+    app.register_blueprint(reports_bp, url_prefix="/api/reports")
 
     @app.route("/")
     def index():
@@ -176,23 +184,36 @@ def create_app(config_name=None):
     with app.app_context():
         # Keep create_all for development SQLite auto-setup, but bypass during migrations
         import sys
-        is_migration_command = any(cmd in sys.argv for cmd in ["db", "migrate", "upgrade", "init", "alembic"])
+
+        is_migration_command = any(
+            cmd in sys.argv
+            for cmd in ["db", "migrate", "upgrade", "init", "alembic"]
+        )
         if not is_migration_command:
             db.create_all()
-            
+
             # --- AUTO-MIGRATE MISSING COLUMNS ---
             try:
                 from sqlalchemy import text, inspect
+
                 inspector = inspect(db.engine)
                 # Ensure users table exists before checking columns
-                if 'users' in inspector.get_table_names():
-                    columns = [col['name'] for col in inspector.get_columns('users')]
-                    if 'uid' not in columns:
-                        db.session.execute(text("ALTER TABLE users ADD COLUMN uid VARCHAR(40) UNIQUE"))
+                if "users" in inspector.get_table_names():
+                    columns = [
+                        col["name"] for col in inspector.get_columns("users")
+                    ]
+                    if "uid" not in columns:
+                        db.session.execute(
+                            text(
+                                "ALTER TABLE users ADD COLUMN uid VARCHAR(40) UNIQUE"
+                            )
+                        )
                         db.session.commit()
             except Exception as e:
-                print(f"Auto-migration failed (this is usually safe to ignore if already migrated): {e}")
-            
+                print(
+                    f"Auto-migration failed (this is usually safe to ignore if already migrated): {e}"
+                )
+
             seed_database(app)
 
     return app

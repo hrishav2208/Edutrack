@@ -1321,10 +1321,31 @@
     document.getElementById('severityFilter')?.addEventListener('change', renderDefaulterTable);
     document.getElementById('exportDefaultersBtn')?.addEventListener('click', () => alert('Export CSV can be added to the API.'));
 
-    ['academicCalendarBtn', 'examScheduleBtn', 'placementStatsBtn', 'viewReportsBtn'].forEach((id) => {
+    ['academicCalendarBtn', 'examScheduleBtn', 'placementStatsBtn'].forEach((id) => {
       document.getElementById(id)?.addEventListener('click', () => {
         alert('Placeholder — connect your backend workflow when ready.');
       });
+    });
+
+    document.getElementById('viewReportsBtn')?.addEventListener('click', async () => {
+      if (!state.apiOnline) {
+        alert('Demo Mode: Connect backend to view real analytics.');
+        return;
+      }
+      try {
+        const data = await apiJson('/api/reports/teacher/analytics?course_code=CS101');
+        document.getElementById('reportTotalStudents').textContent = data.total_students;
+        document.getElementById('reportOverallAttendance').textContent = data.overall_attendance_percent + '%';
+        document.getElementById('reportAverageExam').textContent = data.average_exam_percent + '%';
+        document.getElementById('reportExcellentCount').textContent = data.attendance_breakdown.excellent;
+        document.getElementById('reportGoodCount').textContent = data.attendance_breakdown.good;
+        document.getElementById('reportWarningCount').textContent = data.attendance_breakdown.warning;
+        document.getElementById('reportDefaulterCount').textContent = data.attendance_breakdown.defaulter;
+        
+        navigate('teacher', 'teacher-view-reports');
+      } catch (e) {
+        alert('Failed to load reports: ' + e.message);
+      }
     });
 
     document.getElementById('uploadCurriculumBtn')?.addEventListener('click', () => {

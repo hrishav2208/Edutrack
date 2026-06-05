@@ -859,6 +859,74 @@
             </div>
         </div>
         
+            <div id="teacher-view-reports" class="app-section hidden">
+                <div class="container">
+                    <div class="page-header">
+                        <h1>Class Reports</h1>
+                        <p>Analytics for your students</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <div class="stat-info">
+                                    <p class="stat-label">Total Students</p>
+                                    <p class="stat-value" id="reportTotalStudents">-</p>
+                                </div>
+                                <div class="stat-icon primary">
+                                    <i data-lucide="users"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <div class="stat-info">
+                                    <p class="stat-label">Overall Attendance</p>
+                                    <p class="stat-value success" id="reportOverallAttendance">-</p>
+                                </div>
+                                <div class="stat-icon success">
+                                    <i data-lucide="percent"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <div class="stat-info">
+                                    <p class="stat-label">Average Exam Score</p>
+                                    <p class="stat-value" id="reportAverageExam">-</p>
+                                </div>
+                                <div class="stat-icon secondary">
+                                    <i data-lucide="bar-chart"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 2rem;">
+                        <h3 class="card-title">Attendance Breakdown</h3>
+                        <div class="insights-grid">
+                            <div class="alert alert-success">
+                                <h4>Excellent (≥90%)</h4>
+                                <p id="reportExcellentCount" style="font-size: 1.5rem; font-weight: bold;">-</p>
+                            </div>
+                            <div class="alert alert-info" style="background-color: #eff6ff; border-left-color: #3b82f6;">
+                                <h4>Good (75-89%)</h4>
+                                <p id="reportGoodCount" style="font-size: 1.5rem; font-weight: bold; color: #1d4ed8;">-</p>
+                            </div>
+                            <div class="alert alert-warning">
+                                <h4>Warning (60-74%)</h4>
+                                <p id="reportWarningCount" style="font-size: 1.5rem; font-weight: bold;">-</p>
+                            </div>
+                            <div class="alert alert-danger">
+                                <h4>Defaulters (<60%)</h4>
+                                <p id="reportDefaulterCount" style="font-size: 1.5rem; font-weight: bold;">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Student Dashboard -->
         <div id="studentDashboard" class="hidden">
             <div id="student-view-home" class="app-section">
