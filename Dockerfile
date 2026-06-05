@@ -25,8 +25,5 @@ COPY . .
 # Expose port 5000 for server binding
 EXPOSE 5000
 
-# Create a startup script that handles existing tables from before Alembic was used
-RUN echo '#!/bin/sh\nflask db upgrade || (echo "Upgrade failed (likely existing tables), stamping initial migration..." && flask db stamp 1a98436792c4 && flask db upgrade)\nexec gunicorn -c gunicorn.conf.py wsgi:app' > /app/start.sh && chmod +x /app/start.sh
-
-# Run migrations then start Gunicorn
-CMD ["/app/start.sh"]
+# Run Gunicorn using our configuration file
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]

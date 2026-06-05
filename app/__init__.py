@@ -181,6 +181,20 @@ def create_app(config_name=None):
         is_migration_command = any(cmd in sys.argv for cmd in ["db", "migrate", "upgrade", "init", "alembic"])
         if not is_migration_command:
             db.create_all()
+            
+            # --- AUTO-MIGRATE MISSING COLUMNS ---
+            try:
+                from sqlalchemy import text
+                inspector = db.inspect(db.engine)
+                # Ensure users table exists before checking columns
+                if 'users' in inspector.get_table_names():
+                    columns = [col['name'] for col in inspector.get_columns('users')]
+                    if 'uid' not in columns:
+                        db.session.execute(text("ALTER TABLE users ADD COLUMN uid VARCHAR(40) UNIQUE"))
+                        db.session.commit()
+            except Exception as e:
+                print(f"Auto-migration failed (this is usually safe to ignore if already migrated): {e}")
+            
             seed_database(app)
 
     return app
