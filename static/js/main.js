@@ -1128,7 +1128,7 @@
           },
         });
         loadDirectoryAdmin();
-        closeAddModal();
+        document.getElementById('addTeacherForm').reset();
         alert(`✅ Teacher saved! Portal ID: ${data.uid}`);
       } catch (e) {
         alert(e.message);
@@ -1149,7 +1149,7 @@
           },
         });
         loadDirectoryAdmin();
-        closeAddModal();
+        document.getElementById('addParentForm').reset();
         alert(`✅ Parent saved! Portal ID: ${data.uid}`);
       } catch (e) {
         alert(e.message);
@@ -1173,7 +1173,7 @@
         });
         loadDirectoryAdmin();
         renderStudentTableFromApi('all');
-        closeAddModal();
+        document.getElementById('addStudentForm').reset();
         alert(`✅ Student saved! Portal ID: ${data.uid}`);
       } catch (e) {
         alert(e.message);

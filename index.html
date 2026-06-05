@@ -536,136 +536,107 @@
 
             <div id="admin-view-people" class="app-section hidden">
                 <div class="container">
-                    <div class="page-header">
-                        <h1>Directory</h1>
-                        <div class="tabs">
-                            <button class="tab-btn active" data-tab="people-teachers">Teachers</button>
-                            <button class="tab-btn" data-tab="people-students">Students</button>
-                            <button class="tab-btn" data-tab="people-parents">Parents</button>
+                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h1>Directory</h1>
+                            <p>Add teachers, students, and parents (saved to this device’s database)</p>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" onclick="generateMissingCredentials()">Generate Missing Credentials</button>
-                            <button class="btn btn-primary" onclick="showAddModal('Teacher')">
-                                <i data-lucide="plus"></i> Add User
-                            </button>
+                        <button class="btn btn-secondary" onclick="generateMissingCredentials()">Generate Missing Credentials</button>
+                    </div>
+                    
+                    <div class="stack-cards">
+                        <div class="card">
+                            <h3 class="card-title">Add teacher</h3>
+                            <form id="addTeacherForm">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Name</label><input type="text" id="addTeacherName" placeholder="Full name" required></div>
+                                    <div class="form-group"><label>Email <span class="small">(optional)</span></label><input type="email" id="addTeacherEmail" placeholder="auto-generated if blank"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Department</label>
+                                        <select id="addTeacherDept" class="select">
+                                            <option value="CSE">Computer Science (CSE)</option>
+                                            <option value="ECE">Electronics (ECE)</option>
+                                            <option value="ME">Mechanical (ME)</option>
+                                            <option value="CE">Civil (CE)</option>
+                                            <option value="EEE">Electrical (EEE)</option>
+                                            <option value="IT">Information Tech (IT)</option>
+                                            <option value="General">General/Admin</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group"><label>Monthly salary (₹)</label><input type="number" id="addTeacherSalary" value="50000" step="100"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Primary Phone</label><input type="text" id="addTeacherPrimaryPhone" placeholder="+91 ..."></div>
+                                    <div class="form-group"><label>Secondary Phone</label><input type="text" id="addTeacherSecondaryPhone" placeholder="+91 ..."></div>
+                                    <div class="form-group"><label>Guardian Phone</label><input type="text" id="addTeacherGuardianPhone" placeholder="+91 ..."></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save teacher &amp; generate ID</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title">Add parent</h3>
+                            <form id="addParentForm">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Name</label><input type="text" id="addParentName" placeholder="Full name" required></div>
+                                    <div class="form-group"><label>Email <span class="small">(optional)</span></label><input type="email" id="addParentEmail" placeholder="auto-generated if blank"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Primary Phone</label><input type="text" id="addParentPrimaryPhone" placeholder="+91 ..."></div>
+                                    <div class="form-group"><label>Secondary Phone</label><input type="text" id="addParentSecondaryPhone" placeholder="+91 ..."></div>
+                                    <div class="form-group"><label>Guardian Phone</label><input type="text" id="addParentGuardianPhone" placeholder="+91 ..."></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save parent &amp; generate ID</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title">Add student</h3>
+                            <form id="addStudentForm">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Roll no.</label><input type="text" id="addStudentRoll" placeholder="CS21A099" required></div>
+                                    <div class="form-group"><label>Name</label><input type="text" id="addStudentName" placeholder="Full name" required></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Email <span class="small">(optional)</span></label><input type="email" id="addStudentEmail" placeholder="auto-generated if blank"></div>
+                                    <div class="form-group">
+                                        <label>Department</label>
+                                        <select id="addStudentDept" class="select">
+                                            <option value="CSE">Computer Science (CSE)</option>
+                                            <option value="ECE">Electronics (ECE)</option>
+                                            <option value="ME">Mechanical (ME)</option>
+                                            <option value="CE">Civil (CE)</option>
+                                            <option value="EEE">Electrical (EEE)</option>
+                                            <option value="IT">Information Tech (IT)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group"><label>Parent</label><select id="formStudentParentId" class="select"><option value="">— None —</option></select></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Primary Phone</label><input type="text" id="addStudentPrimaryPhone" placeholder="+91 ..."></div>
+                                    <div class="form-group"><label>Secondary Phone</label><input type="text" id="addStudentSecondaryPhone" placeholder="+91 ..."></div>
+                                    <div class="form-group"><label>Guardian Phone</label><input type="text" id="addStudentGuardianPhone" placeholder="+91 ..."></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save student &amp; generate ID</button>
+                            </form>
                         </div>
                     </div>
-                
-                <form id="addTeacherForm" class="hidden">
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="addTeacherName" required>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Teachers</h3>
+                        <div class="table-responsive"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Dept</th><th>Salary/mo</th><th>Portal ID</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
                     </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="addTeacherEmail">
-                        <small class="text-muted">Leave blank to auto-generate</small>
+                    <div class="card">
+                        <h3 class="card-title">Parents</h3>
+                        <div class="table-responsive"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Portal ID</th></tr></thead><tbody id="adminParentsBody"></tbody></table></div>
                     </div>
-                    <div class="form-group">
-                        <label>Department</label>
-                        <select id="addTeacherDept">
-                            <option value="CSE">Computer Science (CSE)</option>
-                            <option value="ECE">Electronics (ECE)</option>
-                            <option value="ME">Mechanical (ME)</option>
-                            <option value="CE">Civil (CE)</option>
-                            <option value="EEE">Electrical (EEE)</option>
-                            <option value="IT">Information Tech (IT)</option>
-                            <option value="General">General/Admin</option>
-                        </select>
+                    <div class="card">
+                        <h3 class="card-title">Students</h3>
+                        <div class="table-responsive"><table class="table"><thead><tr><th>Roll</th><th>Name</th><th>Dept</th><th>Email</th><th>Portal ID</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
                     </div>
-                    <div class="form-group">
-                        <label>Monthly Salary (₹)</label>
-                        <input type="number" id="addTeacherSalary" value="50000">
-                    </div>
-                    <div class="form-group">
-                        <label>Primary Phone</label>
-                        <input type="text" id="addTeacherPrimaryPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>Secondary Phone</label>
-                        <input type="text" id="addTeacherSecondaryPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>Guardian Phone</label>
-                        <input type="text" id="addTeacherGuardianPhone">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Teacher</button>
-                    </div>
-                </form>
-
-                <form id="addStudentForm" class="hidden">
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="addStudentName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Roll Number</label>
-                        <input type="text" id="addStudentRoll" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="addStudentEmail">
-                        <small class="text-muted">Leave blank to auto-generate</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Department</label>
-                        <select id="addStudentDept">
-                            <option value="CSE">Computer Science (CSE)</option>
-                            <option value="ECE">Electronics (ECE)</option>
-                            <option value="ME">Mechanical (ME)</option>
-                            <option value="CE">Civil (CE)</option>
-                            <option value="EEE">Electrical (EEE)</option>
-                            <option value="IT">Information Tech (IT)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Primary Phone</label>
-                        <input type="text" id="addStudentPrimaryPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>Secondary Phone</label>
-                        <input type="text" id="addStudentSecondaryPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>Guardian Phone</label>
-                        <input type="text" id="addStudentGuardianPhone">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Student</button>
-                    </div>
-                </form>
-
-                <form id="addParentForm" class="hidden">
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="addParentName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="addParentEmail">
-                        <small class="text-muted">Leave blank to auto-generate</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Primary Phone</label>
-                        <input type="text" id="addParentPrimaryPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>Secondary Phone</label>
-                        <input type="text" id="addParentSecondaryPhone">
-                    </div>
-                    <div class="form-group">
-                        <label>Guardian Phone</label>
-                        <input type="text" id="addParentGuardianPhone">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Parent</button>
-                    </div>
-                </form>
-            </div>
+                </div>
             </div>
 
             <div id="admin-view-fees" class="app-section hidden">
