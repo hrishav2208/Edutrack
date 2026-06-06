@@ -1862,8 +1862,6 @@
         }
     });
 
-})();
-
 
 // Expose globally so inline onclick works
 window.renderOtpOutbox = async function() {
@@ -1890,3 +1888,5 @@ window.renderOtpOutbox = async function() {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">Error: ${err.message}</td></tr>`;
   }
 };
+\n})();
+
