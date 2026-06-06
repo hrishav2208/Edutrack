@@ -954,6 +954,22 @@
     });
     const panel = document.getElementById(DASH_MAP[role]);
     if (panel) panel.classList.remove('hidden');
+    
+    if (role === 'admin') {
+        apiJson('/api/reports/admin-stats').then(stats => {
+            const e1 = document.getElementById('adminStatTotalStudents');
+            if (e1) e1.textContent = stats.total_students;
+            const e2 = document.getElementById('adminStatActiveTeachers');
+            if (e2) e2.textContent = stats.active_teachers;
+            const e3 = document.getElementById('adminStatAvgAttendance');
+            if (e3) e3.textContent = stats.avg_attendance + '%';
+            const e4 = document.getElementById('adminStatDefaulters');
+            if (e4) e4.textContent = stats.defaulters;
+            const e5 = document.getElementById('adminStatPlacementRate');
+            if (e5) e5.textContent = stats.placement_rate + '%';
+        }).catch(err => console.error("Stats fetch error:", err));
+    }
+
 
     const userEl = document.getElementById('currentUser');
     if (userEl) userEl.textContent = user?.display_name || role;
@@ -1319,11 +1335,59 @@
     document.getElementById('severityFilter')?.addEventListener('change', renderDefaulterTable);
     document.getElementById('exportDefaultersBtn')?.addEventListener('click', () => alert('Export CSV can be added to the API.'));
 
-    ['academicCalendarBtn', 'examScheduleBtn', 'placementStatsBtn'].forEach((id) => {
-      document.getElementById(id)?.addEventListener('click', () => {
-        alert('Placeholder — connect your backend workflow when ready.');
-      });
+
+    document.getElementById('closeDataModal')?.addEventListener('click', () => {
+        document.getElementById('dataModal').style.display = 'none';
     });
+
+    document.getElementById('academicCalendarBtn')?.addEventListener('click', async () => {
+        try {
+            const data = await apiJson('/api/reports/academic-calendar');
+            document.getElementById('dataModalTitle').textContent = 'Academic Calendar';
+            let html = '<ul style="list-style-type:none; padding:0;">';
+            data.forEach(e => {
+                html += `<li style="margin-bottom:1rem; padding:1rem; border:1px solid #e2e8f0; border-radius:4px;">
+                    <strong>${e.title}</strong> (${e.type})<br>
+                    <span style="color:#64748b; font-size:0.9em;">Date: ${e.date}</span>
+                </li>`;
+            });
+            html += '</ul>';
+            document.getElementById('dataModalBody').innerHTML = html;
+            document.getElementById('dataModal').style.display = 'flex';
+        } catch (err) { alert('Error loading calendar: ' + err.message); }
+    });
+
+    document.getElementById('examScheduleBtn')?.addEventListener('click', async () => {
+        try {
+            const data = await apiJson('/api/reports/exam-schedule');
+            document.getElementById('dataModalTitle').textContent = 'Exam Schedule';
+            let html = '<table class="table" style="width:100%; text-align:left;"><thead><tr><th>Course</th><th>Title</th><th>Date</th></tr></thead><tbody>';
+            data.forEach(e => {
+                html += `<tr><td>${e.course_code}</td><td>${e.exam_title}</td><td>${e.exam_date}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('dataModalBody').innerHTML = html;
+            document.getElementById('dataModal').style.display = 'flex';
+        } catch (err) { alert('Error loading schedule: ' + err.message); }
+    });
+
+    document.getElementById('placementStatsBtn')?.addEventListener('click', async () => {
+        try {
+            const stats = await apiJson('/api/reports/placement-stats');
+            document.getElementById('dataModalTitle').textContent = 'Placement Statistics';
+            let html = `
+                <div style="font-size:1.1em; line-height:1.6;">
+                    <p><strong>Total Eligible Students:</strong> ${stats.total_eligible}</p>
+                    <p><strong>Placed Students:</strong> ${stats.placed}</p>
+                    <p><strong>Unplaced Students:</strong> ${stats.unplaced}</p>
+                    <p><strong>Placement Rate:</strong> <span style="color:#0ea5e9; font-weight:bold;">${stats.placement_rate}%</span></p>
+                </div>
+            `;
+            document.getElementById('dataModalBody').innerHTML = html;
+            document.getElementById('dataModal').style.display = 'flex';
+        } catch (err) { alert('Error loading stats: ' + err.message); }
+    });
+
 
     document.getElementById('viewReportsBtn')?.addEventListener('click', async () => {
       if (!state.apiOnline) {

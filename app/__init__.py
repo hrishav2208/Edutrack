@@ -20,6 +20,8 @@ from app.models import (
     Student,
     Teacher,
     User,
+    AcademicEvent,
+    ExamScheduleItem,
 )
 
 migrate = Migrate()
@@ -55,6 +57,7 @@ def seed_database(app):
         email="student@edutrack.com",
         department="CSE",
         parent_id=parent.id,
+        is_placed=True,
     )
     db.session.add(student)
     db.session.flush()
@@ -139,6 +142,14 @@ def seed_database(app):
         )
     )
 
+    db.session.add_all([
+        AcademicEvent(title="Spring Semester Starts", date=date(2026, 1, 15), type="calendar"),
+        AcademicEvent(title="Annual Tech Fest", date=date(2026, 3, 10), type="event"),
+        AcademicEvent(title="Final Exams Week", date=date(2026, 5, 20), type="calendar"),
+        ExamScheduleItem(course_code="CS101", exam_title="Final Exam", exam_date=date(2026, 5, 21)),
+        ExamScheduleItem(course_code="CS102", exam_title="Final Exam", exam_date=date(2026, 5, 23)),
+    ])
+
     db.session.commit()
 
 
@@ -210,6 +221,11 @@ def create_app(config_name=None):
                                 "ALTER TABLE users ADD COLUMN uid VARCHAR(40) UNIQUE"
                             )
                         )
+                        db.session.commit()
+                if "students" in inspector.get_table_names():
+                    columns = [col["name"] for col in inspector.get_columns("students")]
+                    if "is_placed" not in columns:
+                        db.session.execute(text("ALTER TABLE students ADD COLUMN is_placed BOOLEAN DEFAULT 0"))
                         db.session.commit()
             except Exception as e:
                 print(

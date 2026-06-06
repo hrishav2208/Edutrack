@@ -71,6 +71,7 @@ class Student(db.Model):
     dob = db.Column(db.Date, nullable=True)
     blood_group = db.Column(db.String(10), default="")
     profile_picture = db.Column(db.String(255), default="")
+    is_placed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -182,3 +183,24 @@ class SessionCheckIn(db.Model):
     distance_m = db.Column(db.Float, nullable=False)
     check_type = db.Column(db.String(20), default="ping")  # initial | ping
     checked_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AcademicEvent(db.Model):
+    """Represents a calendar event for the institution."""
+    __tablename__ = "academic_events"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    description = db.Column(db.String(255), default="")
+    type = db.Column(db.String(40), default="event")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ExamScheduleItem(db.Model):
+    """Represents an upcoming exam."""
+    __tablename__ = "exam_schedules"
+    id = db.Column(db.Integer, primary_key=True)
+    course_code = db.Column(db.String(40), nullable=False)
+    exam_title = db.Column(db.String(120), nullable=False)
+    exam_date = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
