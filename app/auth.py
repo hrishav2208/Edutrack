@@ -118,3 +118,100 @@ def biometric_login():
     session["user_id"] = user.id
     session["biometric_verified"] = True
     return jsonify({"ok": True, "user": _user_dict(user)})
+
+
+import random
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash
+
+@auth_bp.route("/request-otp", methods=["POST"])
+def request_otp():
+    data = request.get_json(silent=True) or {}
+    identifier = (data.get("identifier") or "").strip().lower()
+    
+    if not identifier:
+        return jsonify({"error": "Identifier required"}), 400
+
+    user = User.query.filter(
+        db.or_(
+            db.func.lower(User.uid) == identifier,
+            User.email == identifier,
+        )
+    ).first()
+
+    if not user:
+        # Prevent user enumeration by acting like it sent
+        return jsonify({"ok": True, "simulated": True})
+
+    # Generate 6 digit OTP
+    otp = str(random.randint(100000, 999999))
+    user.current_otp = otp
+    user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+    db.session.commit()
+
+    # Log to console for simulation
+    print(f"\n\n[SIMULATED SMS] To {identifier}: Your EduTrack OTP is {otp}\n\n")
+
+    return jsonify({"ok": True, "simulated": True, "message": "OTP sent to registered number", "_dev_otp": otp})
+
+@auth_bp.route("/verify-otp-login", methods=["POST"])
+def verify_otp_login():
+    data = request.get_json(silent=True) or {}
+    identifier = (data.get("identifier") or "").strip().lower()
+    otp = (data.get("otp") or "").strip()
+
+    if not identifier or not otp:
+        return jsonify({"error": "Missing info"}), 400
+
+    user = User.query.filter(
+        db.or_(
+            db.func.lower(User.uid) == identifier,
+            User.email == identifier,
+        )
+    ).first()
+
+    if not user or user.current_otp != otp:
+        return jsonify({"error": "Invalid or expired OTP"}), 401
+
+    if user.otp_expiry and datetime.utcnow() > user.otp_expiry:
+        return jsonify({"error": "OTP has expired"}), 401
+
+    # Valid OTP, log them in
+    user.current_otp = None
+    user.otp_expiry = None
+    db.session.commit()
+
+    session["user_id"] = user.id
+    session["biometric_verified"] = False
+    return jsonify({"ok": True, "user": _user_dict(user)})
+
+@auth_bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    data = request.get_json(silent=True) or {}
+    identifier = (data.get("identifier") or "").strip().lower()
+    otp = (data.get("otp") or "").strip()
+    new_password = (data.get("new_password") or "").strip()
+
+    if not identifier or not otp or not new_password:
+        return jsonify({"error": "Missing info"}), 400
+
+    user = User.query.filter(
+        db.or_(
+            db.func.lower(User.uid) == identifier,
+            User.email == identifier,
+        )
+    ).first()
+
+    if not user or user.current_otp != otp:
+        return jsonify({"error": "Invalid or expired OTP"}), 401
+
+    if user.otp_expiry and datetime.utcnow() > user.otp_expiry:
+        return jsonify({"error": "OTP has expired"}), 401
+
+    # Valid OTP, reset password
+    user.password_hash = generate_password_hash(new_password)
+    user.current_otp = None
+    user.otp_expiry = None
+    db.session.commit()
+
+    return jsonify({"ok": True, "message": "Password updated successfully"})

@@ -21,6 +21,8 @@ class User(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey("parents.id"), nullable=True)
     security_question = db.Column(db.String(255), nullable=True)
     security_answer_hash = db.Column(db.String(256), nullable=True)
+    current_otp = db.Column(db.String(10), nullable=True)
+    otp_expiry = db.Column(db.DateTime, nullable=True)
 
 
 class Teacher(db.Model):

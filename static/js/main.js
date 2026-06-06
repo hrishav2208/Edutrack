@@ -1739,4 +1739,98 @@
       }
     };
   });
+
+    // --- OTP & Forgot Password Flow ---
+    const loginForm = document.getElementById('loginForm');
+    const otpRequestForm = document.getElementById('otpRequestForm');
+    const otpVerifyForm = document.getElementById('otpVerifyForm');
+    const otpResetForm = document.getElementById('otpResetForm');
+
+    function hideAllLoginForms() {
+        if(loginForm) loginForm.classList.add('hidden');
+        if(otpRequestForm) otpRequestForm.classList.add('hidden');
+        if(otpVerifyForm) otpVerifyForm.classList.add('hidden');
+        if(otpResetForm) otpResetForm.classList.add('hidden');
+    }
+
+    document.getElementById('forgotPassBtn')?.addEventListener('click', () => {
+        hideAllLoginForms();
+        if(otpRequestForm) otpRequestForm.classList.remove('hidden');
+    });
+
+    document.getElementById('backToLoginBtn')?.addEventListener('click', () => {
+        hideAllLoginForms();
+        if(loginForm) loginForm.classList.remove('hidden');
+    });
+
+    document.getElementById('backToRequestBtn')?.addEventListener('click', () => {
+        hideAllLoginForms();
+        if(otpRequestForm) otpRequestForm.classList.remove('hidden');
+    });
+
+    document.getElementById('backToVerifyBtn')?.addEventListener('click', () => {
+        hideAllLoginForms();
+        if(otpVerifyForm) otpVerifyForm.classList.remove('hidden');
+    });
+
+    otpRequestForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const identifier = document.getElementById('otpIdentifier').value;
+        try {
+            const res = await apiJson('/api/auth/request-otp', {
+                method: 'POST', body: { identifier }
+            });
+            if (res.ok) {
+                alert("Simulation: SMS sent to registered number.\n\nYour OTP is: " + res._dev_otp);
+                hideAllLoginForms();
+                otpVerifyForm.classList.remove('hidden');
+            }
+        } catch(err) {
+            alert(err.message);
+        }
+    });
+
+    document.getElementById('otpLoginSubmitBtn')?.addEventListener('click', async () => {
+        const identifier = document.getElementById('otpIdentifier').value;
+        const otp = document.getElementById('otpCode').value;
+        try {
+            const res = await apiJson('/api/auth/verify-otp-login', {
+                method: 'POST', body: { identifier, otp }
+            });
+            if (res.ok) {
+                showDashboard(res.user.role, res.user);
+                hideAllLoginForms();
+                loginForm.classList.remove('hidden'); // Reset for next time
+            }
+        } catch(err) {
+            alert(err.message);
+        }
+    });
+
+    document.getElementById('otpResetSubmitBtn')?.addEventListener('click', () => {
+        const otp = document.getElementById('otpCode').value;
+        if(!otp) return alert("Please enter the OTP first!");
+        hideAllLoginForms();
+        otpResetForm.classList.remove('hidden');
+    });
+
+    otpResetForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const identifier = document.getElementById('otpIdentifier').value;
+        const otp = document.getElementById('otpCode').value;
+        const new_password = document.getElementById('otpNewPassword').value;
+        try {
+            const res = await apiJson('/api/auth/reset-password', {
+                method: 'POST', body: { identifier, otp, new_password }
+            });
+            if (res.ok) {
+                alert("Password successfully reset! You can now log in with your new password.");
+                hideAllLoginForms();
+                loginForm.classList.remove('hidden');
+            }
+        } catch(err) {
+            alert(err.message);
+        }
+    });
+
 })();

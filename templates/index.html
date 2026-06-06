@@ -70,8 +70,41 @@
                     <i data-lucide="fingerprint"></i>
                     Use Biometric Login
                 </button>
+
+                <button type="button" id="forgotPassBtn" class="btn-link" style="margin-top:0.5rem; text-decoration:underline;">
+                    Forgot Password / Login with OTP
+                </button>
             </form>
-            
+
+            <form id="otpRequestForm" class="login-form hidden">
+                <div class="form-group">
+                    <label>Portal ID or Email</label>
+                    <input type="text" id="otpIdentifier" placeholder="Enter your ID to receive OTP" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Send OTP</button>
+                <button type="button" id="backToLoginBtn" class="btn-link" style="margin-top:1rem;">Back to Password Login</button>
+            </form>
+
+            <form id="otpVerifyForm" class="login-form hidden">
+                <div class="form-group">
+                    <label>Enter 6-digit OTP</label>
+                    <input type="text" id="otpCode" placeholder="000000" required>
+                    <p class="small" style="margin-top:5px; color: var(--gray-500);">Check the alert for the simulated SMS.</p>
+                </div>
+                <button type="button" id="otpLoginSubmitBtn" class="btn btn-primary btn-block">Log In</button>
+                <button type="button" id="otpResetSubmitBtn" class="btn btn-secondary btn-block" style="margin-top:0.5rem;">Reset Password</button>
+                <button type="button" id="backToRequestBtn" class="btn-link" style="margin-top:1rem;">Cancel</button>
+            </form>
+
+            <form id="otpResetForm" class="login-form hidden">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="otpNewPassword" placeholder="Enter new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Confirm New Password</button>
+                <button type="button" id="backToVerifyBtn" class="btn-link" style="margin-top:1rem;">Cancel</button>
+            </form>
+
             <div class="login-footer">
                 <p>Admin: admin@edutrack.com / demo123</p>
                 <p style="margin-top:4px;">Students/Teachers/Parents: use your Portal ID + password set by admin</p>

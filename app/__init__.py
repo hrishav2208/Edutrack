@@ -216,11 +216,13 @@ def create_app(config_name=None):
                         col["name"] for col in inspector.get_columns("users")
                     ]
                     if "uid" not in columns:
-                        db.session.execute(
-                            text(
-                                "ALTER TABLE users ADD COLUMN uid VARCHAR(40) UNIQUE"
-                            )
-                        )
+                        db.session.execute(text("ALTER TABLE users ADD COLUMN uid VARCHAR(40) UNIQUE"))
+                        db.session.commit()
+                    if "current_otp" not in columns:
+                        db.session.execute(text("ALTER TABLE users ADD COLUMN current_otp VARCHAR(10)"))
+                        db.session.commit()
+                    if "otp_expiry" not in columns:
+                        db.session.execute(text("ALTER TABLE users ADD COLUMN otp_expiry DATETIME"))
                         db.session.commit()
                 if "students" in inspector.get_table_names():
                     columns = [col["name"] for col in inspector.get_columns("students")]
