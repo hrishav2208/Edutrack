@@ -1776,17 +1776,44 @@
     otpRequestForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const identifier = document.getElementById('otpIdentifier').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Sending...';
+        btn.disabled = true;
+        
+        // Remove old inline messages
+        const oldMsg = e.target.querySelector('.inline-error');
+        if(oldMsg) oldMsg.remove();
+
         try {
             const res = await apiJson('/api/auth/request-otp', {
                 method: 'POST', body: { identifier }
             });
             if (res.ok) {
-                alert("Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP.");
+                // Success
                 hideAllLoginForms();
                 otpVerifyForm.classList.remove('hidden');
+                
+                // Show success message in the verify form
+                let verifyMsg = otpVerifyForm.querySelector('.inline-success');
+                if(!verifyMsg) {
+                    verifyMsg = document.createElement('div');
+                    verifyMsg.className = 'inline-success alert alert-success';
+                    verifyMsg.style.marginBottom = '1rem';
+                    otpVerifyForm.insertBefore(verifyMsg, otpVerifyForm.firstChild);
+                }
+                verifyMsg.textContent = "Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP.";
             }
         } catch(err) {
-            alert(err.message);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'inline-error alert alert-danger';
+            errorDiv.style.marginBottom = '1rem';
+            errorDiv.textContent = err.message || "Failed to send OTP.";
+            e.target.insertBefore(errorDiv, e.target.firstChild);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            if(window.lucide) lucide.createIcons();
         }
     });
 
