@@ -187,10 +187,20 @@ def request_otp():
             # Use SSL on port 465 for Gmail (more reliable than STARTTLS on 587)
             if smtp_port == 587:
                 smtp_port = 465 # Force 465 for SSL
-            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-            server.quit()
+
+            import socket
+            orig_getaddrinfo = socket.getaddrinfo
+            def getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
+                return orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+            
+            socket.getaddrinfo = getaddrinfo_ipv4
+            try:
+                server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
+                server.quit()
+            finally:
+                socket.getaddrinfo = orig_getaddrinfo
         except smtplib.SMTPAuthenticationError as e:
             print(f"SMTP Auth Error: {e}")
             return jsonify({"error": "Configuration Error: Please ensure MAIL_USERNAME and MAIL_PASSWORD (16-letter App Password) are exactly correct in Render Environment Variables."}), 500
