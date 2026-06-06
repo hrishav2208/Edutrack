@@ -589,13 +589,7 @@
                                     <div class="form-group">
                                         <label>Department</label>
                                         <select id="addTeacherDept" class="select">
-                                            <option value="CSE">Computer Science (CSE)</option>
-                                            <option value="ECE">Electronics (ECE)</option>
-                                            <option value="ME">Mechanical (ME)</option>
-                                            <option value="CE">Civil (CE)</option>
-                                            <option value="EEE">Electrical (EEE)</option>
-                                            <option value="IT">Information Tech (IT)</option>
-                                            <option value="General">General/Admin</option>
+                                            <option value="">Loading departments...</option>
                                         </select>
                                     </div>
                                     <div class="form-group"><label>Monthly salary (₹)</label><input type="number" id="addTeacherSalary" value="50000" step="100"></div>
@@ -637,12 +631,7 @@
                                     <div class="form-group">
                                         <label>Department</label>
                                         <select id="addStudentDept" class="select">
-                                            <option value="CSE">Computer Science (CSE)</option>
-                                            <option value="ECE">Electronics (ECE)</option>
-                                            <option value="ME">Mechanical (ME)</option>
-                                            <option value="CE">Civil (CE)</option>
-                                            <option value="EEE">Electrical (EEE)</option>
-                                            <option value="IT">Information Tech (IT)</option>
+                                            <option value="">Loading departments...</option>
                                         </select>
                                     </div>
                                     <div class="form-group"><label>Parent</label><select id="formStudentParentId" class="select"><option value="">— None —</option></select></div>
@@ -659,7 +648,7 @@
                     
                     <div class="card">
                         <h3 class="card-title" id="admin-teachers-card">Teachers</h3>
-                        <div class="table-responsive"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Dept</th><th>Salary/mo</th><th>Portal ID</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
+                        <div class="table-responsive"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Dept</th><th>Salary/mo</th><th>Portal ID</th><th>Actions</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
                     </div>
                     <div class="card">
                         <h3 class="card-title">Parents</h3>
@@ -667,7 +656,7 @@
                     </div>
                     <div class="card">
                         <h3 class="card-title" id="admin-students-card">Students</h3>
-                        <div class="table-responsive"><table class="table"><thead><tr><th>Roll</th><th>Name</th><th>Dept</th><th>Email</th><th>Portal ID</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
+                        <div class="table-responsive"><table class="table"><thead><tr><th>Roll</th><th>Name</th><th>Dept</th><th>Email</th><th>Portal ID</th><th>Actions</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
                     </div>
                 </div>
             </div>

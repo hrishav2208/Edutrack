@@ -362,3 +362,41 @@ def generate_missing_credentials():
 
     db.session.commit()
     return jsonify({"ok": True, "generated_count": generated_count})
+
+
+@directory_bp.route("/teachers/<int:teacher_id>/dept", methods=["PATCH"])
+def update_teacher_dept(teacher_id):
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+    data = request.get_json() or {}
+    dept = data.get("department", "").strip().upper()
+    if not dept:
+        return jsonify({"error": "Department is required"}), 400
+    teacher = Teacher.query.get(teacher_id)
+    if not teacher:
+        return jsonify({"error": "Teacher not found"}), 404
+    teacher.department = dept
+    db.session.commit()
+    return jsonify({"ok": True, "department": dept})
+
+
+@directory_bp.route("/students/<int:student_id>/dept", methods=["PATCH"])
+def update_student_dept(student_id):
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+    data = request.get_json() or {}
+    dept = data.get("department", "").strip().upper()
+    if not dept:
+        return jsonify({"error": "Department is required"}), 400
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({"error": "Student not found"}), 404
+    student.department = dept
+    db.session.commit()
+    return jsonify({"ok": True, "department": dept})

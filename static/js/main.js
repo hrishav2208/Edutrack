@@ -524,7 +524,7 @@
         tb.innerHTML = teachers
           .map(
             (t) =>
-              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td></tr>`
+              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td><td><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="openEditBranchModal('teacher', ${t.id}, '${escapeHtml(t.department)}')">✏️ Edit Branch</button></td></tr>`
           )
           .join('');
       const pb = document.getElementById('adminParentsBody');
@@ -537,9 +537,10 @@
         sb.innerHTML = students
           .map(
             (s) =>
-              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td></tr>`
+              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td><td><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="openEditBranchModal('student', ${s.id}, '${escapeHtml(s.department)}')">✏️ Edit Branch</button></td></tr>`
           )
           .join('');
+      populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
       const sel = document.getElementById('formStudentParentId');
       if (sel) {
         const cur = sel.value;
@@ -1954,21 +1955,56 @@ window.removeDepartment = async function(dept) {
     alert('Failed to remove department: ' + err.message);
   }
 };
+
+// --- Edit Branch Logic ---
+function populateDeptDropdowns(departments) {
+  const deptOptions = departments.map(d => `<option value="${d}">${d}</option>`).join('');
+  const teacherSel = document.getElementById('addTeacherDept');
+  const studentSel = document.getElementById('addStudentDept');
+  if (teacherSel) teacherSel.innerHTML = deptOptions;
+  if (studentSel) studentSel.innerHTML = deptOptions;
+}
+
+window.openEditBranchModal = async function(type, id, currentDept) {
+  const departments = activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+  const opts = departments.map((d, i) => `${i+1}. ${d}`).join('\n');
+  const choice = prompt(`Select new department for this ${type}:\n\n${opts}\n\nType department name exactly:`, currentDept);
+  if (!choice) return;
+  const dept = choice.trim().toUpperCase();
+  if (!departments.includes(dept)) {
+    alert('Invalid department: ' + dept + '. Please type one of the listed options exactly.');
+    return;
+  }
+  try {
+    const url = type === 'teacher' ? `/api/directory/teachers/${id}/dept` : `/api/directory/students/${id}/dept`;
+    await apiJson(url, { method: 'PATCH', body: { department: dept } });
+    loadDirectoryAdmin();
+  } catch(err) {
+    alert('Failed to update department: ' + err.message);
+  }
+};
+
 })();
 
 window.viewDirectory = function(targetId) {
-  showSection('admin', 'admin-view-people');
+  const allSections = document.querySelectorAll('.app-section');
+  allSections.forEach(el => {
+    if (el.id === 'admin-view-people') el.classList.remove('hidden');
+    else if (el.closest && el.closest('#admin-dashboard')) el.classList.add('hidden');
+  });
+  document.querySelectorAll('#sidebarNav button, #bottomNav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.section === 'admin-view-people');
+  });
   setTimeout(() => {
     const el = document.getElementById(targetId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Add a brief highlight flash
       const card = el.closest('.card');
       if (card) {
         card.style.transition = 'box-shadow 0.3s';
-        card.style.boxShadow = '0 0 0 2px var(--primary-color)';
+        card.style.boxShadow = '0 0 0 2px var(--primary-color, #3b6582)';
         setTimeout(() => { card.style.boxShadow = 'none'; }, 1500);
       }
     }
-  }, 100);
+  }, 150);
 };
