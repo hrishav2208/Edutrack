@@ -258,7 +258,8 @@ def reset_password():
 @auth_bp.route("/admin/otp-logs", methods=["GET"])
 def get_otp_logs():
     # Only allow admins to view OTP logs
-    if 'user_id' not in session or session.get('role') != 'admin':
+    u = current_user()
+    if not u or u.role != 'admin':
         return jsonify({"error": "Unauthorized"}), 403
         
     try:
