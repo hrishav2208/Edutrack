@@ -229,6 +229,11 @@ def create_app(config_name=None):
                     if "is_placed" not in columns:
                         db.session.execute(text("ALTER TABLE students ADD COLUMN is_placed BOOLEAN DEFAULT FALSE"))
                         db.session.commit()
+                if "campus_settings" in inspector.get_table_names():
+                    columns = [col["name"] for col in inspector.get_columns("campus_settings")]
+                    if "departments_json" not in columns:
+                        db.session.execute(text("ALTER TABLE campus_settings ADD COLUMN departments_json TEXT DEFAULT '[\"CSE\", \"ECE\", \"ME\", \"CE\", \"EEE\"]'"))
+                        db.session.commit()
             except Exception as e:
                 db.session.rollback()
                 print(

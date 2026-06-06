@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, request, session
 
 from werkzeug.security import check_password_hash
 
-from app.models import User, db
+from app.models import User, db, CampusSettings\nimport json
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -281,3 +281,41 @@ def get_otp_logs():
         print(f"Error fetching OTP logs: {e}")
         return jsonify({"error": "Failed to fetch OTP logs"}), 500
 
+
+
+@auth_bp.route("/admin/departments", methods=["GET"])
+def get_departments():
+    u = current_user()
+    if not u or u.role != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+        
+    settings = CampusSettings.query.first()
+    if not settings or not settings.departments_json:
+        return jsonify({"departments": ["CSE", "ECE", "ME", "CE", "EEE"]})
+        
+    try:
+        dept_list = json.loads(settings.departments_json)
+        return jsonify({"departments": dept_list})
+    except:
+        return jsonify({"departments": ["CSE", "ECE", "ME", "CE", "EEE"]})
+
+@auth_bp.route("/admin/departments", methods=["POST"])
+def update_departments():
+    u = current_user()
+    if not u or u.role != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+        
+    data = request.get_json() or {}
+    departments = data.get("departments")
+    if not isinstance(departments, list):
+        return jsonify({"error": "departments must be a list"}), 400
+        
+    settings = CampusSettings.query.first()
+    if not settings:
+        settings = CampusSettings(lat=0, lng=0)
+        db.session.add(settings)
+        
+    settings.departments_json = json.dumps(departments)
+    db.session.commit()
+    
+    return jsonify({"ok": True, "departments": departments})

@@ -83,6 +83,7 @@ class CampusSettings(db.Model):
     lat = db.Column(db.Float, nullable=False)
     lng = db.Column(db.Float, nullable=False)
     radius_m = db.Column(db.Float, nullable=False, default=500.0)
+    departments_json = db.Column(db.Text, default='["CSE", "ECE", "ME", "CE", "EEE"]')
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 

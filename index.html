@@ -1329,7 +1329,21 @@
                     </div>
                 </div>
                 
-                <!-- Recent Alerts -->
+                
+                <!-- Manage Departments -->
+                <div class="card" id="admin-manage-depts" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Manage Departments</h3>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" id="newDeptInput" class="form-control" placeholder="e.g. AIML, IT, DS" style="max-width: 200px;">
+                        <button class="btn btn-primary" onclick="addDepartment()">Add</button>
+                    </div>
+                    <div id="deptTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <!-- Department tags will be loaded here -->
+                    </div>
+                </div>
+<!-- Recent Alerts -->
                 <div class="card">
                     <h3 class="card-title">Recent Alerts & Notifications</h3>
                     <div class="alert-list">

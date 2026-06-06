@@ -112,7 +112,7 @@
     }
   }
 
-  function initAdminCharts() {
+  async function initAdminCharts() {
     const ac = document.getElementById('attendanceChart');
     const pc = document.getElementById('performanceChart');
     if (!ac || !pc || typeof Chart === 'undefined') return;
@@ -156,15 +156,20 @@
         },
       },
     });
+    await loadDepartments();
+    const mockData = activeDepartments.map(() => Math.floor(Math.random() * 20) + 75);
+    const colors = ['#3b6582', '#687787', '#3b9b58', '#cda174', '#5a84a6', '#8e44ad', '#d35400', '#16a085'];
+    const mockColors = activeDepartments.map((_, i) => colors[i % colors.length]);
+
     performanceChart = new Chart(pc.getContext('2d'), {
       type: 'bar',
       data: {
-        labels: ['CSE', 'ECE', 'ME', 'CE', 'EEE'],
+        labels: activeDepartments,
         datasets: [
           {
             label: 'Avg attendance %',
-            data: [94, 86, 81, 79, 88],
-            backgroundColor: ['#3b6582', '#687787', '#3b9b58', '#cda174', '#5a84a6'],
+            data: mockData,
+            backgroundColor: mockColors,
           },
         ],
       },
@@ -1889,5 +1894,65 @@ window.renderOtpOutbox = async function() {
   }
 };
 
-})();
+
+// --- Department Management Logic ---
+let activeDepartments = [];
+
+async function loadDepartments() {
+  try {
+    const data = await apiJson('/api/auth/admin/departments');
+    activeDepartments = data.departments || ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    renderDepartmentTags();
+  } catch (err) {
+    console.error('Failed to load departments', err);
+    activeDepartments = ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+  }
+}
+
+function renderDepartmentTags() {
+  const container = document.getElementById('deptTagsContainer');
+  if (!container) return;
+  container.innerHTML = activeDepartments.map(d => `
+    <span class="badge primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 1rem;">
+      ${d}
+      <i data-lucide="x" style="cursor: pointer; width: 16px; height: 16px;" onclick="removeDepartment('${d}')"></i>
+    </span>
+  `).join('');
+  refreshIcons();
+}
+
+window.addDepartment = async function() {
+  const input = document.getElementById('newDeptInput');
+  const val = input.value.trim().toUpperCase();
+  if (!val) return;
+  if (activeDepartments.includes(val)) {
+    input.value = '';
+    return;
+  }
+  
+  const newList = [...activeDepartments, val];
+  try {
+    await apiJson('/api/auth/admin/departments', { method: 'POST', body: { departments: newList } });
+    activeDepartments = newList;
+    input.value = '';
+    renderDepartmentTags();
+    initAdminCharts(); // Re-render chart!
+  } catch (err) {
+    alert('Failed to add department: ' + err.message);
+  }
+};
+
+window.removeDepartment = async function(dept) {
+  if (!confirm(`Are you sure you want to remove ${dept}?`)) return;
+  const newList = activeDepartments.filter(d => d !== dept);
+  try {
+    await apiJson('/api/auth/admin/departments', { method: 'POST', body: { departments: newList } });
+    activeDepartments = newList;
+    renderDepartmentTags();
+    initAdminCharts(); // Re-render chart!
+  } catch (err) {
+    alert('Failed to remove department: ' + err.message);
+  }
+};
+\n})();
 
