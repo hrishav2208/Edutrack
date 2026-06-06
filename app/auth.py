@@ -1,5 +1,9 @@
 """Session-based authentication and biometric demo endpoints."""
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
 from flask import Blueprint, jsonify, request, session
 
 from werkzeug.security import check_password_hash
@@ -149,10 +153,49 @@ def request_otp():
     user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
     db.session.commit()
 
-    # Log to console for simulation
-    print(f"\n\n[SIMULATED SMS] To {identifier}: Your EduTrack OTP is {otp}\n\n")
+    # Send Email via SMTP
+    sender_email = os.environ.get('MAIL_USERNAME')
+    sender_password = os.environ.get('MAIL_PASSWORD')
+    smtp_server = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.environ.get('MAIL_PORT', 587))
+    
+    recipient_email = user.email
 
-    return jsonify({"ok": True, "simulated": True, "message": "OTP sent to registered number", "_dev_otp": otp})
+    if sender_email and sender_password and recipient_email:
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = f"EduTrack Support <{sender_email}>"
+            msg['To'] = recipient_email
+            msg['Subject'] = "Your EduTrack OTP Verification Code"
+
+            body = f"""
+            <html>
+            <body>
+                <h2>EduTrack Security Verification</h2>
+                <p>Hello,</p>
+                <p>You recently requested a Password Reset or OTP Login. Your 6-digit verification code is:</p>
+                <h1 style="color: #2b6cb0; font-size: 32px; letter-spacing: 4px;">{otp}</h1>
+                <p>This code will expire in 5 minutes.</p>
+                <p>If you did not request this, please ignore this email or contact the administrator.</p>
+                <br>
+                <p>Regards,<br>EduTrack Team</p>
+            </body>
+            </html>
+            """
+            msg.attach(MIMEText(body, 'html'))
+
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            return jsonify({"error": "Failed to send OTP email. Please contact support."}), 500
+    else:
+        print(f"\n\n[WARNING] SMTP not configured or user has no email! OTP for {identifier} is {otp}\n\n")
+
+    return jsonify({"ok": True, "message": "OTP sent to registered email address"})
 
 @auth_bp.route("/verify-otp-login", methods=["POST"])
 def verify_otp_login():

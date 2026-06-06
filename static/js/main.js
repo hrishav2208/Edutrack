@@ -1781,7 +1781,7 @@
                 method: 'POST', body: { identifier }
             });
             if (res.ok) {
-                alert("Simulation: SMS sent to registered number.\n\nYour OTP is: " + res._dev_otp);
+                alert("Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP.");
                 hideAllLoginForms();
                 otpVerifyForm.classList.remove('hidden');
             }
