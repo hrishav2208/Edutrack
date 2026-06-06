@@ -439,7 +439,7 @@
                 
                 <!-- Stats Cards -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'" onclick="viewDirectory('admin-students-card')">
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Total Students</p>
@@ -451,7 +451,7 @@
                         </div>
                     </div>
                     
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'" onclick="viewDirectory('admin-teachers-card')">
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Active Teachers</p>
@@ -658,7 +658,7 @@
                     </div>
                     
                     <div class="card">
-                        <h3 class="card-title">Teachers</h3>
+                        <h3 class="card-title" id="admin-teachers-card">Teachers</h3>
                         <div class="table-responsive"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Dept</th><th>Salary/mo</th><th>Portal ID</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
                     </div>
                     <div class="card">
@@ -666,7 +666,7 @@
                         <div class="table-responsive"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Portal ID</th></tr></thead><tbody id="adminParentsBody"></tbody></table></div>
                     </div>
                     <div class="card">
-                        <h3 class="card-title">Students</h3>
+                        <h3 class="card-title" id="admin-students-card">Students</h3>
                         <div class="table-responsive"><table class="table"><thead><tr><th>Roll</th><th>Name</th><th>Dept</th><th>Email</th><th>Portal ID</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
                     </div>
                 </div>

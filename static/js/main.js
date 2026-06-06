@@ -1956,3 +1956,20 @@ window.removeDepartment = async function(dept) {
 };
 \n})();
 
+\n
+window.viewDirectory = function(targetId) {
+  showSection('admin', 'admin-view-people');
+  setTimeout(() => {
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Add a brief highlight flash
+      const card = el.closest('.card');
+      if (card) {
+        card.style.transition = 'box-shadow 0.3s';
+        card.style.boxShadow = '0 0 0 2px var(--primary-color)';
+        setTimeout(() => { card.style.boxShadow = 'none'; }, 1500);
+      }
+    }
+  }, 100);
+};
