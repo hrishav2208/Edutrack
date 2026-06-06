@@ -1954,9 +1954,8 @@ window.removeDepartment = async function(dept) {
     alert('Failed to remove department: ' + err.message);
   }
 };
-\n})();
+})();
 
-\n
 window.viewDirectory = function(targetId) {
   showSection('admin', 'admin-view-people');
   setTimeout(() => {
