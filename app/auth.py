@@ -8,7 +8,8 @@ from flask import Blueprint, jsonify, request, session
 
 from werkzeug.security import check_password_hash
 
-from app.models import User, db, CampusSettings\nimport json
+from app.models import User, db, CampusSettings
+import json
 
 auth_bp = Blueprint("auth", __name__)
 
