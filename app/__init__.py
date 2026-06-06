@@ -222,14 +222,15 @@ def create_app(config_name=None):
                         db.session.execute(text("ALTER TABLE users ADD COLUMN current_otp VARCHAR(10)"))
                         db.session.commit()
                     if "otp_expiry" not in columns:
-                        db.session.execute(text("ALTER TABLE users ADD COLUMN otp_expiry DATETIME"))
+                        db.session.execute(text("ALTER TABLE users ADD COLUMN otp_expiry TIMESTAMP"))
                         db.session.commit()
                 if "students" in inspector.get_table_names():
                     columns = [col["name"] for col in inspector.get_columns("students")]
                     if "is_placed" not in columns:
-                        db.session.execute(text("ALTER TABLE students ADD COLUMN is_placed BOOLEAN DEFAULT 0"))
+                        db.session.execute(text("ALTER TABLE students ADD COLUMN is_placed BOOLEAN DEFAULT FALSE"))
                         db.session.commit()
             except Exception as e:
+                db.session.rollback()
                 print(
                     f"Auto-migration failed (this is usually safe to ignore if already migrated): {e}"
                 )
