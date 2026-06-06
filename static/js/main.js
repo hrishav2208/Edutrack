@@ -1869,7 +1869,7 @@ window.renderOtpOutbox = async function() {
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">Loading...</td></tr>`;
   try {
-    const res = await apiFetch('/api/admin/otp-logs');
+    const res = await apiFetch('/api/auth/admin/otp-logs');
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
     if (!data.logs || data.logs.length === 0) {
