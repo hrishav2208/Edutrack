@@ -184,14 +184,19 @@ def request_otp():
             """
             msg.attach(MIMEText(body, 'html'))
 
-            server = smtplib.SMTP(smtp_server, smtp_port)
-            server.starttls()
+            # Use SSL on port 465 for Gmail (more reliable than STARTTLS on 587)
+            if smtp_port == 587:
+                smtp_port = 465 # Force 465 for SSL
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
             server.login(sender_email, sender_password)
             server.send_message(msg)
             server.quit()
+        except smtplib.SMTPAuthenticationError as e:
+            print(f"SMTP Auth Error: {e}")
+            return jsonify({"error": "Configuration Error: Please ensure MAIL_USERNAME and MAIL_PASSWORD (16-letter App Password) are exactly correct in Render Environment Variables."}), 500
         except Exception as e:
             print(f"Failed to send email: {e}")
-            return jsonify({"error": "Failed to send OTP email. Please contact support."}), 500
+            return jsonify({"error": f"Failed to send OTP email: {e}"}), 500
     else:
         print(f"\n\n[WARNING] SMTP not configured or user has no email! OTP for {identifier} is {otp}\n\n")
 
