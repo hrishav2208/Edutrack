@@ -86,6 +86,7 @@
         <!-- Admin Dashboard -->
         <div id="adminDashboard" class="hidden">
             <div class="container">
+                <div id="admin-view-home" class="app-section">
                 <div class="page-header">
                     <h1>Admin Dashboard</h1>
                     <p>College-wide insights and management</p>
@@ -218,12 +219,36 @@
                         </div>
                     </div>
                 </div>
+                </div>
+                <div id="admin-view-people" class="app-section hidden">
+                    <div class="page-header"><h1>Directory</h1></div>
+                    <div class="card"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Department/Phone</th><th>Info</th><th>UID</th></tr></thead><tbody id="adminTeachersBody"></tbody><tbody id="adminParentsBody"></tbody><tbody id="adminStudentsBody"></tbody></table></div>
+                </div>
+                <div id="admin-view-fees" class="app-section hidden">
+                    <div class="page-header"><h1>Fees</h1></div>
+                    <div class="card"><table class="table"><thead><tr><th>Program</th><th>Item</th><th>Amount</th><th>Year</th></tr></thead><tbody id="feeStructureBody"></tbody></table></div>
+                    <div class="card"><table class="table"><thead><tr><th>Student</th><th>Amount Paid</th><th>Date</th><th>Remarks</th></tr></thead><tbody id="feePaymentsBody"></tbody></table></div>
+                </div>
+                <div id="admin-view-salary" class="app-section hidden">
+                    <div class="page-header"><h1>Salaries</h1></div>
+                    <div class="card"><table class="table"><thead><tr><th>Teacher</th><th>Period</th><th>Gross</th><th>Net</th><th>Date</th></tr></thead><tbody id="salaryBody"></tbody></table></div>
+                </div>
+                <div id="admin-view-campus" class="app-section hidden">
+                    <div class="page-header"><h1>Campus GPS</h1></div>
+                    <div class="card">
+                        <input type="text" id="campusLat" placeholder="Lat" style="margin-right:1rem;">
+                        <input type="text" id="campusLng" placeholder="Lng" style="margin-right:1rem;">
+                        <input type="text" id="campusRadius" placeholder="Radius" style="margin-right:1rem;">
+                        <button id="btnSaveCampus" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Teacher Dashboard -->
         <div id="teacherDashboard" class="hidden">
             <div class="container">
+                <div id="teacher-view-home" class="app-section">
                 <div class="page-header">
                     <h1>Teacher Dashboard</h1>
                     <p>Manage your classes and curriculum</p>
@@ -324,15 +349,93 @@
                         </div>
                     </div>
                 </div>
+                </div>
+                <div id="teacher-view-attendance" class="app-section hidden">
+                    <div class="page-header"><h1>Attendance</h1></div>
+                    <!-- GPS Live Session Management -->
+                    <div class="card" id="teacherLiveSessionCard">
+                        <h3 class="card-title">
+                            <i data-lucide="map-pin"></i>
+                            Live GPS Class Session
+                        </h3>
+                        <!-- Inactive State: Start Session Form -->
+                        <div id="sessionInactive">
+                            <p>Start a new live geofenced session for students to mark attendance.</p>
+                            <div class="form-row" style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Course Code</label>
+                                    <input type="text" id="sessionCourseCode" placeholder="e.g. CS101" value="CS101">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Room Name</label>
+                                    <input type="text" id="sessionRoomName" placeholder="e.g. Lab 1" value="Lab 1">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Radius (meters)</label>
+                                    <input type="number" id="sessionRadius" value="20">
+                                </div>
+                            </div>
+                            <button id="btnStartSession" class="btn btn-primary" style="margin-top: 1rem;">Start Live Session</button>
+                        </div>
+
+                        <!-- Active State: Session Info -->
+                        <div id="sessionActive" class="hidden">
+                            <div class="alert alert-success">
+                                <h4>Session is currently LIVE</h4>
+                                <p><strong>Course:</strong> <span id="sessionActiveCourse"></span></p>
+                                <p><strong>Room:</strong> <span id="sessionActiveRoom"></span></p>
+                                <p><strong>Radius:</strong> <span id="sessionActiveRadius"></span></p>
+                                <p><strong>Duration:</strong> <span id="sessionDuration"></span> min</p>
+                                <p><strong>Students Checked In:</strong> <span id="sessionCheckedInCount">0</span></p>
+                                <button id="btnEndSession" class="btn btn-danger" style="margin-top: 1rem;">End Session</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Manual Attendance</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <input type="text" id="manualCourseCode" placeholder="Course Code" value="CS101" style="margin-right:1rem;">
+                            <input type="date" id="manualAttDate" style="margin-right:1rem;">
+                            <button id="btnLoadManualAttendance" class="btn btn-secondary">Load Roster</button>
+                        </div>
+                        <table class="table"><thead><tr><th>Roll No</th><th>Name</th><th>Status</th></tr></thead><tbody id="manualAttendanceBody"></tbody></table>
+                        <button id="btnSaveManualAttendance" class="btn btn-primary" style="margin-top: 1rem;">Save Attendance</button>
+                    </div>
+                </div>
+                <div id="teacher-view-marks" class="app-section hidden">
+                    <div class="page-header"><h1>Marks Management</h1></div>
+                    <div class="card">
+                        <select id="formMarkStudent" style="margin-right:1rem; padding:0.5rem;"></select>
+                        <input type="text" id="formMarkCourse" placeholder="Course" style="margin-right:1rem; padding:0.5rem;">
+                        <input type="text" id="formMarkTitle" placeholder="Exam Title" style="margin-right:1rem; padding:0.5rem;">
+                        <input type="number" id="formMarkScore" placeholder="Score" style="margin-right:1rem; padding:0.5rem; width: 80px;">
+                        <input type="number" id="formMarkMax" placeholder="Max Score" style="margin-right:1rem; padding:0.5rem; width: 100px;">
+                        <button id="btnAddMark" class="btn btn-primary">Add Mark</button>
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Student Dashboard -->
         <div id="studentDashboard" class="hidden">
             <div class="container">
+                <div id="student-view-home" class="app-section">
                 <div class="page-header">
                     <h1>Student Dashboard</h1>
                     <p>Track your academic progress</p>
+                </div>
+                
+                <!-- Live Session Banner for Students -->
+                <div id="studentSessionBanner" class="hidden" style="margin-bottom: 2rem;">
+                    <div class="alert alert-info" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0; color: #1e3a8a;"><i data-lucide="radio" style="vertical-align: middle; margin-right: 0.5rem;"></i> Active Class Session</h4>
+                            <p style="margin: 0.5rem 0 0 0;"><strong><span id="sessionBannerInfo"></span></strong></p>
+                            <span id="sessionBannerStatus" class="badge badge-warning" style="margin-top: 0.5rem; display: inline-block;">Not checked in</span>
+                        </div>
+                        <button id="btnSessionCheckin" class="btn btn-primary">Check In Now</button>
+                    </div>
                 </div>
                 
                 <!-- Student Stats -->
@@ -493,12 +596,18 @@
                         <p class="small">Loading curriculum...</p>
                     </div>
                 </div>
+                </div>
+                <div id="student-view-marks" class="app-section hidden">
+                    <div class="page-header"><h1>My Marks</h1></div>
+                    <div class="card"><table class="table"><thead><tr><th>Course</th><th>Exam</th><th>Score</th><th>Max</th><th>Date</th></tr></thead><tbody id="studentMarksBody"></tbody></table></div>
+                </div>
             </div>
         </div>
         
         <!-- Parent Dashboard -->
         <div id="parentDashboard" class="hidden">
             <div class="container">
+                <div id="parent-view-home" class="app-section">
                 <div class="page-header">
                     <h1>Parent Dashboard</h1>
                     <p>Monitor your child's academic progress</p>
@@ -641,6 +750,11 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                </div>
+                <div id="parent-view-fees" class="app-section hidden">
+                    <div class="page-header"><h1>Fee Payments</h1></div>
+                    <div class="card"><table class="table"><thead><tr><th>Student</th><th>Amount</th><th>Date</th><th>Remarks</th></tr></thead><tbody id="parentFeeBody"></tbody></table></div>
                 </div>
             </div>
         </div>
