@@ -368,12 +368,45 @@
                     <i data-lucide="fingerprint"></i>
                     Use Biometric Login
                 </button>
+                <button type="button" id="forgotPassBtn" class="btn-link" style="margin-top:0.5rem; text-decoration:underline;">
+                    Forgot Password / Login with OTP
+                </button>
                 
                 <button type="button" id="backToLandingBtn" class="login-back-btn">
                     <i data-lucide="arrow-left"></i>
                     Back to Introduction &amp; Showcase
                 </button>
             </form>
+
+            <form id="otpRequestForm" class="login-form hidden">
+                <div class="form-group">
+                    <label>Portal ID or Email</label>
+                    <input type="text" id="otpIdentifier" placeholder="Enter your ID to receive OTP" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Send OTP</button>
+                <button type="button" id="backToLoginBtn" class="btn-link" style="margin-top:1rem;">Back to Password Login</button>
+            </form>
+
+            <form id="otpVerifyForm" class="login-form hidden">
+                <div class="form-group">
+                    <label>Enter 6-digit OTP</label>
+                    <input type="text" id="otpCode" placeholder="000000" required>
+                    <p class="small" style="margin-top:5px; color: var(--gray-500);">Check the alert for the simulated SMS.</p>
+                </div>
+                <button type="button" id="otpLoginSubmitBtn" class="btn btn-primary btn-block">Log In</button>
+                <button type="button" id="otpResetSubmitBtn" class="btn btn-secondary btn-block" style="margin-top:0.5rem;">Reset Password</button>
+                <button type="button" id="backToRequestBtn" class="btn-link" style="margin-top:1rem;">Cancel</button>
+            </form>
+
+            <form id="otpResetForm" class="login-form hidden">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="otpNewPassword" placeholder="Enter new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Confirm New Password</button>
+                <button type="button" id="backToVerifyBtn" class="btn-link" style="margin-top:1rem;">Cancel</button>
+            </form>
+
             
             <div class="login-footer">
                 <p>Admin: admin@edutrack.com / demo123</p>
@@ -410,7 +443,7 @@
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Total Students</p>
-                                <p class="stat-value">2,847</p>
+                                <p class="stat-value" id="adminStatTotalStudents">2,847</p>
                             </div>
                             <div class="stat-icon primary">
                                 <i data-lucide="users"></i>
@@ -422,7 +455,7 @@
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Active Teachers</p>
-                                <p class="stat-value">156</p>
+                                <p class="stat-value" id="adminStatActiveTeachers">156</p>
                             </div>
                             <div class="stat-icon success">
                                 <i data-lucide="user-check"></i>
@@ -434,7 +467,7 @@
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Avg Attendance</p>
-                                <p class="stat-value">87.3%</p>
+                                <p class="stat-value" id="adminStatAvgAttendance">87.3%</p>
                             </div>
                             <div class="stat-icon secondary">
                                 <i data-lucide="bar-chart-2"></i>
@@ -446,7 +479,7 @@
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Defaulters</p>
-                                <p class="stat-value">23</p>
+                                <p class="stat-value" id="adminStatDefaulters">23</p>
                             </div>
                             <div class="stat-icon danger">
                                 <i data-lucide="alert-triangle"></i>
@@ -458,7 +491,7 @@
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Placement Rate</p>
-                                <p class="stat-value">94.2%</p>
+                                <p class="stat-value" id="adminStatPlacementRate">94.2%</p>
                             </div>
                             <div class="stat-icon primary">
                                 <i data-lucide="target"></i>
@@ -1517,5 +1550,19 @@
     </div>
 
     <script src="/static/js/main.js"></script>
+
+    <!-- Generic Data Modal -->
+    <div id="dataModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="dataModalTitle" style="margin: 0; font-size: 1.25rem;">Data</h3>
+                <button id="closeDataModal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="dataModalBody" class="modal-body" style="padding: 1.5rem; overflow-y: auto;">
+                Loading...
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
