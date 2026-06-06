@@ -153,64 +153,44 @@ def request_otp():
     user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
     db.session.commit()
 
-    # Send Email via SMTP
-    sender_email = os.environ.get('MAIL_USERNAME')
-    sender_password = os.environ.get('MAIL_PASSWORD')
-    smtp_server = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    smtp_port = int(os.environ.get('MAIL_PORT', 587))
-    
+    # Send Email via EmailJS API (Bypasses SMTP Blocks)
+    emailjs_service_id = os.environ.get('EMAILJS_SERVICE_ID')
+    emailjs_template_id = os.environ.get('EMAILJS_TEMPLATE_ID')
+    emailjs_public_key = os.environ.get('EMAILJS_PUBLIC_KEY')
     recipient_email = user.email
 
-    if sender_email and sender_password and recipient_email:
+    if emailjs_service_id and emailjs_template_id and emailjs_public_key and recipient_email:
+        import urllib.request
+        import urllib.error
+        import json
         try:
-            msg = MIMEMultipart()
-            msg['From'] = f"EduTrack Support <{sender_email}>"
-            msg['To'] = recipient_email
-            msg['Subject'] = "Your EduTrack OTP Verification Code"
-
-            body = f"""
-            <html>
-            <body>
-                <h2>EduTrack Security Verification</h2>
-                <p>Hello,</p>
-                <p>You recently requested a Password Reset or OTP Login. Your 6-digit verification code is:</p>
-                <h1 style="color: #2b6cb0; font-size: 32px; letter-spacing: 4px;">{otp}</h1>
-                <p>This code will expire in 5 minutes.</p>
-                <p>If you did not request this, please ignore this email or contact the administrator.</p>
-                <br>
-                <p>Regards,<br>EduTrack Team</p>
-            </body>
-            </html>
-            """
-            msg.attach(MIMEText(body, 'html'))
-
-            # Use SSL on port 465 for Gmail (more reliable than STARTTLS on 587)
-            if smtp_port == 587:
-                smtp_port = 465 # Force 465 for SSL
-
-            import socket
-            orig_getaddrinfo = socket.getaddrinfo
-            def getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
-                return orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-            
-            socket.getaddrinfo = getaddrinfo_ipv4
-            try:
-                server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
-                server.login(sender_email, sender_password)
-                server.send_message(msg)
-                server.quit()
-            finally:
-                socket.getaddrinfo = orig_getaddrinfo
-        except smtplib.SMTPAuthenticationError as e:
-            print(f"SMTP Auth Error: {e}")
-            return jsonify({"error": "Configuration Error: Please ensure MAIL_USERNAME and MAIL_PASSWORD (16-letter App Password) are exactly correct in Render Environment Variables."}), 500
+            payload = {
+                "service_id": emailjs_service_id,
+                "template_id": emailjs_template_id,
+                "user_id": emailjs_public_key,
+                "template_params": {
+                    "to_email": recipient_email,
+                    "otp_code": otp
+                }
+            }
+            req = urllib.request.Request(
+                'https://api.emailjs.com/api/v1.0/email/send',
+                data=json.dumps(payload).encode('utf-8'),
+                headers={'Content-Type': 'application/json'}
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                print(f"EmailJS Response: {response.status}")
+        except urllib.error.HTTPError as e:
+            err_msg = e.read().decode('utf-8')
+            print(f"EmailJS HTTP Error: {err_msg}")
+            return jsonify({"error": f"EmailJS API Error: {err_msg}"}), 500
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            print(f"Failed to send email via EmailJS: {e}")
             return jsonify({"error": f"Failed to send OTP email: {e}"}), 500
     else:
-        print(f"\n\n[WARNING] SMTP not configured or user has no email! OTP for {identifier} is {otp}\n\n")
+        print(f"\n\n[WARNING] EmailJS keys missing or user has no email. Falling back to Admin Outbox. OTP for {identifier} is {otp}\n\n")
 
-    return jsonify({"ok": True, "message": "OTP sent to registered email address"})
+    return jsonify({"ok": True, "message": "OTP sent securely. Check your email or the Admin System Outbox."})
 
 @auth_bp.route("/verify-otp-login", methods=["POST"])
 def verify_otp_login():
@@ -273,3 +253,55 @@ def reset_password():
     db.session.commit()
 
     return jsonify({"ok": True, "message": "Password updated successfully"})
+
+
+@auth_bp.route('/api/admin/otp-logs', methods=['GET'])
+def get_otp_logs():
+    # Only allow admins to view OTP logs
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+        
+    try:
+        now = datetime.utcnow()
+        # Find all users with an active OTP
+        users_with_otp = User.query.filter(User.current_otp.isnot(None), User.otp_expiry > now).all()
+        
+        logs = []
+        for u in users_with_otp:
+            logs.append({
+                "identifier": u.uid or u.email,
+                "role": u.role,
+                "otp": u.current_otp,
+                "expiry": u.otp_expiry.isoformat()
+            })
+            
+        return jsonify({"logs": logs})
+    except Exception as e:
+        print(f"Error fetching OTP logs: {e}")
+        return jsonify({"error": "Failed to fetch OTP logs"}), 500
+
+
+@auth_bp.route("/api/admin/otp-logs", methods=["GET"])
+def get_otp_logs():
+    # Only allow admins to view OTP logs
+    if "user_id" not in session or session.get("role") != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+        
+    try:
+        now = datetime.utcnow()
+        # Find all users with an active OTP
+        users_with_otp = User.query.filter(User.current_otp.isnot(None), User.otp_expiry > now).all()
+        
+        logs = []
+        for u in users_with_otp:
+            logs.append({
+                "identifier": u.uid or u.email,
+                "role": u.role,
+                "otp": u.current_otp,
+                "expiry": u.otp_expiry.isoformat()
+            })
+            
+        return jsonify({"logs": logs})
+    except Exception as e:
+        print(f"Error fetching OTP logs: {e}")
+        return jsonify({"error": "Failed to fetch OTP logs"}), 500
