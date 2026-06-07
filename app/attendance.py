@@ -368,21 +368,27 @@ def session_end():
     u, err = require_login()
     if err:
         return err
-    if u.role != "teacher" or not u.teacher_id:
-        return jsonify({"error": "Only teachers can end sessions"}), 403
+    if u.role not in ("teacher", "admin"):
+        return jsonify({"error": "Only teachers or admins can end sessions"}), 403
 
     data = request.get_json(silent=True) or {}
     session_id = data.get("session_id")
 
     if session_id:
         session = ClassSession.query.get(session_id)
-    else:
+    elif u.teacher_id:
         session = ClassSession.query.filter_by(
             teacher_id=u.teacher_id, is_active=True
         ).first()
+    else:
+        # Admin without teacher_id — try to find any active session
+        session = ClassSession.query.filter_by(is_active=True).first()
 
     if not session:
         return jsonify({"error": "No active session found"}), 404
+
+    if not session.is_active:
+        return jsonify({"error": "Session already ended"}), 400
 
     session.is_active = False
     session.ended_at = datetime.utcnow()
@@ -535,6 +541,19 @@ def session_checkin():
     inside = d <= session.radius_m
 
     if not inside:
+        # Log the failed attempt so teachers can see who tried
+        db.session.add(
+            SessionCheckIn(
+                session_id=session.id,
+                student_id=u.student_id,
+                lat=lat,
+                lng=lng,
+                inside_radius=False,
+                distance_m=round(d, 1),
+                check_type="initial",
+            )
+        )
+        db.session.commit()
         return (
             jsonify(
                 {

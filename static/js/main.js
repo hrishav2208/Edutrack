@@ -355,19 +355,58 @@
     return new Promise((resolve, reject) => {
       const fallback = () => {
         if (confirm("Could not read GPS (or not supported on HTTP). Use simulated campus location for demo?")) {
-          resolve({ lat: 28.7041, lng: 77.1025 });
+          resolve({ lat: 28.7041, lng: 77.1025, accuracy: 999 });
         } else {
           reject(new Error('Geolocation not supported or denied.'));
         }
       };
 
       if (!navigator.geolocation) return fallback();
-      
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => fallback(),
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
+
+      const gpsOptions = {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0   // never use a cached position
+      };
+
+      // Try up to 3 times, keeping the reading with best accuracy
+      let bestPos = null;
+      let attempts = 0;
+      const maxAttempts = 3;
+
+      const tryOnce = () => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const current = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              accuracy: pos.coords.accuracy
+            };
+            if (!bestPos || current.accuracy < bestPos.accuracy) {
+              bestPos = current;
+            }
+            attempts++;
+            // If accuracy is already good (<30m) or we've used all attempts, resolve
+            if (current.accuracy <= 30 || attempts >= maxAttempts) {
+              resolve(bestPos);
+            } else {
+              setTimeout(tryOnce, 500);
+            }
+          },
+          (err) => {
+            attempts++;
+            if (bestPos) {
+              resolve(bestPos);   // got at least one good reading before
+            } else if (attempts >= maxAttempts) {
+              fallback();
+            } else {
+              setTimeout(tryOnce, 500);
+            }
+          },
+          gpsOptions
+        );
+      };
+      tryOnce();
     });
   }
 
