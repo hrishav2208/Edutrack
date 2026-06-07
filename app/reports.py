@@ -1,7 +1,9 @@
-from flask import Blueprint, jsonify, request
+import io
+import csv
+from flask import Blueprint, jsonify, request, Response
 from sqlalchemy import func
 from app.auth import require_login
-from app.models import db, Student, Teacher, AttendanceRecord, Mark, User, AcademicEvent, ExamScheduleItem
+from app.models import db, Student, Teacher, AttendanceRecord, Mark, User, AcademicEvent, ExamScheduleItem, ClassSession, SessionCheckIn
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -198,4 +200,152 @@ def placement_stats():
         "placed": placed,
         "unplaced": unplaced,
         "placement_rate": rate
+    })
+
+
+# ===================================================================
+#  ATTENDANCE CSV EXPORT
+# ===================================================================
+
+@reports_bp.route("/attendance/export-csv", methods=["GET"])
+def export_attendance_csv():
+    """Download attendance records as a CSV file. Teachers and admins only."""
+    u, err = require_login()
+    if err:
+        return err
+    if u.role not in ("admin", "teacher"):
+        return jsonify({"error": "Forbidden"}), 403
+
+    course_code = request.args.get("course_code", "CS101")
+    date_from = request.args.get("from")  # optional YYYY-MM-DD
+    date_to = request.args.get("to")      # optional YYYY-MM-DD
+
+    query = (
+        db.session.query(AttendanceRecord, Student)
+        .join(Student, AttendanceRecord.student_id == Student.id)
+        .filter(AttendanceRecord.course_code == course_code)
+        .order_by(AttendanceRecord.session_date.asc(), Student.roll_no.asc())
+    )
+    if date_from:
+        from datetime import date as dt_date
+        query = query.filter(AttendanceRecord.session_date >= dt_date.fromisoformat(date_from))
+    if date_to:
+        from datetime import date as dt_date
+        query = query.filter(AttendanceRecord.session_date <= dt_date.fromisoformat(date_to))
+
+    rows = query.all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Date", "Roll No", "Student Name", "Department", "Status", "Method"])
+    for rec, stu in rows:
+        writer.writerow([
+            rec.session_date.isoformat(),
+            stu.roll_no,
+            stu.name,
+            stu.department,
+            "Present" if rec.present else "Absent",
+            rec.method or "manual"
+        ])
+
+    csv_data = output.getvalue()
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=attendance_{course_code}.csv"}
+    )
+
+
+# ===================================================================
+#  SESSION HISTORY (past GPS class sessions)
+# ===================================================================
+
+@reports_bp.route("/session-history", methods=["GET"])
+def session_history():
+    """Get past completed sessions for the logged-in teacher, or all sessions for admin."""
+    u, err = require_login()
+    if err:
+        return err
+    if u.role not in ("admin", "teacher"):
+        return jsonify({"error": "Forbidden"}), 403
+
+    query = ClassSession.query.filter_by(is_active=False).order_by(ClassSession.started_at.desc())
+    if u.role == "teacher" and u.teacher_id:
+        query = query.filter_by(teacher_id=u.teacher_id)
+
+    sessions = query.limit(50).all()
+    result = []
+    for s in sessions:
+        teacher = Teacher.query.get(s.teacher_id)
+        checkin_count = (
+            db.session.query(SessionCheckIn.student_id)
+            .filter_by(session_id=s.id, inside_radius=True)
+            .distinct()
+            .count()
+        )
+        duration_min = 0
+        if s.ended_at and s.started_at:
+            duration_min = round((s.ended_at - s.started_at).total_seconds() / 60, 1)
+
+        result.append({
+            "id": s.id,
+            "course_code": s.course_code,
+            "room_name": s.room_name,
+            "teacher_name": teacher.name if teacher else "Unknown",
+            "started_at": s.started_at.isoformat() + "Z",
+            "ended_at": s.ended_at.isoformat() + "Z" if s.ended_at else None,
+            "duration_minutes": duration_min,
+            "checkin_count": checkin_count,
+            "total_checkins": s.total_checkins or 0,
+        })
+
+    return jsonify(result)
+
+
+# ===================================================================
+#  STUDENT ATTENDANCE SUMMARY (real data per course)
+# ===================================================================
+
+@reports_bp.route("/student/attendance-summary", methods=["GET"])
+def student_attendance_summary():
+    """Get the logged-in student's attendance percentage per course."""
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "student" or not u.student_id:
+        return jsonify({"error": "Only students can view their own summary"}), 403
+
+    # Group attendance by course_code
+    att_data = (
+        db.session.query(
+            AttendanceRecord.course_code,
+            func.count(AttendanceRecord.id).label("total"),
+            func.sum(func.cast(AttendanceRecord.present, db.Integer)).label("present")
+        )
+        .filter_by(student_id=u.student_id)
+        .group_by(AttendanceRecord.course_code)
+        .all()
+    )
+
+    courses = []
+    overall_total = 0
+    overall_present = 0
+    for row in att_data:
+        pct = round((row.present / row.total) * 100.0, 1) if row.total > 0 else 0.0
+        courses.append({
+            "course_code": row.course_code,
+            "total_sessions": row.total,
+            "present": row.present,
+            "percentage": pct,
+        })
+        overall_total += row.total
+        overall_present += row.present
+
+    overall_pct = round((overall_present / overall_total) * 100.0, 1) if overall_total > 0 else 0.0
+
+    return jsonify({
+        "overall_percentage": overall_pct,
+        "overall_total": overall_total,
+        "overall_present": overall_present,
+        "courses": courses,
     })

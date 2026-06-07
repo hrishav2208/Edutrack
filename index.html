@@ -947,6 +947,35 @@
                             </table>
                         </div>
                         <button type="button" class="btn btn-primary" id="btnSaveManualAttendance" style="margin-top:12px">Save attendance</button>
+                        <button type="button" class="btn btn-secondary" id="btnExportCSV" style="margin-top:12px; margin-left:8px;">
+                            <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+                        </button>
+                    </div>
+
+                    <!-- Session History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Session History</h3>
+                            <button type="button" class="btn btn-secondary" id="btnLoadSessionHistory" style="padding:4px 10px; font-size:12px;">
+                                <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> Load
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Room</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Students</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sessionHistoryBody">
+                                    <tr><td colspan="5" style="text-align:center; color:var(--gray-400);">Click "Load" to see past sessions</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1070,7 +1099,7 @@
                         <div class="stat-content">
                             <div class="stat-info">
                                 <p class="stat-label">Attendance Rate</p>
-                                <p class="stat-value success">92.5%</p>
+                                <p class="stat-value success" id="studentOverallAttendanceRate">-</p>
                             </div>
                             <div class="stat-icon success">
                                 <i data-lucide="check-circle"></i>
@@ -1141,43 +1170,9 @@
 
                     <div class="card">
                         <h3 class="card-title">Attendance by Subject</h3>
-                        <div class="attendance-list">
-                            <div class="attendance-item">
-                                <span class="subject-name">Data Structures</span>
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill success" style="width: 95%"></div>
-                                    </div>
-                                    <span class="percentage success">95%</span>
-                                </div>
-                            </div>
-                            <div class="attendance-item">
-                                <span class="subject-name">Computer Networks</span>
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill primary" style="width: 88%"></div>
-                                    </div>
-                                    <span class="percentage primary">88%</span>
-                                </div>
-                            </div>
-                            <div class="attendance-item">
-                                <span class="subject-name">Database Systems</span>
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill success" style="width: 92%"></div>
-                                    </div>
-                                    <span class="percentage success">92%</span>
-                                </div>
-                            </div>
-                            <div class="attendance-item">
-                                <span class="subject-name">Software Engineering</span>
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill warning" style="width: 78%"></div>
-                                    </div>
-                                    <span class="percentage warning">78%</span>
-                                </div>
-                            </div>
+                        <div class="attendance-list" id="studentCourseAttendanceList">
+                            <div style="padding: 10px; color: var(--gray-500); text-align: center;">Loading attendance data...</div>
+                        </div>
                         </div>
                     </div>
                 </div>

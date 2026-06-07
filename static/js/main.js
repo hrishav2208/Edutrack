@@ -330,7 +330,10 @@
       sessionPollInterval = setInterval(fetchActiveSessionStatus, 3000);
     }
     if (sectionId === 'teacher-view-marks') loadMarkStudentSelect();
-    if (sectionId === 'student-view-home') checkActiveSessionStudent();
+    if (sectionId === 'student-view-home') {
+      checkActiveSessionStudent();
+      loadStudentAttendanceSummary();
+    }
     if (sectionId === 'student-view-marks') loadStudentMarks();
     if (sectionId === 'parent-view-fees') loadParentFees();
   }
@@ -531,6 +534,49 @@
       }
     } catch (e) {
       console.error('Error fetching session status:', e);
+    }
+  }
+
+  async function loadStudentAttendanceSummary() {
+    if (state.role !== 'student') return;
+    try {
+      const data = await apiJson('/api/reports/student/attendance-summary');
+      
+      const overallEl = document.getElementById('studentOverallAttendanceRate');
+      if (overallEl) {
+        overallEl.textContent = `${data.overall_percentage}%`;
+        overallEl.className = `stat-value ${data.overall_percentage >= 75 ? 'success' : (data.overall_percentage >= 60 ? 'warning' : 'danger')}`;
+      }
+
+      const listEl = document.getElementById('studentCourseAttendanceList');
+      if (listEl) {
+        if (!data.courses || data.courses.length === 0) {
+          listEl.innerHTML = '<div style="padding: 10px; color: var(--gray-500); text-align: center;">No attendance data found yet.</div>';
+          return;
+        }
+
+        listEl.innerHTML = data.courses.map(c => {
+          let colorClass = 'success';
+          if (c.percentage < 60) colorClass = 'danger';
+          else if (c.percentage < 75) colorClass = 'warning';
+          else if (c.percentage < 90) colorClass = 'primary';
+          
+          return `
+            <div class="attendance-item">
+                <span class="subject-name">${escapeHtml(c.course_code)}</span>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill ${colorClass}" style="width: ${c.percentage}%"></div>
+                    </div>
+                    <span class="percentage ${colorClass}">${c.percentage}%</span>
+                </div>
+            </div>`;
+        }).join('');
+      }
+    } catch (e) {
+      console.error('Failed to load student attendance summary:', e);
+      const listEl = document.getElementById('studentCourseAttendanceList');
+      if (listEl) listEl.innerHTML = '<div style="padding: 10px; color: var(--danger); text-align: center;">Error loading data.</div>';
     }
   }
 
@@ -1408,6 +1454,47 @@
 
     document.getElementById('btnLoadManualAttendance')?.addEventListener('click', loadManualRoster);
     document.getElementById('btnSaveManualAttendance')?.addEventListener('click', saveManualRoster);
+
+    // CSV Export
+    document.getElementById('btnExportCSV')?.addEventListener('click', () => {
+      const course = document.getElementById('manualCourseCode')?.value || 'CS101';
+      const dateVal = document.getElementById('manualAttDate')?.value || '';
+      let url = `/api/reports/attendance/export-csv?course_code=${encodeURIComponent(course)}`;
+      if (dateVal) {
+        url += `&from=${dateVal}&to=${dateVal}`;
+      }
+      window.open(url, '_blank');
+    });
+
+    // Session History
+    document.getElementById('btnLoadSessionHistory')?.addEventListener('click', async () => {
+      const tbody = document.getElementById('sessionHistoryBody');
+      if (!tbody) return;
+      try {
+        const data = await apiJson('/api/reports/session-history');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--gray-400);">No past sessions found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(s => {
+          const dt = new Date(s.started_at);
+          const dateStr = dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+          const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+          const durH = Math.floor(s.duration_minutes / 60);
+          const durM = Math.round(s.duration_minutes % 60);
+          const durStr = durH > 0 ? `${durH}h ${durM}m` : `${durM}m`;
+          return `<tr>
+            <td><strong>${escapeHtml(s.course_code)}</strong></td>
+            <td>${escapeHtml(s.room_name)}</td>
+            <td>${dateStr}<br><small style="color:var(--gray-500)">${timeStr}</small></td>
+            <td>${durStr}</td>
+            <td><strong>${s.checkin_count}</strong> checked in</td>
+          </tr>`;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5">${e.message}</td></tr>`;
+      }
+    });
     document.getElementById('btnAddMark')?.addEventListener('click', async () => {
       try {
         await apiJson('/api/marks/add', {
