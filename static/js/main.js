@@ -433,6 +433,8 @@
         if (!startedAtStr.endsWith('Z')) startedAtStr += 'Z';
         const start = new Date(startedAtStr);
 
+        document.getElementById('btnRefreshSession')?.addEventListener('click', fetchActiveSessionStatus);
+
         const updateTimer = () => {
           const diffMs = Date.now() - start.getTime();
           if (diffMs < 0) return;
@@ -1713,7 +1715,8 @@
 
     refreshIcons();
     window.closeProfileModal = function () {
-      document.getElementById('profileModal')?.classList.add('hidden');
+      const modal = document.getElementById('profileModal');
+      if (modal) modal.style.display = 'none';
     };
 
     document.getElementById('myProfileBtn')?.addEventListener('click', async () => {
@@ -1759,9 +1762,10 @@
         document.getElementById('profileAddress').value = p.address || '';
         document.getElementById('profileDob').value = p.dob || '';
         document.getElementById('profileBloodGroup').value = p.blood_group || '';
-        document.getElementById('profilePicture').value = p.profile_picture || '';
+        document.getElementById('profilePicture').value = '';
         
-        document.getElementById('profileModal')?.classList.remove('hidden');
+        const modal = document.getElementById('profileModal');
+        if (modal) modal.style.display = 'flex';
       } catch (e) {
         alert("Could not load profile: " + e.message);
       }
@@ -1770,6 +1774,17 @@
     document.getElementById('profilePhoneForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
+        const fileInput = document.getElementById('profilePicture');
+        if (fileInput.files.length > 0) {
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const uploadRes = await fetch('/api/profile/upload-picture', {
+                method: 'POST',
+                body: formData
+            });
+            if (!uploadRes.ok) throw new Error('Failed to upload picture');
+        }
+
         await apiJson('/api/profile/me', {
           method: 'PUT',
           body: {
@@ -1779,7 +1794,6 @@
             address: document.getElementById('profileAddress').value,
             dob: document.getElementById('profileDob').value,
             blood_group: document.getElementById('profileBloodGroup').value,
-            profile_picture: document.getElementById('profilePicture').value,
           }
         });
         alert('Profile details updated successfully!');

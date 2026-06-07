@@ -1,5 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import os
 from app.auth import require_login
 from app.models import db, User, Teacher, Student, Parent
 
@@ -135,3 +137,30 @@ def change_password():
     db.session.commit()
 
     return jsonify({"ok": True, "message": "Password changed successfully."})
+
+@profile_bp.route("/upload-picture", methods=["POST"])
+def upload_picture():
+    u, err = require_login()
+    if err: return err
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    if file:
+        filename = secure_filename(f"{u.id}_{file.filename}")
+        upload_folder = os.path.join(current_app.root_path, "..", "static", "uploads")
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+        
+        url = f"/static/uploads/{filename}"
+        if u.role == "teacher" and u.teacher_id:
+            Teacher.query.get(u.teacher_id).profile_picture = url
+        elif u.role == "student" and u.student_id:
+            Student.query.get(u.student_id).profile_picture = url
+        elif u.role == "parent" and u.parent_id:
+            Parent.query.get(u.parent_id).profile_picture = url
+        
+        db.session.commit()
+        return jsonify({"ok": True, "url": url})
