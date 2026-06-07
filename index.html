@@ -906,6 +906,20 @@
                                     <span>Running for <strong id="sessionDuration">00:00:00</strong></span>
                                 </div>
                             </div>
+                            <div id="sessionCheckinLists" style="margin-top: 20px; display: flex; gap: 20px;">
+                                <div style="flex: 1; background: var(--gray-50); padding: 12px; border-radius: 8px;">
+                                    <h4 style="color: var(--success); font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="check-circle" style="width:16px;height:16px;"></i> Marked
+                                    </h4>
+                                    <ul id="markedList" style="list-style: none; padding: 0; margin: 0; font-size: 13px;"></ul>
+                                </div>
+                                <div style="flex: 1; background: var(--gray-50); padding: 12px; border-radius: 8px;">
+                                    <h4 style="color: var(--danger); font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="x-circle" style="width:16px;height:16px;"></i> Out of Range
+                                    </h4>
+                                    <ul id="failedList" style="list-style: none; padding: 0; margin: 0; font-size: 13px;"></ul>
+                                </div>
+                            </div>
                             <button type="button" class="btn btn-danger" id="btnEndSession" style="margin-top:16px;">
                                 <i data-lucide="square"></i>
                                 End Session

@@ -474,6 +474,27 @@ def session_active():
                 is not None
             )
 
+        recent_checkins = []
+        if u.role in ("teacher", "admin"):
+            checkins_db = (
+                db.session.query(SessionCheckIn, Student.roll_no, Student.name)
+                .join(Student, SessionCheckIn.student_id == Student.id)
+                .filter(SessionCheckIn.session_id == s.id)
+                .order_by(SessionCheckIn.checked_at.desc())
+                .all()
+            )
+            student_attempts = {}
+            for ci, roll_no, name in checkins_db:
+                if ci.student_id not in student_attempts:
+                    student_attempts[ci.student_id] = {
+                        "roll_no": roll_no,
+                        "name": name,
+                        "inside_radius": ci.inside_radius,
+                        "distance_m": ci.distance_m,
+                        "checked_at": ci.checked_at.isoformat() + "Z"
+                    }
+            recent_checkins = list(student_attempts.values())
+
         result.append(
             {
                 "session_id": s.id,
@@ -485,6 +506,7 @@ def session_active():
                 "started_at": s.started_at.isoformat(),
                 "checked_in_count": checked_in,
                 "already_checked_in": already_checked,
+                "recent_checkins": recent_checkins,
             }
         )
 

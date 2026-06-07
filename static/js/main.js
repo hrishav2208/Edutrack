@@ -317,6 +317,7 @@
   }
 
   function navigate(role, sectionId) {
+    if (sessionPollInterval) { clearInterval(sessionPollInterval); sessionPollInterval = null; }
     showSection(role, sectionId);
     if (sectionId === 'admin-view-people') loadDirectoryAdmin();
     if (sectionId === 'admin-view-fees') loadFeesAdmin();
@@ -326,6 +327,7 @@
       const d = document.getElementById('manualAttDate');
       if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
       fetchActiveSessionStatus();
+      sessionPollInterval = setInterval(fetchActiveSessionStatus, 3000);
     }
     if (sectionId === 'teacher-view-marks') loadMarkStudentSelect();
     if (sectionId === 'student-view-home') checkActiveSessionStudent();
@@ -442,6 +444,41 @@
         };
         updateTimer(); // initial call
         sessionTimerInterval = setInterval(updateTimer, 1000);
+        
+        if (s.recent_checkins) {
+          const markedList = document.getElementById('markedList');
+          const failedList = document.getElementById('failedList');
+          if (markedList && failedList) {
+            markedList.innerHTML = '';
+            failedList.innerHTML = '';
+            s.recent_checkins.forEach(ci => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '4px';
+              
+              const nameSpan = document.createElement('span');
+              nameSpan.style.fontWeight = '500';
+              nameSpan.textContent = ci.roll_no;
+              
+              const textSpan = document.createElement('span');
+              textSpan.textContent = ` - ${ci.name}`;
+              
+              li.appendChild(nameSpan);
+              li.appendChild(textSpan);
+              
+              if (ci.inside_radius) {
+                markedList.appendChild(li);
+              } else {
+                const distSpan = document.createElement('span');
+                distSpan.textContent = ` (${ci.distance_m}m away)`;
+                distSpan.style.color = 'var(--gray-500)';
+                distSpan.style.fontSize = '11px';
+                distSpan.style.marginLeft = '4px';
+                li.appendChild(distSpan);
+                failedList.appendChild(li);
+              }
+            });
+          }
+        }
         
         inactiveDiv.classList.add('hidden');
         activeDiv.classList.remove('hidden');
