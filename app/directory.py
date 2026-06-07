@@ -7,7 +7,10 @@ from flask import Blueprint, jsonify, request
 from werkzeug.security import generate_password_hash
 
 from app.auth import require_login
-from app.models import Parent, Student, Teacher, User, db
+from app.models import (
+    Parent, Student, Teacher, User, db, Notification, AttendanceRecord, Mark,
+    FeePayment, ClassSession, SessionCheckIn, SalaryDisbursement
+)
 
 directory_bp = Blueprint("directory", __name__)
 
@@ -400,3 +403,80 @@ def update_student_dept(student_id):
     student.department = dept
     db.session.commit()
     return jsonify({"ok": True, "department": dept})
+
+
+@directory_bp.route("/teachers/<int:teacher_id>", methods=["DELETE"])
+def delete_teacher(teacher_id):
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Forbidden"}), 403
+
+    teacher = Teacher.query.get(teacher_id)
+    if not teacher:
+        return jsonify({"error": "Not found"}), 404
+
+    user = User.query.filter_by(teacher_id=teacher_id).first()
+    if user:
+        Notification.query.filter_by(user_id=user.id).delete()
+        db.session.delete(user)
+    
+    SalaryDisbursement.query.filter_by(teacher_id=teacher_id).delete()
+    ClassSession.query.filter_by(teacher_id=teacher_id).delete()
+    db.session.query(Mark).filter(Mark.teacher_id == teacher_id).update({"teacher_id": None})
+    
+    db.session.delete(teacher)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@directory_bp.route("/parents/<int:parent_id>", methods=["DELETE"])
+def delete_parent(parent_id):
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Forbidden"}), 403
+
+    parent = Parent.query.get(parent_id)
+    if not parent:
+        return jsonify({"error": "Not found"}), 404
+
+    user = User.query.filter_by(parent_id=parent_id).first()
+    if user:
+        Notification.query.filter_by(user_id=user.id).delete()
+        db.session.delete(user)
+    
+    db.session.query(Student).filter(Student.parent_id == parent_id).update({"parent_id": None})
+    
+    db.session.delete(parent)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@directory_bp.route("/students/<int:student_id>", methods=["DELETE"])
+def delete_student(student_id):
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Forbidden"}), 403
+
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({"error": "Not found"}), 404
+
+    user = User.query.filter_by(student_id=student_id).first()
+    if user:
+        Notification.query.filter_by(user_id=user.id).delete()
+        db.session.delete(user)
+    
+    AttendanceRecord.query.filter_by(student_id=student_id).delete()
+    Mark.query.filter_by(student_id=student_id).delete()
+    FeePayment.query.filter_by(student_id=student_id).delete()
+    SessionCheckIn.query.filter_by(student_id=student_id).delete()
+
+    db.session.delete(student)
+    db.session.commit()
+    return jsonify({"ok": True})

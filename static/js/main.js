@@ -524,20 +524,20 @@
         tb.innerHTML = teachers
           .map(
             (t) =>
-              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td><td><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="openEditBranchModal('teacher', ${t.id}, '${escapeHtml(t.department)}')">✏️ Edit Branch</button></td></tr>`
+              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td><td><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.8rem;margin-right:4px;" onclick="openEditBranchModal('teacher', ${t.id}, '${escapeHtml(t.department)}')">✏️ Edit Branch</button><button class="btn btn-danger" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="deleteProfile('teacher', ${t.id})">🗑️</button></td></tr>`
           )
           .join('');
       const pb = document.getElementById('adminParentsBody');
       if (pb)
         pb.innerHTML = parents
-          .map((p) => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email)}</td><td>${escapeHtml(p.phone || '')}</td><td><code>${escapeHtml(p.uid || '—')}</code></td></tr>`)
+          .map((p) => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email)}</td><td>${escapeHtml(p.phone || '')}</td><td><code>${escapeHtml(p.uid || '—')}</code></td><td><button class="btn btn-danger" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="deleteProfile('parent', ${p.id})">🗑️</button></td></tr>`)
           .join('');
       const sb = document.getElementById('adminStudentsBody');
       if (sb)
         sb.innerHTML = students
           .map(
             (s) =>
-              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td><td><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="openEditBranchModal('student', ${s.id}, '${escapeHtml(s.department)}')">✏️ Edit Branch</button></td></tr>`
+              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td><td><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;font-size:0.8rem;margin-right:4px;" onclick="openEditBranchModal('student', ${s.id}, '${escapeHtml(s.department)}')">✏️ Edit Branch</button><button class="btn btn-danger" style="padding:0.25rem 0.75rem;font-size:0.8rem;" onclick="deleteProfile('student', ${s.id})">🗑️</button></td></tr>`
           )
           .join('');
       populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
@@ -558,6 +558,20 @@
     }
     refreshIcons();
   }
+
+  window.deleteProfile = async function(role, id) {
+    if(!confirm(`Are you sure you want to delete this ${role}?`)) return;
+    try {
+      const res = await apiJson(`/api/directory/${role}s/${id}`, { method: 'DELETE' });
+      if(res.ok) {
+        loadDirectoryAdmin();
+      } else {
+        alert(res.error || 'Failed to delete');
+      }
+    } catch(e) {
+      alert(e.message);
+    }
+  };
 
   function escapeHtml(s) {
     const d = document.createElement('div');
