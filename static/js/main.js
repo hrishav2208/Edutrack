@@ -350,10 +350,19 @@
 
   function getCurrentPosition() {
     return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+      const fallback = () => {
+        if (confirm("Could not read GPS (or not supported on HTTP). Use simulated campus location for demo?")) {
+          resolve({ lat: 28.7041, lng: 77.1025 });
+        } else {
+          reject(new Error('Geolocation not supported or denied.'));
+        }
+      };
+
+      if (!navigator.geolocation) return fallback();
+      
       navigator.geolocation.getCurrentPosition(
         (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => reject(new Error('Could not read GPS. Ensure location permissions are granted.')),
+        (err) => fallback(),
         { enableHighAccuracy: true, timeout: 10000 }
       );
     });
