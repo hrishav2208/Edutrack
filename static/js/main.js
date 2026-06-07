@@ -53,6 +53,7 @@
   let activeSessionId = null;
   let sessionPollInterval = null;
   let randomPingInterval = null;
+  let sessionTimerInterval = null;
 
   function refreshIcons() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -399,6 +400,7 @@
       if (res.ok) {
         alert(`Session ended. ${res.total_checkins} students checked in. Duration: ${res.duration_minutes} min.`);
         activeSessionId = null;
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
         fetchActiveSessionStatus();
       }
     } catch (e) {
@@ -423,13 +425,29 @@
         document.getElementById('sessionActiveRadius').textContent = `${s.radius_m}m radius`;
         document.getElementById('sessionCheckedInCount').textContent = s.checked_in_count;
         
-        const durationMin = Math.floor((new Date() - new Date(s.started_at)) / 60000);
-        document.getElementById('sessionDuration').textContent = durationMin;
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+        
+        let startedAtStr = s.started_at;
+        if (!startedAtStr.endsWith('Z')) startedAtStr += 'Z';
+        const start = new Date(startedAtStr);
+
+        const updateTimer = () => {
+          const diffMs = Date.now() - start.getTime();
+          if (diffMs < 0) return;
+          const totalSec = Math.floor(diffMs / 1000);
+          const h = Math.floor(totalSec / 3600).toString().padStart(2, '0');
+          const m = Math.floor((totalSec % 3600) / 60).toString().padStart(2, '0');
+          const sec = (totalSec % 60).toString().padStart(2, '0');
+          document.getElementById('sessionDuration').textContent = `${h}:${m}:${sec}`;
+        };
+        updateTimer(); // initial call
+        sessionTimerInterval = setInterval(updateTimer, 1000);
         
         inactiveDiv.classList.add('hidden');
         activeDiv.classList.remove('hidden');
       } else {
         activeSessionId = null;
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
         inactiveDiv.classList.remove('hidden');
         activeDiv.classList.add('hidden');
       }
