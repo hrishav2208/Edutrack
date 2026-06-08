@@ -1594,6 +1594,62 @@
             </div>
         </div>
     </div>
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal-backdrop hidden" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="editProfileTitle" style="margin: 0; font-size: 1.25rem;">Edit Profile</h3>
+                <button type="button" onclick="closeEditProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; overflow-y: auto;">
+                <form id="editProfileForm">
+                    <input type="hidden" id="editProfileId" />
+                    <input type="hidden" id="editProfileType" />
+                    
+                    <div class="form-group" id="editFormGroupRollNo" style="display:none; margin-bottom:1rem;">
+                        <label>Roll No.</label>
+                        <input type="text" id="editProfileRollNo" class="form-control" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label>Name</label>
+                        <input type="text" id="editProfileName" class="form-control" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label>Email</label>
+                        <input type="email" id="editProfileEmail" class="form-control" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                    
+                    <div class="form-group" id="editFormGroupPhone" style="margin-bottom:1rem;">
+                        <label>Phone</label>
+                        <input type="text" id="editProfilePhone" class="form-control" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                    
+                    <div class="form-row" id="editFormGroupDeptSalary" style="display:none; gap:1rem; margin-bottom:1rem; display:flex;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Department</label>
+                            <select id="editProfileDept" class="select" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;"></select>
+                        </div>
+                        <div class="form-group" id="editFormGroupSalary" style="flex:1;">
+                            <label>Monthly Salary (₹)</label>
+                            <input type="number" id="editProfileSalary" step="100" class="form-control" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="editFormGroupParent" style="display:none; margin-bottom:1rem;">
+                        <label>Parent</label>
+                        <select id="editProfileParentId" class="select" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;"><option value="">— None —</option></select>
+                    </div>
+                    
+                    <div class="form-actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/js/main.js"></script>
 

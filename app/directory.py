@@ -367,42 +367,88 @@ def generate_missing_credentials():
     return jsonify({"ok": True, "generated_count": generated_count})
 
 
-@directory_bp.route("/teachers/<int:teacher_id>/dept", methods=["PATCH"])
-def update_teacher_dept(teacher_id):
+@directory_bp.route("/teachers/<int:teacher_id>", methods=["PATCH"])
+def update_teacher(teacher_id):
     u, err = require_login()
-    if err:
-        return err
-    if u.role != "admin":
-        return jsonify({"error": "Unauthorized"}), 403
-    data = request.get_json() or {}
-    dept = data.get("department", "").strip().upper()
-    if not dept:
-        return jsonify({"error": "Department is required"}), 400
+    if err: return err
+    if u.role != "admin": return jsonify({"error": "Unauthorized"}), 403
+    
     teacher = Teacher.query.get(teacher_id)
-    if not teacher:
-        return jsonify({"error": "Teacher not found"}), 404
-    teacher.department = dept
-    db.session.commit()
-    return jsonify({"ok": True, "department": dept})
-
-
-@directory_bp.route("/students/<int:student_id>/dept", methods=["PATCH"])
-def update_student_dept(student_id):
-    u, err = require_login()
-    if err:
-        return err
-    if u.role != "admin":
-        return jsonify({"error": "Unauthorized"}), 403
+    if not teacher: return jsonify({"error": "Teacher not found"}), 404
+    
     data = request.get_json() or {}
-    dept = data.get("department", "").strip().upper()
-    if not dept:
-        return jsonify({"error": "Department is required"}), 400
-    student = Student.query.get(student_id)
-    if not student:
-        return jsonify({"error": "Student not found"}), 404
-    student.department = dept
+    
+    if "name" in data: teacher.name = data["name"].strip()
+    if "email" in data: teacher.email = data["email"].strip().lower()
+    if "department" in data: teacher.department = data["department"].strip().upper()
+    if "monthly_salary" in data: teacher.monthly_salary = float(data["monthly_salary"] or 0)
+    if "primary_phone" in data: teacher.primary_phone = data["primary_phone"].strip()
+    if "secondary_phone" in data: teacher.secondary_phone = data["secondary_phone"].strip()
+    if "guardian_phone" in data: teacher.guardian_phone = data["guardian_phone"].strip()
+
+    user = User.query.filter_by(teacher_id=teacher_id).first()
+    if user:
+        if "name" in data: user.display_name = teacher.name
+        if "email" in data: user.email = teacher.email
+
     db.session.commit()
-    return jsonify({"ok": True, "department": dept})
+    return jsonify({"ok": True})
+
+
+@directory_bp.route("/students/<int:student_id>", methods=["PATCH"])
+def update_student(student_id):
+    u, err = require_login()
+    if err: return err
+    if u.role != "admin": return jsonify({"error": "Unauthorized"}), 403
+    
+    student = Student.query.get(student_id)
+    if not student: return jsonify({"error": "Student not found"}), 404
+    
+    data = request.get_json() or {}
+    
+    if "roll_no" in data: student.roll_no = data["roll_no"].strip()
+    if "name" in data: student.name = data["name"].strip()
+    if "email" in data: student.email = data["email"].strip().lower()
+    if "department" in data: student.department = data["department"].strip().upper()
+    if "parent_id" in data: student.parent_id = int(data["parent_id"]) if data["parent_id"] else None
+    if "primary_phone" in data: student.primary_phone = data["primary_phone"].strip()
+    if "secondary_phone" in data: student.secondary_phone = data["secondary_phone"].strip()
+    if "guardian_phone" in data: student.guardian_phone = data["guardian_phone"].strip()
+
+    user = User.query.filter_by(student_id=student_id).first()
+    if user:
+        if "name" in data: user.display_name = student.name
+        if "email" in data: user.email = student.email
+
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@directory_bp.route("/parents/<int:parent_id>", methods=["PATCH"])
+def update_parent(parent_id):
+    u, err = require_login()
+    if err: return err
+    if u.role != "admin": return jsonify({"error": "Unauthorized"}), 403
+    
+    parent = Parent.query.get(parent_id)
+    if not parent: return jsonify({"error": "Parent not found"}), 404
+    
+    data = request.get_json() or {}
+    
+    if "name" in data: parent.name = data["name"].strip()
+    if "email" in data: parent.email = data["email"].strip().lower()
+    if "phone" in data: parent.phone = data["phone"].strip()
+    if "primary_phone" in data: parent.primary_phone = data["primary_phone"].strip()
+    if "secondary_phone" in data: parent.secondary_phone = data["secondary_phone"].strip()
+    if "guardian_phone" in data: parent.guardian_phone = data["guardian_phone"].strip()
+
+    user = User.query.filter_by(parent_id=parent_id).first()
+    if user:
+        if "name" in data: user.display_name = parent.name
+        if "email" in data: user.email = parent.email
+
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 @directory_bp.route("/teachers/<int:teacher_id>", methods=["DELETE"])

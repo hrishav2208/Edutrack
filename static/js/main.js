@@ -676,34 +676,35 @@
         tb.innerHTML = teachers
           .map(
             (t) =>
-              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td><td style="white-space:nowrap;"><button class="btn btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.85rem;margin-right:6px;display:inline-flex;align-items:center;gap:4px;" onclick="openEditBranchModal('teacher', ${t.id}, '${escapeHtml(t.department)}')"><i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit</button><button class="btn btn-danger" style="padding:0.35rem 0.75rem;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;" onclick="deleteProfile('teacher', ${t.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button></td></tr>`
+              `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.email)}</td><td>${escapeHtml(t.department)}</td><td>${t.monthly_salary}</td><td><code>${escapeHtml(t.uid || '—')}</code></td><td style="white-space:nowrap;"><button class="btn btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.85rem;margin-right:6px;display:inline-flex;align-items:center;gap:4px;" onclick="openEditProfileModal('teacher', '${encodeURIComponent(JSON.stringify(t))}')"><i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit</button><button class="btn btn-danger" style="padding:0.35rem 0.75rem;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;" onclick="deleteProfile('teacher', ${t.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button></td></tr>`
           )
           .join('');
       const pb = document.getElementById('adminParentsBody');
       if (pb)
         pb.innerHTML = parents
-          .map((p) => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email)}</td><td>${escapeHtml(p.phone || '')}</td><td><code>${escapeHtml(p.uid || '—')}</code></td><td style="white-space:nowrap;"><button class="btn btn-danger" style="padding:0.35rem 0.75rem;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;" onclick="deleteProfile('parent', ${p.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button></td></tr>`)
+          .map((p) => `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email)}</td><td>${escapeHtml(p.phone || '')}</td><td><code>${escapeHtml(p.uid || '—')}</code></td><td style="white-space:nowrap;"><button class="btn btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.85rem;margin-right:6px;display:inline-flex;align-items:center;gap:4px;" onclick="openEditProfileModal('parent', '${encodeURIComponent(JSON.stringify(p))}')"><i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit</button><button class="btn btn-danger" style="padding:0.35rem 0.75rem;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;" onclick="deleteProfile('parent', ${p.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button></td></tr>`)
           .join('');
       const sb = document.getElementById('adminStudentsBody');
       if (sb)
         sb.innerHTML = students
           .map(
             (s) =>
-              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td><td style="white-space:nowrap;"><button class="btn btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.85rem;margin-right:6px;display:inline-flex;align-items:center;gap:4px;" onclick="openEditBranchModal('student', ${s.id}, '${escapeHtml(s.department)}')"><i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit</button><button class="btn btn-danger" style="padding:0.35rem 0.75rem;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;" onclick="deleteProfile('student', ${s.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button></td></tr>`
+              `<tr><td>${escapeHtml(s.roll_no)}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.department)}</td><td>${escapeHtml(s.email || '')}</td><td><code>${escapeHtml(s.uid || '—')}</code></td><td style="white-space:nowrap;"><button class="btn btn-secondary" style="padding:0.35rem 0.75rem;font-size:0.85rem;margin-right:6px;display:inline-flex;align-items:center;gap:4px;" onclick="openEditProfileModal('student', '${encodeURIComponent(JSON.stringify(s))}')"><i data-lucide="edit-2" style="width:14px;height:14px;"></i> Edit</button><button class="btn btn-danger" style="padding:0.35rem 0.75rem;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;" onclick="deleteProfile('student', ${s.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button></td></tr>`
           )
           .join('');
       populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
       const sel = document.getElementById('formStudentParentId');
+      const editSel = document.getElementById('editProfileParentId');
       if (sel) {
         const cur = sel.value;
-        sel.innerHTML = '<option value="">— None —</option>';
-        parents.forEach((p) => {
-          const o = document.createElement('option');
-          o.value = p.id;
-          o.textContent = `${p.name} (${p.email})`;
-          sel.appendChild(o);
-        });
+        const curEdit = editSel ? editSel.value : '';
+        const optionsHTML = '<option value="">— None —</option>' + parents.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.email)})</option>`).join('');
+        sel.innerHTML = optionsHTML;
         sel.value = cur;
+        if (editSel) {
+            editSel.innerHTML = optionsHTML;
+            editSel.value = curEdit;
+        }
       }
     } catch (e) {
       console.error(e);
@@ -2205,33 +2206,97 @@ window.removeDepartment = async function(dept) {
   }
 };
 
-// --- Edit Branch Logic ---
+// --- Edit Profile Logic ---
 function populateDeptDropdowns(departments) {
   const deptOptions = departments.map(d => `<option value="${d}">${d}</option>`).join('');
   const teacherSel = document.getElementById('addTeacherDept');
   const studentSel = document.getElementById('addStudentDept');
+  const editDeptSel = document.getElementById('editProfileDept');
   if (teacherSel) teacherSel.innerHTML = deptOptions;
   if (studentSel) studentSel.innerHTML = deptOptions;
+  if (editDeptSel) editDeptSel.innerHTML = deptOptions;
 }
 
-window.openEditBranchModal = async function(type, id, currentDept) {
-  const departments = activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
-  const opts = departments.map((d, i) => `${i+1}. ${d}`).join('\n');
-  const choice = prompt(`Select new department for this ${type}:\n\n${opts}\n\nType department name exactly:`, currentDept);
-  if (!choice) return;
-  const dept = choice.trim().toUpperCase();
-  if (!departments.includes(dept)) {
-    alert('Invalid department: ' + dept + '. Please type one of the listed options exactly.');
-    return;
+window.openEditProfileModal = function(type, dataStr) {
+  const data = JSON.parse(decodeURIComponent(dataStr));
+  document.getElementById('editProfileId').value = data.id;
+  document.getElementById('editProfileType').value = type;
+  
+  // Reset all optional groups
+  document.getElementById('editFormGroupRollNo').style.display = 'none';
+  document.getElementById('editFormGroupPhone').style.display = 'none';
+  document.getElementById('editFormGroupDeptSalary').style.display = 'none';
+  document.getElementById('editFormGroupSalary').style.display = 'none';
+  document.getElementById('editFormGroupParent').style.display = 'none';
+  
+  // Common fields
+  document.getElementById('editProfileName').value = data.name || '';
+  document.getElementById('editProfileEmail').value = data.email || '';
+  
+  if (type === 'teacher') {
+    document.getElementById('editFormGroupPhone').style.display = 'block';
+    document.getElementById('editProfilePhone').value = data.primary_phone || '';
+    document.getElementById('editFormGroupDeptSalary').style.display = 'flex';
+    document.getElementById('editFormGroupSalary').style.display = 'block';
+    document.getElementById('editProfileDept').value = data.department || '';
+    document.getElementById('editProfileSalary').value = data.monthly_salary || 0;
+  } else if (type === 'student') {
+    document.getElementById('editFormGroupRollNo').style.display = 'block';
+    document.getElementById('editProfileRollNo').value = data.roll_no || '';
+    document.getElementById('editFormGroupPhone').style.display = 'block';
+    document.getElementById('editProfilePhone').value = data.primary_phone || '';
+    document.getElementById('editFormGroupDeptSalary').style.display = 'flex';
+    document.getElementById('editProfileDept').value = data.department || '';
+    document.getElementById('editFormGroupParent').style.display = 'block';
+    document.getElementById('editProfileParentId').value = data.parent_id || '';
+  } else if (type === 'parent') {
+    document.getElementById('editFormGroupPhone').style.display = 'block';
+    document.getElementById('editProfilePhone').value = data.phone || data.primary_phone || '';
   }
-  try {
-    const url = type === 'teacher' ? `/api/directory/teachers/${id}/dept` : `/api/directory/students/${id}/dept`;
-    await apiJson(url, { method: 'PATCH', body: { department: dept } });
-    loadDirectoryAdmin();
-  } catch(err) {
-    alert('Failed to update department: ' + err.message);
-  }
+  
+  document.getElementById('editProfileModal').style.display = 'flex';
+  document.getElementById('editProfileModal').classList.remove('hidden');
 };
+
+window.closeEditProfileModal = function() {
+  document.getElementById('editProfileModal').style.display = 'none';
+  document.getElementById('editProfileModal').classList.add('hidden');
+};
+
+document.getElementById('editProfileForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('editProfileId').value;
+  const type = document.getElementById('editProfileType').value;
+  
+  const payload = {
+    name: document.getElementById('editProfileName').value,
+    email: document.getElementById('editProfileEmail').value
+  };
+  
+  if (type === 'teacher') {
+    payload.department = document.getElementById('editProfileDept').value;
+    payload.monthly_salary = document.getElementById('editProfileSalary').value;
+    payload.primary_phone = document.getElementById('editProfilePhone').value;
+  } else if (type === 'student') {
+    payload.roll_no = document.getElementById('editProfileRollNo').value;
+    payload.department = document.getElementById('editProfileDept').value;
+    payload.primary_phone = document.getElementById('editProfilePhone').value;
+    payload.parent_id = document.getElementById('editProfileParentId').value;
+  } else if (type === 'parent') {
+    payload.phone = document.getElementById('editProfilePhone').value;
+    payload.primary_phone = document.getElementById('editProfilePhone').value;
+  }
+  
+  try {
+    await apiJson(`/api/directory/${type}s/${id}`, { method: 'PATCH', body: payload });
+    closeEditProfileModal();
+    if (typeof loadDirectoryAdmin === 'function') {
+      loadDirectoryAdmin();
+    }
+  } catch (err) {
+    alert('Failed to update profile: ' + err.message);
+  }
+});
 
 })();
 
