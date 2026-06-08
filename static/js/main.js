@@ -323,6 +323,7 @@
     if (sectionId === 'admin-view-fees') loadFeesAdmin();
     if (sectionId === 'admin-view-salary') loadSalaryAdmin();
     if (sectionId === 'admin-view-campus') loadCampusAdmin();
+    if (sectionId === 'teacher-view-home') loadTeacherDashboard();
     if (sectionId === 'teacher-view-attendance') {
       const d = document.getElementById('manualAttDate');
       if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
@@ -723,6 +724,36 @@
       alert(e.message);
     }
   };
+
+  async function loadTeacherDashboard() {
+    showTableSkeleton('studentTableBody', 7, 5);
+    if (!state.apiOnline) return;
+    try {
+      const data = await apiJson('/api/reports/teacher/analytics');
+      const tbody = document.getElementById('studentTableBody');
+      if (tbody && data.students) {
+        tbody.innerHTML = data.students
+          .map(
+            (s) => `
+          <tr class="${s.row_class || 'neutral'}">
+            <td>${escapeHtml(s.roll_no)}</td>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${s.percent}%</td>
+            <td>${s.present}/${s.total}</td>
+            <td>${escapeHtml(s.status)}</td>
+            <td>—</td>
+            <td><button type="button" class="btn btn-sm btn-secondary">View</button></td>
+          </tr>`
+          )
+          .join('');
+      }
+    } catch (e) {
+      console.error(e);
+      const tbody = document.getElementById('studentTableBody');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7">${e.message}</td></tr>`;
+    }
+    refreshIcons();
+  }
 
   function escapeHtml(s) {
     const d = document.createElement('div');

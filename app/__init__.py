@@ -62,6 +62,14 @@ def seed_database(app):
     db.session.add(student)
     db.session.flush()
 
+    t1 = Teacher(name="Andrew Tate", email="andrew33@gmail.com", department="AIML", monthly_salary=40000.0)
+    t2 = Teacher(name="Hrishav Bisht", email="hrishav888@gmail.com", department="AIML", monthly_salary=90000.0)
+    t3 = Teacher(name="Hrishav Hrishav Hrishav", email="bishthrishav@gmail.com", department="CSE", monthly_salary=100000.0)
+    p1 = Parent(name="SANJAY GAIKWAD", email="sanjay@gmail.com", phone="+91 8373711116")
+    s1 = Student(roll_no="CS21554", name="WILSON GAIKWAD", email="wilsongaikwad@gmail.com", department="AIML")
+    db.session.add_all([t1, t2, t3, p1, s1])
+    db.session.flush()
+
     db.session.add_all(
         [
             User(
@@ -91,6 +99,11 @@ def seed_database(app):
                 display_name="Mrs. Sharma",
                 parent_id=parent.id,
             ),
+            User(email=t1.email, uid="EMP-AI26AND001", password_hash=ph, role="teacher", display_name=t1.name, teacher_id=t1.id),
+            User(email=t2.email, uid="EMP-AI26HRI001", password_hash=ph, role="teacher", display_name=t2.name, teacher_id=t2.id),
+            User(email=t3.email, uid="EMP-CSE26HRI001", password_hash=ph, role="teacher", display_name=t3.name, teacher_id=t3.id),
+            User(email=p1.email, uid="PAR-26SAN001", password_hash=ph, role="parent", display_name=p1.name, parent_id=p1.id),
+            User(email=s1.email, uid="STU-AIM26WIL001", password_hash=ph, role="student", display_name=s1.name, student_id=s1.id),
         ]
     )
 

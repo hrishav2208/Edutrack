@@ -7,6 +7,64 @@ from app.models import db, Student, Teacher, AttendanceRecord, Mark, User, Acade
 
 reports_bp = Blueprint("reports", __name__)
 
+
+# ===================================================================
+#  ADMIN STATS (Global College Metrics)
+# ===================================================================
+
+@reports_bp.route("/admin-stats", methods=["GET"])
+def admin_stats():
+    """Returns global stats for the Admin Dashboard."""
+    u, err = require_login()
+    if err:
+        return err
+    if u.role != "admin":
+        return jsonify({"error": "Forbidden"}), 403
+
+    # Total Students
+    total_students = Student.query.count()
+
+    # Active Teachers
+    active_teachers = Teacher.query.count()
+
+    # Avg Attendance
+    total_sessions = AttendanceRecord.query.count()
+    if total_sessions > 0:
+        present_sessions = AttendanceRecord.query.filter_by(present=True).count()
+        avg_attendance = round((present_sessions / total_sessions) * 100.0, 1)
+    else:
+        avg_attendance = 100.0
+
+    # Defaulters (Students with overall attendance < 75%)
+    # For a large DB we'd do a complex group_by query, but for now we calculate
+    att_data = db.session.query(
+        AttendanceRecord.student_id,
+        func.count(AttendanceRecord.id).label("total"),
+        func.sum(func.cast(AttendanceRecord.present, db.Integer)).label("present")
+    ).group_by(AttendanceRecord.student_id).all()
+
+    defaulters = 0
+    for row in att_data:
+        if row.total > 0:
+            pct = (row.present / row.total) * 100.0
+            if pct < 75.0:
+                defaulters += 1
+
+    # Placement Rate
+    placed_students = Student.query.filter_by(is_placed=True).count()
+    if total_students > 0:
+        placement_rate = round((placed_students / total_students) * 100.0, 1)
+    else:
+        placement_rate = 0.0
+
+    return jsonify({
+        "total_students": total_students,
+        "active_teachers": active_teachers,
+        "avg_attendance": avg_attendance,
+        "defaulters": defaulters,
+        "placement_rate": placement_rate
+    })
+
 @reports_bp.route("/teacher/analytics", methods=["GET"])
 def teacher_analytics():
     u, err = require_login()
@@ -49,25 +107,56 @@ def teacher_analytics():
     total_att_percent = 0.0
     students_with_records = 0
 
+    student_details = []
+
     for s in students:
         stats = student_stats.get(s.id)
         if not stats or stats["total"] == 0:
-            # If no records, default them to 100% or 0% depending on policy.
-            # Here we skip them for the average, but for categorization let's say they haven't attended.
+            student_details.append({
+                "id": s.id,
+                "roll_no": s.roll_no,
+                "name": s.name,
+                "department": s.department,
+                "percent": 0.0,
+                "status": "No Records",
+                "row_class": "neutral",
+                "present": 0,
+                "total": 0
+            })
             continue
             
         percent = (stats["present"] / stats["total"]) * 100.0
         total_att_percent += percent
         students_with_records += 1
         
+        row_class = "good"
+        status_text = "Good"
+        
         if percent >= 90:
             excellent += 1
+            status_text = "Excellent"
         elif percent >= 75:
             good += 1
         elif percent >= 60:
             warning += 1
+            status_text = "Warning"
+            row_class = "warning"
         else:
             defaulter += 1
+            status_text = "Defaulter"
+            row_class = "danger"
+            
+        student_details.append({
+            "id": s.id,
+            "roll_no": s.roll_no,
+            "name": s.name,
+            "department": s.department,
+            "percent": round(percent, 1),
+            "status": status_text,
+            "row_class": row_class,
+            "present": stats["present"],
+            "total": stats["total"]
+        })
 
     overall_attendance_percent = (total_att_percent / students_with_records) if students_with_records > 0 else 0.0
 
@@ -93,7 +182,8 @@ def teacher_analytics():
             "warning": warning,
             "defaulter": defaulter
         },
-        "average_exam_percent": round(average_exam_percent, 1)
+        "average_exam_percent": round(average_exam_percent, 1),
+        "students": student_details
     })
 
 @reports_bp.route("/public-stats", methods=["GET"])
@@ -115,55 +205,6 @@ def public_stats():
         "avg_placement": placement_rate
     })
 
-@reports_bp.route("/admin-stats", methods=["GET"])
-def admin_stats():
-    u, err = require_login()
-    if err: return err
-    if u.role != "admin": return jsonify({"error": "Admin only"}), 403
-
-    total_students = Student.query.count()
-    active_teachers = Teacher.query.count()
-    
-    # Calculate placement rate
-    if total_students > 0:
-        placed = Student.query.filter_by(is_placed=True).count()
-        placement_rate = round((placed / total_students) * 100.0, 1)
-    else:
-        placement_rate = 0.0
-
-    # Calculate overall avg attendance and defaulters
-    # Simple approach: average of all sessions present vs total
-    att_data = db.session.query(
-        func.count(AttendanceRecord.id).label("total"),
-        func.sum(func.cast(AttendanceRecord.present, db.Integer)).label("present")
-    ).first()
-
-    avg_attendance = 0.0
-    if att_data and att_data.total and att_data.total > 0:
-        avg_attendance = round((att_data.present / att_data.total) * 100.0, 1)
-
-    # Count defaulters (students with < 75% attendance overall)
-    # We group by student
-    student_att = db.session.query(
-        AttendanceRecord.student_id,
-        func.count(AttendanceRecord.id).label("total"),
-        func.sum(func.cast(AttendanceRecord.present, db.Integer)).label("present")
-    ).group_by(AttendanceRecord.student_id).all()
-
-    defaulters = 0
-    for row in student_att:
-        if row.total > 0:
-            pct = (row.present / row.total) * 100.0
-            if pct < 75.0:
-                defaulters += 1
-
-    return jsonify({
-        "total_students": total_students,
-        "active_teachers": active_teachers,
-        "avg_attendance": avg_attendance,
-        "defaulters": defaulters,
-        "placement_rate": placement_rate
-    })
 
 @reports_bp.route("/academic-calendar", methods=["GET"])
 def academic_calendar():
