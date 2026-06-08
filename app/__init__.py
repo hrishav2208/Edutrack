@@ -247,6 +247,15 @@ def create_app(config_name=None):
                     if "departments_json" not in columns:
                         db.session.execute(text("ALTER TABLE campus_settings ADD COLUMN departments_json TEXT DEFAULT '[\"CSE\", \"ECE\", \"ME\", \"CE\", \"EEE\"]'"))
                         db.session.commit()
+                # Auto-create messages table columns if needed
+                if "messages" in inspector.get_table_names():
+                    msg_cols = [col["name"] for col in inspector.get_columns("messages")]
+                    if "recipient_dept" not in msg_cols:
+                        db.session.execute(text("ALTER TABLE messages ADD COLUMN recipient_dept VARCHAR(80)"))
+                        db.session.commit()
+                    if "recipient_role" not in msg_cols:
+                        db.session.execute(text("ALTER TABLE messages ADD COLUMN recipient_role VARCHAR(40)"))
+                        db.session.commit()
             except Exception as e:
                 db.session.rollback()
                 print(

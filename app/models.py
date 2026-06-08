@@ -207,3 +207,23 @@ class ExamScheduleItem(db.Model):
     exam_title = db.Column(db.String(120), nullable=False)
     exam_date = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Message(db.Model):
+    """In-app message sent from one user to individual or group recipients."""
+    __tablename__ = "messages"
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # Target: individual user
+    recipient_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    # Target: broadcast by role ('student', 'teacher', 'parent', 'all')
+    recipient_role = db.Column(db.String(40), nullable=True)
+    # Target: broadcast by department
+    recipient_dept = db.Column(db.String(80), nullable=True)
+    subject = db.Column(db.String(200), nullable=False, default="")
+    body = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    sender = db.relationship("User", foreign_keys=[sender_id], backref="sent_messages")
+    recipient = db.relationship("User", foreign_keys=[recipient_id], backref="received_messages")

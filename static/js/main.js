@@ -1143,6 +1143,7 @@
     });
     state.user = null;
     state.role = null;
+    if (typeof window._stopNotifications === 'function') window._stopNotifications();
     refreshIcons();
   }
 
@@ -1191,7 +1192,12 @@
 
     fetchNotifications();
     if (!notifInterval) {
-      notifInterval = setInterval(fetchNotifications, 10000); // poll every 10s
+      notifInterval = setInterval(fetchNotifications, 30000); // poll every 30s (legacy)
+    }
+
+    // Start new notification badge polling
+    if (typeof window._startNotificationsForUser === 'function') {
+      window._startNotificationsForUser(role);
     }
   }
 
@@ -2322,3 +2328,347 @@ window.viewDirectory = function(targetId) {
     }
   }, 150);
 };
+
+// =============================================================================
+// NOTIFICATION & MESSAGING SYSTEM
+// =============================================================================
+
+let _notifPollTimer = null;
+let _notifPanelOpen = false;
+let _recipientsList = [];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function _timeAgo(isoStr) {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function _showToast(msg, isError = false) {
+  const el = document.getElementById('toastNotif');
+  const txt = document.getElementById('toastNotifText');
+  if (!el || !txt) return;
+  txt.textContent = msg;
+  el.style.background = isError ? '#7f1d1d' : '#1a2e40';
+  el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); el.style.display = 'none'; }, 3000);
+}
+
+// ── Badge polling ─────────────────────────────────────────────────────────────
+
+async function _pollUnreadCount() {
+  try {
+    const data = await fetch('/api/notifications/unread-count', { credentials: 'same-origin' })
+      .then(r => r.json()).catch(() => ({ count: 0 }));
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    const count = data.count || 0;
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.classList.remove('hidden');
+      badge.classList.add('has-new');
+    } else {
+      badge.classList.add('hidden');
+      badge.classList.remove('has-new');
+    }
+  } catch (e) { /* silent fail */ }
+}
+
+function startNotifPolling() {
+  _pollUnreadCount();
+  _notifPollTimer = setInterval(_pollUnreadCount, 30000);
+}
+
+function stopNotifPolling() {
+  if (_notifPollTimer) { clearInterval(_notifPollTimer); _notifPollTimer = null; }
+}
+
+// ── Panel open/close ──────────────────────────────────────────────────────────
+
+function initNotificationPanel() {
+  const btn = document.getElementById('notificationBtn');
+  const panel = document.getElementById('notifPanel');
+  if (!btn || !panel) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    _notifPanelOpen = !_notifPanelOpen;
+    panel.classList.toggle('hidden', !_notifPanelOpen);
+    if (_notifPanelOpen) {
+      loadNotifPanelAlerts();
+      // Show compose footer only for admin/teacher
+      const role = window._currentUserRole || '';
+      const footer = document.getElementById('notifComposeFooter');
+      if (footer) footer.style.display = (role === 'admin' || role === 'teacher') ? 'block' : 'none';
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById('notifWrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+      panel.classList.add('hidden');
+      _notifPanelOpen = false;
+    }
+  });
+
+  const markAllBtn = document.getElementById('markAllReadBtn');
+  if (markAllBtn) {
+    markAllBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await fetch('/api/notifications/mark-read', { method: 'POST', credentials: 'same-origin', headers: {'Content-Type':'application/json'}, body: '{}' });
+      _pollUnreadCount();
+      loadNotifPanelAlerts();
+    });
+  }
+
+  document.getElementById('composeForm')?.addEventListener('submit', handleComposeSend);
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+
+window.switchNotifTab = function(tab) {
+  ['notifs', 'inbox', 'sent'].forEach(t => {
+    document.getElementById(`notifTabContent${t.charAt(0).toUpperCase() + t.slice(1)}`)?.classList.toggle('hidden', t !== tab);
+    document.getElementById(`notifTab${t.charAt(0).toUpperCase() + t.slice(1)}`)?.classList.toggle('active', t === tab);
+  });
+  if (tab === 'inbox') loadInbox();
+  if (tab === 'sent') loadSent();
+};
+
+// ── Alerts tab ────────────────────────────────────────────────────────────────
+
+async function loadNotifPanelAlerts() {
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  list.innerHTML = '<div class="notif-empty">Loading...</div>';
+  try {
+    const notifs = await apiJson('/api/notifications/list');
+    if (!notifs.length) {
+      list.innerHTML = '<div class="notif-empty">No notifications yet 🎉</div>';
+      return;
+    }
+    list.innerHTML = notifs.map(n => `
+      <div class="notif-item ${n.is_read ? 'read' : 'unread'}" onclick="markNotifRead(${n.id})" data-id="${n.id}">
+        <div class="notif-item-dot"></div>
+        <div class="notif-item-content">
+          <div class="notif-item-title">${escapeHtml(n.title)}</div>
+          <div class="notif-item-msg">${escapeHtml(n.message)}</div>
+        </div>
+        <div class="notif-item-time">${_timeAgo(n.created_at)}</div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="notif-empty">Failed to load.</div>';
+  }
+}
+
+window.markNotifRead = async function(id) {
+  await fetch('/api/notifications/mark-read', {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  const el = document.querySelector(`.notif-item[data-id="${id}"]`);
+  if (el) { el.classList.remove('unread'); el.classList.add('read'); }
+  _pollUnreadCount();
+};
+
+// ── Inbox tab ─────────────────────────────────────────────────────────────────
+
+async function loadInbox() {
+  const list = document.getElementById('inboxList');
+  if (!list) return;
+  list.innerHTML = '<div class="notif-empty">Loading...</div>';
+  try {
+    const msgs = await apiJson('/api/notifications/messages/inbox');
+    if (!msgs.length) {
+      list.innerHTML = '<div class="notif-empty">No messages in your inbox</div>';
+      return;
+    }
+    list.innerHTML = msgs.map(m => `
+      <div class="msg-item ${m.is_read ? '' : 'unread'}" onclick="openMsgView(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+        <div class="msg-item-header">
+          <span class="msg-item-from">From: ${escapeHtml(m.sender_name)}</span>
+          <span class="msg-item-time">${_timeAgo(m.sent_at)}</span>
+        </div>
+        <div class="msg-item-subject">${escapeHtml(m.subject || '(no subject)')}</div>
+        <div class="msg-item-preview">${escapeHtml(m.body)}</div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="notif-empty">Failed to load inbox.</div>';
+  }
+}
+
+// ── Sent tab ──────────────────────────────────────────────────────────────────
+
+async function loadSent() {
+  const list = document.getElementById('sentList');
+  if (!list) return;
+  list.innerHTML = '<div class="notif-empty">Loading...</div>';
+  try {
+    const msgs = await apiJson('/api/notifications/messages/sent');
+    if (!msgs.length) {
+      list.innerHTML = '<div class="notif-empty">No sent messages</div>';
+      return;
+    }
+    list.innerHTML = msgs.map(m => {
+      let toLabel = '';
+      if (m.recipient_role) toLabel = `All ${m.recipient_role}s`;
+      else if (m.recipient_dept) toLabel = `Dept: ${m.recipient_dept}`;
+      else toLabel = 'Individual';
+      return `
+      <div class="msg-item" onclick="openMsgView(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+        <div class="msg-item-header">
+          <span class="msg-item-from">To: ${escapeHtml(toLabel)}</span>
+          <span class="msg-item-time">${_timeAgo(m.sent_at)}</span>
+        </div>
+        <div class="msg-item-subject">${escapeHtml(m.subject || '(no subject)')}</div>
+        <div class="msg-item-preview">${escapeHtml(m.body)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="notif-empty">Failed to load sent messages.</div>';
+  }
+}
+
+// ── Message view modal ────────────────────────────────────────────────────────
+
+window.openMsgView = function(msg) {
+  if (typeof msg === 'string') msg = JSON.parse(msg);
+  document.getElementById('msgViewSubject').textContent = msg.subject || '(no subject)';
+  document.getElementById('msgViewMeta').textContent = `From: ${msg.sender_name}  ·  ${new Date(msg.sent_at).toLocaleString()}`;
+  document.getElementById('msgViewBody').textContent = msg.body;
+  const modal = document.getElementById('msgViewModal');
+  modal.style.display = 'flex';
+  modal.classList.remove('hidden');
+};
+
+window.closeMsgViewModal = function() {
+  const modal = document.getElementById('msgViewModal');
+  modal.style.display = 'none';
+  modal.classList.add('hidden');
+};
+
+// ── Compose modal ─────────────────────────────────────────────────────────────
+
+window.openComposeModal = async function() {
+  // Close notification panel first
+  document.getElementById('notifPanel')?.classList.add('hidden');
+  _notifPanelOpen = false;
+
+  const modal = document.getElementById('composeModal');
+  modal.style.display = 'flex';
+  modal.classList.remove('hidden');
+  document.getElementById('composeBody').value = '';
+  document.getElementById('composeSubject').value = '';
+  document.getElementById('composeRecipientPreview').textContent = '';
+  document.getElementById('composeTargetType').value = 'user';
+  onComposeTargetTypeChange();
+
+  // Load recipients
+  try {
+    const users = await apiJson('/api/notifications/messages/recipients');
+    _recipientsList = users;
+    const sel = document.getElementById('composeTargetUser');
+    sel.innerHTML = users.length
+      ? users.map(u => `<option value="${u.id}">[${u.role.toUpperCase()}] ${escapeHtml(u.display_name)} (${escapeHtml(u.email || u.uid || '')})</option>`).join('')
+      : '<option value="">No recipients available</option>';
+    onComposeTargetTypeChange();
+  } catch(e) {
+    document.getElementById('composeTargetUser').innerHTML = '<option value="">Error loading users</option>';
+  }
+
+  // Populate dept options from active departments
+  const deptSel = document.getElementById('composeTargetDept');
+  if (deptSel) {
+    try {
+      const deptData = await apiJson('/api/auth/admin/departments');
+      const depts = deptData.departments || ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+      deptSel.innerHTML = depts.map(d => `<option value="${d}">${d}</option>`).join('');
+    } catch(e) { /* use existing options */ }
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+
+window.closeComposeModal = function() {
+  document.getElementById('composeModal').style.display = 'none';
+  document.getElementById('composeModal').classList.add('hidden');
+};
+
+window.onComposeTargetTypeChange = function() {
+  const type = document.getElementById('composeTargetType')?.value;
+  const userSel = document.getElementById('composeTargetUser');
+  const roleSel = document.getElementById('composeTargetRole');
+  const deptSel = document.getElementById('composeTargetDept');
+  if (!userSel || !roleSel || !deptSel) return;
+  userSel.classList.toggle('hidden', type !== 'user');
+  roleSel.classList.toggle('hidden', type !== 'role');
+  deptSel.classList.toggle('hidden', type !== 'dept');
+
+  // Update preview text
+  const preview = document.getElementById('composeRecipientPreview');
+  if (type === 'role') preview.textContent = '→ Will be sent to all users in the selected role group';
+  else if (type === 'dept') preview.textContent = '→ Will be sent to all students & teachers in the selected department';
+  else preview.textContent = '';
+};
+
+async function handleComposeSend(e) {
+  e.preventDefault();
+  const type = document.getElementById('composeTargetType').value;
+  let targetValue = '';
+  if (type === 'user') targetValue = document.getElementById('composeTargetUser').value;
+  else if (type === 'role') targetValue = document.getElementById('composeTargetRole').value;
+  else if (type === 'dept') targetValue = document.getElementById('composeTargetDept').value;
+
+  if (!targetValue) { _showToast('Please select a recipient.', true); return; }
+
+  const subject = document.getElementById('composeSubject').value;
+  const body = document.getElementById('composeBody').value;
+  if (!body.trim()) { _showToast('Message body is required.', true); return; }
+
+  const btn = document.getElementById('composeSendBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const res = await apiJson('/api/notifications/messages/send', {
+      method: 'POST',
+      body: { target_type: type, target_value: targetValue, subject, body }
+    });
+    closeComposeModal();
+    _showToast(`✅ Message sent to ${res.recipients_count} recipient(s)!`);
+    _pollUnreadCount();
+  } catch(err) {
+    _showToast('Failed to send: ' + err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send" style="width:14px;height:14px;"></i> Send Message';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+}
+
+// ── Wire up after login ───────────────────────────────────────────────────────
+// Store role globally so notification panel can access it
+const _origInitForUser = window._initForUser;
+document.addEventListener('DOMContentLoaded', () => {
+  initNotificationPanel();
+});
+
+// Expose to be called from login success
+window._startNotificationsForUser = function(role) {
+  window._currentUserRole = role;
+  startNotifPolling();
+  const footer = document.getElementById('notifComposeFooter');
+  if (footer) footer.style.display = (role === 'admin' || role === 'teacher') ? 'block' : 'none';
+};
+
+window._stopNotifications = function() {
+  stopNotifPolling();
+  window._currentUserRole = null;
+};
+
