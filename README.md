@@ -26,3 +26,26 @@ EduTrack is a comprehensive educational institution management platform designed
 - **Database**: PostgreSQL (psycopg2-binary)
 - **Server**: Gunicorn
 - **Deployment**: Docker, Docker Compose
+
+## Getting Started
+
+### Prerequisites
+- Python 3.10+
+- PostgreSQL
+- Virtual environment tool (`venv` or `virtualenv`)
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/hrishav2208/Edutrack.git
+   cd Edutrack
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
