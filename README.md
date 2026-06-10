@@ -49,3 +49,13 @@ EduTrack is a comprehensive educational institution management platform designed
    ```bash
    pip install -r requirements.txt
    ```
+
+## Configuration
+Configure environment variables by copying `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+Ensure you set the following variables:
+- `DATABASE_URL`: PostgreSQL connection string.
+- `SECRET_KEY`: Secret key for session encryption.
+- `EMAILJS_SERVICE_ID` & `EMAILJS_TEMPLATE_ID`: For notification delivery.
