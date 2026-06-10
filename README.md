@@ -77,3 +77,10 @@ Edutrack/
 ├── wsgi.py               # WSGI application entrypoint
 └── requirements.txt      # Dependency specification
 ```
+
+## Technical Documentation
+Technical documentation can be generated on the fly as a PDF using the generator tool:
+```bash
+python generate_docs_pdf.py
+```
+This outputs `EduTrack_Technical_Documentation.pdf` outlining structural components and architecture guidelines.
