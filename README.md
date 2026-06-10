@@ -59,3 +59,21 @@ Ensure you set the following variables:
 - `DATABASE_URL`: PostgreSQL connection string.
 - `SECRET_KEY`: Secret key for session encryption.
 - `EMAILJS_SERVICE_ID` & `EMAILJS_TEMPLATE_ID`: For notification delivery.
+
+## Folder Structure
+```text
+Edutrack/
+├── app/                  # Application core package
+│   ├── attendance.py     # Attendance module
+│   ├── auth.py           # User authentication & access roles
+│   ├── config.py         # Config loader
+│   ├── directory.py      # Student & branch directory
+│   ├── models.py         # SQLAlchemy DB models
+│   ├── notifications.py  # Messaging & notifications dispatch
+│   └── reports.py        # Grade & system reporting
+├── migrations/           # Database schema migrations
+├── static/               # Client-side static assets (JS, CSS)
+├── templates/            # HTML templates
+├── wsgi.py               # WSGI application entrypoint
+└── requirements.txt      # Dependency specification
+```
