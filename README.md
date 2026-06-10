@@ -11,3 +11,12 @@ EduTrack is a comprehensive educational institution management platform designed
 - [Technical Documentation](#technical-documentation)
 - [Deployment](#deployment)
 - [License](#license)
+
+## Features
+- **Student Directory**: Manage profiles, roles, and branch details.
+- **Attendance Management**: Track attendance records for students and staff.
+- **Marks & Grading**: Log exam details, marks, and student performance.
+- **In-App Messaging & Notifications**: Dynamic messaging and email notifications (using EmailJS/OTP verification).
+- **Financial Tracking**: Invoice management, fees, and payments.
+- **Face Recognition**: Security and auto-attendance options.
+- **PDF Report Generation**: Automated PDF documents for technical guidelines and student details.
