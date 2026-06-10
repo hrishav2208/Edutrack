@@ -99,3 +99,6 @@ Deploy with Docker Compose:
 ```bash
 docker-compose up -d --build
 ```
+
+## License
+Distributed under the MIT License. See `LICENSE` for more information.
