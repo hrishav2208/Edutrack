@@ -84,3 +84,18 @@ Technical documentation can be generated on the fly as a PDF using the generator
 python generate_docs_pdf.py
 ```
 This outputs `EduTrack_Technical_Documentation.pdf` outlining structural components and architecture guidelines.
+
+## Deployment
+
+### Running Locally
+To run the server locally on Windows:
+```cmd
+run.bat
+```
+This starts the development server.
+
+### Docker Deployment
+Deploy with Docker Compose:
+```bash
+docker-compose up -d --build
+```
