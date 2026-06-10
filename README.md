@@ -20,3 +20,9 @@ EduTrack is a comprehensive educational institution management platform designed
 - **Financial Tracking**: Invoice management, fees, and payments.
 - **Face Recognition**: Security and auto-attendance options.
 - **PDF Report Generation**: Automated PDF documents for technical guidelines and student details.
+
+## Tech Stack
+- **Backend**: Python, Flask, SQLAlchemy, Flask-Migrate
+- **Database**: PostgreSQL (psycopg2-binary)
+- **Server**: Gunicorn
+- **Deployment**: Docker, Docker Compose
