@@ -109,7 +109,7 @@ def patch_auth_api():
     # Now add the new admin OTP logs route
     new_route = """
 
-@auth_bp.route('/api/admin/otp-logs', methods=['GET'])
+@auth_bp.route('/admin/otp-logs', methods=['GET'])
 def get_otp_logs():
     # Only allow admins to view OTP logs
     if 'user_id' not in session or session.get('role') != 'admin':

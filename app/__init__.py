@@ -203,6 +203,11 @@ def create_app(config_name=None):
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
     app.register_blueprint(profile_bp, url_prefix="/api/profile")
 
+    @app.route("/api/admin/otp-logs", methods=["GET"])
+    def legacy_otp_logs():
+        from app.auth import get_otp_logs
+        return get_otp_logs()
+
     @app.route("/")
     def index():
         return send_from_directory(BASE_DIR, "index.html")
