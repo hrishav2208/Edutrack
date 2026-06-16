@@ -2603,7 +2603,10 @@ window.openComposeModal = async function() {
       const deptData = await apiJson('/api/auth/admin/departments');
       const depts = deptData.departments || ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
       deptSel.innerHTML = depts.map(d => `<option value="${d}">${d}</option>`).join('');
-    } catch(e) { /* use existing options */ }
+    } catch(e) { 
+        const depts = ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+        deptSel.innerHTML = depts.map(d => `<option value="${d}">${d}</option>`).join('');
+      }
   }
 
   if (typeof lucide !== 'undefined') lucide.createIcons();

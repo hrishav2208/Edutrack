@@ -292,7 +292,7 @@ def get_otp_logs():
 @auth_bp.route("/admin/departments", methods=["GET"])
 def get_departments():
     u = current_user()
-    if not u or u.role != 'admin':
+    if not u:
         return jsonify({"error": "Unauthorized"}), 403
         
     settings = CampusSettings.query.first()
