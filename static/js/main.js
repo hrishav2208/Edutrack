@@ -1275,11 +1275,8 @@
     document.getElementById('sidebarBackdrop')?.addEventListener('click', closeMobileSidebar);
 
     const me = await tryApi();
-    if (me.user) {
-      showDashboard(me.user.role, me.user);
-    } else {
-      showLanding();
-    }
+    // Always start on landing page on every refresh — user must log in again
+    showLanding();
 
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1853,6 +1850,23 @@
       });
     });
 
+    // ── Scroll-Reveal IntersectionObserver ──
+    const revealElements = document.querySelectorAll('.scroll-reveal');
+    if (revealElements.length > 0) {
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+      revealElements.forEach(el => revealObserver.observe(el));
+    }
+
     // Footer link scroll triggers
     document.getElementById('footerEnterPortal')?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -2066,7 +2080,7 @@
                     verifyMsg.style.marginBottom = '1rem';
                     otpVerifyForm.insertBefore(verifyMsg, otpVerifyForm.firstChild);
                 }
-                verifyMsg.textContent = "Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP.";
+                verifyMsg.textContent = res.message || "Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP.";
             }
         } catch(err) {
             const errorDiv = document.createElement('div');

@@ -146,7 +146,7 @@ def request_otp():
 
     if not user:
         # Prevent user enumeration by acting like it sent
-        return jsonify({"ok": True, "simulated": True})
+        return jsonify({"ok": True, "simulated": True, "message": "Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP."})
 
     # Generate 6 digit OTP
     otp = str(random.randint(100000, 999999))
@@ -160,6 +160,7 @@ def request_otp():
     emailjs_public_key = os.environ.get('EMAILJS_PUBLIC_KEY')
     recipient_email = user.email
 
+    email_sent = False
     if emailjs_service_id and emailjs_template_id and emailjs_public_key and recipient_email:
         import urllib.request
         import urllib.error
@@ -181,17 +182,21 @@ def request_otp():
             )
             with urllib.request.urlopen(req, timeout=10) as response:
                 print(f"EmailJS Response: {response.status}")
+                email_sent = True
         except urllib.error.HTTPError as e:
             err_msg = e.read().decode('utf-8')
             print(f"EmailJS HTTP Error: {err_msg}")
-            return jsonify({"error": f"EmailJS API Error: {err_msg}"}), 500
+            print(f"\n\n[WARNING] EmailJS API Error: {err_msg}. Falling back to Admin Outbox. OTP for {identifier} is {otp}\n\n")
         except Exception as e:
             print(f"Failed to send email via EmailJS: {e}")
-            return jsonify({"error": f"Failed to send OTP email: {e}"}), 500
+            print(f"\n\n[WARNING] Failed to send email via EmailJS: {e}. Falling back to Admin Outbox. OTP for {identifier} is {otp}\n\n")
     else:
         print(f"\n\n[WARNING] EmailJS keys missing or user has no email. Falling back to Admin Outbox. OTP for {identifier} is {otp}\n\n")
 
-    return jsonify({"ok": True, "message": "OTP sent securely. Check your email or the Admin System Outbox."})
+    if email_sent:
+        return jsonify({"ok": True, "message": "Success! Please check your email inbox (and spam folder) for your secure 6-digit OTP."})
+    else:
+        return jsonify({"ok": True, "message": "OTP generated. Email service is currently offline. Please retrieve your OTP from the Admin System Outbox."})
 
 @auth_bp.route("/verify-otp-login", methods=["POST"])
 def verify_otp_login():

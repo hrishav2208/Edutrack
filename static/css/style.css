@@ -1135,6 +1135,210 @@ textarea:focus {
     .modal-filters {
         flex-direction: column;
     }
+
+    /* ── Mobile Button Refinements ── */
+    .btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        gap: 6px;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .btn-block {
+        padding: 10px 14px;
+    }
+
+    /* ── Mobile Headings ── */
+    h1 { font-size: 22px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; }
+
+    .page-header h1 {
+        font-size: 22px;
+    }
+
+    /* ── Mobile Container ── */
+    .container {
+        padding: var(--space-2);
+    }
+
+    /* ── Mobile Cards ── */
+    .card {
+        padding: var(--space-2);
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .stat-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .action-card {
+        padding: 14px;
+        gap: 6px;
+    }
+
+    .action-card svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .action-card h3 {
+        font-size: 14px;
+    }
+
+    .action-card p {
+        font-size: 12px;
+    }
+
+    /* ── Mobile Notification Panel ── */
+    .notif-panel {
+        width: calc(100vw - 16px) !important;
+        right: 8px !important;
+        left: 8px !important;
+        max-height: 70vh !important;
+        position: fixed !important;
+        top: 58px !important;
+    }
+
+    .notif-item-msg,
+    .msg-item-preview {
+        white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .notif-item-title,
+    .msg-item-subject {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    .notif-panel-header {
+        padding: 10px 12px 8px;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .notif-tab-btn {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+    }
+
+    /* ── Mobile Modals ── */
+    .modal-backdrop > div,
+    .modal-content {
+        width: calc(100vw - 24px) !important;
+        max-height: 85vh !important;
+    }
+
+    /* Compose & Message View modals */
+    #composeModal > div {
+        width: calc(100vw - 24px) !important;
+        max-height: 85vh !important;
+    }
+
+    #composeModal > div > div:last-child {
+        padding: 1rem !important;
+    }
+
+    #msgViewModal > div {
+        width: calc(100vw - 24px) !important;
+        max-height: 85vh !important;
+    }
+
+    #msgViewModal > div > div:last-child {
+        padding: 1rem !important;
+    }
+
+    /* ── Mobile Landing Page ── */
+    .landing-hero {
+        padding: 48px 16px 32px;
+    }
+
+    .landing-hero h1 {
+        font-size: 28px;
+    }
+
+    .landing-hero p.tagline {
+        font-size: 14px;
+    }
+
+    .landing-cta-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 36px;
+    }
+
+    .btn-landing-primary,
+    .btn-landing-secondary {
+        padding: 12px 22px;
+        font-size: 14px;
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+    }
+
+    .landing-pillars {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 16px 40px;
+    }
+
+    .pillar-card {
+        padding: 20px;
+    }
+
+    .simulator-section {
+        margin: 32px auto 56px;
+        padding: 0 16px;
+    }
+
+    .simulator-title-group h2,
+    .testimonial-title-group h2,
+    .faq-title-group h2 {
+        font-size: 24px;
+    }
+
+    .testimonials-section {
+        margin: 48px auto;
+        padding: 0 16px;
+    }
+
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .faq-section {
+        margin: 40px auto 56px;
+        padding: 0 16px;
+    }
+
+    .stat-banner-item h4 {
+        font-size: 28px;
+    }
+
+    .landing-footer {
+        padding: 40px 16px 24px;
+    }
 }
 
 /* ===================================
@@ -1186,8 +1390,8 @@ textarea:focus {
     bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     right: var(--space-2);
     z-index: 1100;
-    width: 52px;
-    height: 52px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: none;
     background: var(--primary-600);
@@ -1197,11 +1401,16 @@ textarea:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-toggle:active {
+    transform: scale(0.92);
 }
 
 .sidebar-toggle svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
 }
 
 .app-sidebar {
@@ -1217,12 +1426,14 @@ textarea:focus {
         left: 0;
         top: 64px;
         bottom: 0;
-        width: min(280px, 88vw);
+        width: min(260px, 80vw);
         transform: translateX(-100%);
-        transition: transform 0.2s ease;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
     }
     .app-sidebar.open {
         transform: translateX(0);
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.12);
     }
 }
 
@@ -1298,19 +1509,20 @@ textarea:focus {
 .bottom-nav button {
     flex: 1;
     min-width: 0;
-    max-width: 120px;
+    max-width: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 6px 4px;
+    gap: 1px;
+    padding: 5px 3px;
     border: none;
     background: none;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     color: var(--gray-600);
     cursor: pointer;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
+    transition: color 0.15s, background 0.15s;
 }
 
 .bottom-nav button.active {
@@ -1319,8 +1531,8 @@ textarea:focus {
 }
 
 .bottom-nav button svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
 }
 
 .api-banner {
@@ -2740,4 +2952,192 @@ textarea:focus {
 #toastNotif.show {
     display: flex !important;
     animation: toastSlideIn 0.25s ease;
+}
+
+/* ===================================
+   SCROLL-REVEAL ANIMATIONS
+   =================================== */
+@keyframes revealUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes revealScale {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes shimmerGlow {
+    0%, 100% {
+        opacity: 0.5;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes floatOrb {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    33% {
+        transform: translate(15px, -20px) scale(1.05);
+    }
+    66% {
+        transform: translate(-10px, 10px) scale(0.95);
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered delays for grid children */
+.scroll-reveal.delay-1 { transition-delay: 0.1s; }
+.scroll-reveal.delay-2 { transition-delay: 0.2s; }
+.scroll-reveal.delay-3 { transition-delay: 0.3s; }
+.scroll-reveal.delay-4 { transition-delay: 0.4s; }
+
+/* Scale variant for cards */
+.scroll-reveal.reveal-scale {
+    transform: scale(0.92) translateY(20px);
+}
+
+.scroll-reveal.reveal-scale.visible {
+    transform: scale(1) translateY(0);
+}
+
+/* ── Hero Floating Orbs ── */
+.landing-hero {
+    position: relative;
+    overflow: visible;
+}
+
+.hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+    animation: floatOrb 8s ease-in-out infinite;
+}
+
+.hero-orb-1 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(79, 124, 158, 0.2) 0%, transparent 70%);
+    top: -60px;
+    left: -80px;
+    animation-delay: 0s;
+}
+
+.hero-orb-2 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(205, 161, 116, 0.18) 0%, transparent 70%);
+    top: 40px;
+    right: -60px;
+    animation-delay: -3s;
+}
+
+.hero-orb-3 {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(59, 155, 88, 0.12) 0%, transparent 70%);
+    bottom: -40px;
+    left: 30%;
+    animation-delay: -5s;
+}
+
+.landing-hero > *:not(.hero-orb) {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Stats Banner Animation ── */
+.landing-stats-banner {
+    background: linear-gradient(135deg, var(--primary-700) 0%, #3e5a70 50%, var(--primary-600) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 6s ease infinite;
+}
+
+.stat-banner-item h4 {
+    animation: shimmerGlow 3s ease-in-out infinite;
+}
+
+.stat-banner-item:nth-child(2) h4 { animation-delay: 0.5s; }
+.stat-banner-item:nth-child(3) h4 { animation-delay: 1s; }
+.stat-banner-item:nth-child(4) h4 { animation-delay: 1.5s; }
+
+/* ── Pillar card hover glow ── */
+.pillar-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pillar-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -8px rgba(59, 101, 130, 0.12);
+}
+
+/* ── Testimonial card subtle rotation ── */
+.testimonial-card {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px) rotate(-0.5deg);
+    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.08);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    .hero-orb {
+        animation: none;
+    }
+    .stat-banner-item h4 {
+        animation: none;
+    }
+    .landing-stats-banner {
+        animation: none;
+    }
 }
