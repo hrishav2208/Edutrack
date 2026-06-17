@@ -2796,13 +2796,13 @@ window.loadDepartmentsAdmin = async function() {
         let html = '';
         res.stats.forEach(s => {
             html += `
-            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s;" onclick="window.viewDeptDetails('${escapeHtml(s.name)}')">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
                         <h3 style="margin:0; font-size:1.1rem; color:var(--gray-900);">${escapeHtml(s.name)}</h3>
                         <div style="display:flex; gap:6px;">
-                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem;" onclick="window.renameDept('${escapeHtml(s.name)}')"><i data-lucide="edit-2" style="width:12px;height:12px;"></i></button>
-                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem; color:red;" onclick="window.deleteDept('${escapeHtml(s.name)}')"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem;" onclick="event.stopPropagation(); window.renameDept('${escapeHtml(s.name)}')"><i data-lucide="edit-2" style="width:12px;height:12px;"></i></button>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem; color:red;" onclick="event.stopPropagation(); window.deleteDept('${escapeHtml(s.name)}')"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
                         </div>
                     </div>
                     <div style="display:flex; gap:20px; font-size:0.85rem; color:var(--gray-600); margin-bottom:15px;">
@@ -2874,6 +2874,59 @@ window.deleteDept = async function(name) {
     }
 };
 
+window.viewDeptDetails = async function(deptName) {
+    try {
+        const [teachers, students] = await Promise.all([
+            apiJson('/api/directory/teachers'),
+            apiJson('/api/directory/students')
+        ]);
+        
+        const deptTeachers = teachers.filter(t => t.department === deptName);
+        const deptStudents = students.filter(s => s.department === deptName);
+        
+        let html = `
+        <div id="tempDeptModal" class="modal-backdrop" style="display:flex; z-index:99999;">
+            <div class="modal-content" style="max-width:800px; width:90%; max-height:85vh; overflow-y:auto;">
+                <div class="modal-header">
+                    <h2>${escapeHtml(deptName)} Department Details</h2>
+                    <button class="btn btn-secondary" onclick="document.getElementById('tempDeptModal').remove()"><i data-lucide="x"></i></button>
+                </div>
+                <div style="padding:20px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <!-- Teachers -->
+                        <div>
+                            <h3 style="margin-top:0;">Teachers (${deptTeachers.length})</h3>
+                            <ul style="list-style:none; padding:0; margin:0; border:1px solid var(--gray-200); border-radius:8px; overflow:hidden;">
+                                ${deptTeachers.length === 0 ? '<li style="padding:10px; color:var(--gray-500);">No teachers</li>' : 
+                                  deptTeachers.map(t => `<li style="padding:10px; border-bottom:1px solid var(--gray-100); background:var(--gray-50);">
+                                    <div style="font-weight:600;">${escapeHtml(t.name)}</div>
+                                    <div style="font-size:0.8rem; color:var(--gray-600);">${escapeHtml(t.email)}</div>
+                                  </li>`).join('')}
+                            </ul>
+                        </div>
+                        <!-- Students -->
+                        <div>
+                            <h3 style="margin-top:0;">Students (${deptStudents.length})</h3>
+                            <ul style="list-style:none; padding:0; margin:0; border:1px solid var(--gray-200); border-radius:8px; overflow:hidden;">
+                                ${deptStudents.length === 0 ? '<li style="padding:10px; color:var(--gray-500);">No students</li>' : 
+                                  deptStudents.map(s => `<li style="padding:10px; border-bottom:1px solid var(--gray-100); background:var(--gray-50);">
+                                    <div style="font-weight:600;">${escapeHtml(s.name)} <span style="font-weight:normal; color:var(--primary-600); font-size:0.8rem;">(${escapeHtml(s.roll_no)})</span></div>
+                                    <div style="font-size:0.8rem; color:var(--gray-600);">${escapeHtml(s.email)}</div>
+                                  </li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
+        document.body.insertAdjacentHTML('beforeend', html);
+        refreshIcons();
+    } catch(e) {
+        alert("Error loading department details: " + e.message);
+    }
+};
+
 window.loadDeptTransferDropdowns = async function() {
     const res = await apiJson('/api/auth/admin/departments');
     const depts = res.departments || [];
@@ -2900,7 +2953,7 @@ window.loadDeptTransferUsers = async function() {
     sel.innerHTML = '<option value="">Loading...</option>';
     try {
         const res = await apiJson(`/api/directory/${type}s`);
-        const users = type === 'student' ? res.students : res.teachers;
+        const users = res;
         if (!users || !users.length) {
             sel.innerHTML = '<option value="">No users found</option>';
             return;
