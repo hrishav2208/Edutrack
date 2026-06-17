@@ -2885,14 +2885,14 @@ window.viewDeptDetails = async function(deptName) {
         const deptStudents = students.filter(s => s.department === deptName);
         
         let html = `
-        <div id="tempDeptModal" class="modal-backdrop" style="display:flex; z-index:99999;">
-            <div class="modal-content" style="max-width:800px; width:90%; max-height:85vh; overflow-y:auto;">
-                <div class="modal-header">
-                    <h2>${escapeHtml(deptName)} Department Details</h2>
-                    <button class="btn btn-secondary" onclick="document.getElementById('tempDeptModal').remove()"><i data-lucide="x"></i></button>
+        <div id="tempDeptModal" class="modal-backdrop" style="display:flex; position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+            <div class="modal-content" style="background:white; border-radius:12px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="modal-header" style="padding:16px 20px; border-bottom:1px solid var(--gray-200); display:flex; justify-content:space-between; align-items:center; background:var(--gray-50);">
+                    <h2 style="margin:0; font-size:1.25rem;">${escapeHtml(deptName)} Department Details</h2>
+                    <button class="btn btn-secondary" style="padding:6px; border:none; background:transparent;" onclick="document.getElementById('tempDeptModal').remove()"><i data-lucide="x"></i></button>
                 </div>
-                <div style="padding:20px;">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div style="padding:20px; overflow-y:auto; flex:1;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
                         <!-- Teachers -->
                         <div>
                             <h3 style="margin-top:0;">Teachers (${deptTeachers.length})</h3>
