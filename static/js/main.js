@@ -2381,8 +2381,6 @@ document.getElementById('editProfileForm')?.addEventListener('submit', async (e)
   }
 });
 
-})();
-
 window.viewDirectory = function(targetId) {
   const allSections = document.querySelectorAll('.app-section');
   allSections.forEach(el => {
@@ -2779,6 +2777,8 @@ window._stopNotifications = function() {
 // ============================================================
 //  LOGIN SCREEN – PARTICLE NETWORK CANVAS ANIMATION
 // ============================================================
+})();
+
 (function initLoginParticles() {
   const canvas = document.getElementById('loginParticleCanvas');
   if (!canvas) return;
