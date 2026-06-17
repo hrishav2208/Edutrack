@@ -2415,10 +2415,16 @@ function initNotificationPanel() {
     panel.classList.toggle('hidden', !_notifPanelOpen);
     if (_notifPanelOpen) {
       loadNotifPanelAlerts();
-      // Show compose footer only for admin/teacher
       const role = window._currentUserRole || '';
-      const footer = document.getElementById('notifComposeFooter');
-      if (footer) footer.style.display = (role === 'admin' || role === 'teacher') ? 'block' : 'none';
+      const wrapper = document.getElementById('inboxComposeWrapper');
+      if (wrapper) {
+        wrapper.style.display = (role === 'admin' || role === 'teacher') ? 'flex' : 'none';
+        if ((role === 'admin' || role === 'teacher') && (!window._recipientsList || !window._recipientsList.length)) {
+          if (typeof window.loadComposeRecipients === 'function') {
+             window.loadComposeRecipients();
+          }
+        }
+      }
     }
   });
 
@@ -2513,7 +2519,7 @@ async function loadInbox() {
         <div class="msg-item-preview">${escapeHtml(m.body)}</div>
       </div>`).join('');
   } catch(e) {
-    list.innerHTML = '<div class="notif-empty">Failed to load inbox.</div>';
+    list.innerHTML = `<div class="notif-empty">Failed to load inbox: ${escapeHtml(e.message)}</div>`;
   }
 }
 
@@ -2569,24 +2575,16 @@ window.closeMsgViewModal = function() {
 
 // ── Compose modal ─────────────────────────────────────────────────────────────
 
-window.openComposeModal = async function() {
-  // Close notification panel first
-  document.getElementById('notifPanel')?.classList.add('hidden');
-  _notifPanelOpen = false;
-
-  const modal = document.getElementById('composeModal');
-  modal.style.display = 'flex';
-  modal.classList.remove('hidden');
+window.loadComposeRecipients = async function() {
   document.getElementById('composeBody').value = '';
   document.getElementById('composeSubject').value = '';
   document.getElementById('composeRecipientPreview').textContent = '';
   document.getElementById('composeTargetType').value = 'user';
   onComposeTargetTypeChange();
 
-  // Load recipients
   try {
     const users = await apiJson('/api/notifications/messages/recipients');
-    _recipientsList = users;
+    window._recipientsList = users;
     const sel = document.getElementById('composeTargetUser');
     sel.innerHTML = users.length
       ? users.map(u => `<option value="${u.id}">[${u.role.toUpperCase()}] ${escapeHtml(u.display_name)} (${escapeHtml(u.email || u.uid || '')})</option>`).join('')
@@ -2596,7 +2594,6 @@ window.openComposeModal = async function() {
     document.getElementById('composeTargetUser').innerHTML = '<option value="">Error loading users</option>';
   }
 
-  // Populate dept options from active departments
   const deptSel = document.getElementById('composeTargetDept');
   if (deptSel) {
     try {
@@ -2606,15 +2603,27 @@ window.openComposeModal = async function() {
     } catch(e) { 
         const depts = ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
         deptSel.innerHTML = depts.map(d => `<option value="${d}">${d}</option>`).join('');
-      }
+    }
   }
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-window.closeComposeModal = function() {
-  document.getElementById('composeModal').style.display = 'none';
-  document.getElementById('composeModal').classList.add('hidden');
+window.openComposeModal = function(preselectUserId) {
+  const notifBtn = document.getElementById('notificationBtn');
+  if (!_notifPanelOpen) {
+    notifBtn?.click();
+  }
+  switchNotifTab('inbox');
+  
+  if (preselectUserId) {
+    setTimeout(() => {
+      const sel = document.getElementById('composeTargetUser');
+      if (sel) sel.value = preselectUserId;
+      document.getElementById('composeTargetType').value = 'user';
+      onComposeTargetTypeChange();
+    }, 500);
+  }
 };
 
 window.onComposeTargetTypeChange = function() {

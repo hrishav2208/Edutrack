@@ -343,10 +343,50 @@
                                 <div class="notif-empty">Loading notifications...</div>
                             </div>
                         </div>
-                        <!-- Inbox Tab -->
+                        <!-- Inbox Tab (Split View) -->
                         <div id="notifTabContentInbox" class="notif-tab-content hidden">
-                            <div id="inboxList" class="notif-list">
-                                <div class="notif-empty">Loading inbox...</div>
+                            <div class="inbox-split">
+                                <div class="inbox-list-col">
+                                    <div id="inboxList" class="notif-list">
+                                        <div class="notif-empty">Loading inbox...</div>
+                                    </div>
+                                </div>
+                                <div class="inbox-compose-col" id="inboxComposeWrapper" style="display:none;">
+                                    <h4 style="margin:0 0 10px 0; font-size:1rem; color:var(--gray-700);"><i data-lucide="send" style="width:16px;height:16px;vertical-align:middle;"></i> Compose</h4>
+                                    <form id="composeForm">
+                                        <div style="margin-bottom:0.75rem;">
+                                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                                <select id="composeTargetType" class="select" style="width:110px; padding:0.4rem; font-size:0.85rem;" onchange="onComposeTargetTypeChange()">
+                                                    <option value="user">Individual</option>
+                                                    <option value="role">Role Group</option>
+                                                    <option value="dept">Department</option>
+                                                </select>
+                                                <select id="composeTargetUser" class="select" style="flex:1; min-width:140px; padding:0.4rem; font-size:0.85rem;">
+                                                    <option value="">Loading users...</option>
+                                                </select>
+                                                <select id="composeTargetRole" class="select hidden" style="flex:1; min-width:140px; padding:0.4rem; font-size:0.85rem;">
+                                                    <option value="student">Students</option>
+                                                    <option value="teacher">Teachers</option>
+                                                    <option value="parent">Parents</option>
+                                                    <option value="all">Everyone</option>
+                                                </select>
+                                                <select id="composeTargetDept" class="select hidden" style="flex:1; min-width:140px; padding:0.4rem; font-size:0.85rem;">
+                                                    <option value="">Select dept...</option>
+                                                </select>
+                                            </div>
+                                            <div id="composeRecipientPreview" style="font-size:0.75rem; color:#4a6b8a; min-height:16px; margin-top:4px;"></div>
+                                        </div>
+                                        <div style="margin-bottom:0.75rem;">
+                                            <input type="text" id="composeSubject" placeholder="Subject (optional)" style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:6px; font-size:0.85rem;">
+                                        </div>
+                                        <div style="margin-bottom:0.75rem;">
+                                            <textarea id="composeBody" placeholder="Message body..." required rows="4" style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:6px; font-size:0.85rem; resize:vertical; font-family:inherit;"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="composeSendBtn" style="width:100%; font-size:0.85rem; padding:0.5rem;">
+                                            <i data-lucide="send" style="width:14px;height:14px;"></i> Send Message
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         <!-- Sent Tab -->
@@ -354,12 +394,6 @@
                             <div id="sentList" class="notif-list">
                                 <div class="notif-empty">Loading sent messages...</div>
                             </div>
-                        </div>
-                        <!-- Compose Button at bottom -->
-                        <div class="notif-panel-footer" id="notifComposeFooter" style="display:none;">
-                            <button class="btn btn-primary" style="width:100%;font-size:0.85rem;padding:0.5rem;" onclick="openComposeModal()">
-                                <i data-lucide="pencil" style="width:14px;height:14px;"></i> Compose Message
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -375,6 +409,56 @@
 
     <!-- Login Screen -->
     <div id="loginScreen" class="login-screen">
+        <!-- Particle Canvas (JS-driven) -->
+        <canvas id="loginParticleCanvas"></canvas>
+
+        <!-- CSS Particle Dots -->
+        <div class="login-particle" style="width:4px;height:4px;top:20%;left:15%;animation-duration:3.2s;animation-delay:0s;"></div>
+        <div class="login-particle" style="width:6px;height:6px;top:35%;left:72%;animation-duration:4.1s;animation-delay:0.8s;"></div>
+        <div class="login-particle" style="width:3px;height:3px;top:78%;left:40%;animation-duration:2.8s;animation-delay:1.4s;"></div>
+        <div class="login-particle" style="width:5px;height:5px;top:55%;left:85%;animation-duration:3.9s;animation-delay:0.3s;"></div>
+        <div class="login-particle" style="width:4px;height:4px;top:10%;left:60%;animation-duration:5s;animation-delay:2s;"></div>
+        <div class="login-particle" style="width:7px;height:7px;top:90%;left:25%;animation-duration:4.5s;animation-delay:1.1s;"></div>
+
+        <!-- Flying Side Icons (LEFT side) -->
+        <div class="login-float-icon lfi-left" style="width:64px;height:64px;top:18%;left:3%;animation-duration:9s;animation-delay:0s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="login-float-icon lfi-left" style="width:50px;height:50px;top:55%;left:5%;animation-duration:12s;animation-delay:3s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="login-float-icon lfi-left" style="width:44px;height:44px;top:80%;left:1%;animation-duration:8s;animation-delay:5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+
+        <!-- Flying Side Icons (RIGHT side) -->
+        <div class="login-float-icon lfi-right" style="width:70px;height:70px;top:22%;right:3%;animation-duration:10s;animation-delay:1.5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div class="login-float-icon lfi-right" style="width:52px;height:52px;top:62%;right:4%;animation-duration:11s;animation-delay:4s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="login-float-icon lfi-right" style="width:42px;height:42px;top:42%;right:2%;animation-duration:7s;animation-delay:2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+
+        <!-- Rising Bubble Icons (bottom, floating up) -->
+        <div class="login-float-icon lfi-rise" style="width:56px;height:56px;left:8%;animation-duration:14s;animation-delay:0s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:48px;height:48px;left:25%;animation-duration:17s;animation-delay:2.5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:60px;height:60px;left:60%;animation-duration:13s;animation-delay:5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:40px;height:40px;left:80%;animation-duration:19s;animation-delay:7s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:46px;height:46px;left:45%;animation-duration:15s;animation-delay:9s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+
         <div class="login-card">
             <div class="login-header">
                 <i data-lucide="graduation-cap" class="login-icon"></i>
@@ -1708,58 +1792,7 @@
         </div>
     </div>
 
-    <!-- Compose Message Modal -->
-    <div id="composeModal" class="modal-backdrop hidden" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card,#fff); border-radius:14px; max-width:560px; width:92%; max-height:88vh; display:flex; flex-direction:column; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
-            <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border,#e2e8f0); display:flex; justify-content:space-between; align-items:center; background: linear-gradient(135deg,#4a6b8a,#2d4d6b); border-radius:14px 14px 0 0;">
-                <h3 style="margin:0; font-size:1.1rem; color:#fff; display:flex; align-items:center; gap:8px;">
-                    <i data-lucide="send" style="width:18px;height:18px;"></i> Compose Message
-                </h3>
-                <button type="button" onclick="closeComposeModal()" style="background:rgba(255,255,255,0.2); border:none; color:#fff; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center;">&times;</button>
-            </div>
-            <div style="padding:1.5rem; overflow-y:auto; flex:1;">
-                <form id="composeForm">
-                    <div style="margin-bottom:1rem;">
-                        <label style="font-weight:600; font-size:0.85rem; color:#666; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;">Send To</label>
-                        <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
-                            <select id="composeTargetType" class="select" style="width:140px; padding:0.5rem; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;" onchange="onComposeTargetTypeChange()">
-                                <option value="user">Individual</option>
-                                <option value="role">Role Group</option>
-                                <option value="dept">Department</option>
-                            </select>
-                            <select id="composeTargetUser" class="select" style="flex:1; min-width:180px; padding:0.5rem; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
-                                <option value="">Loading users...</option>
-                            </select>
-                            <select id="composeTargetRole" class="select hidden" style="flex:1; min-width:180px; padding:0.5rem; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
-                                <option value="student">All Students</option>
-                                <option value="teacher">All Teachers</option>
-                                <option value="parent">All Parents</option>
-                                <option value="all">Everyone</option>
-                            </select>
-                            <select id="composeTargetDept" class="select hidden" style="flex:1; min-width:180px; padding:0.5rem; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
-                                <option value="">Select department...</option>
-                            </select>
-                        </div>
-                        <div id="composeRecipientPreview" style="font-size:0.8rem; color:#4a6b8a; min-height:18px;"></div>
-                    </div>
-                    <div style="margin-bottom:1rem;">
-                        <label style="font-weight:600; font-size:0.85rem; color:#666; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;">Subject <span style="font-weight:400; text-transform:none; font-size:0.8rem;">(optional)</span></label>
-                        <input type="text" id="composeSubject" placeholder="Enter subject..." style="width:100%; padding:0.6rem 0.8rem; border:1px solid #ddd; border-radius:8px; font-size:0.9rem; box-sizing:border-box;">
-                    </div>
-                    <div style="margin-bottom:1.25rem;">
-                        <label style="font-weight:600; font-size:0.85rem; color:#666; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;">Message</label>
-                        <textarea id="composeBody" placeholder="Type your message here..." required rows="5" style="width:100%; padding:0.6rem 0.8rem; border:1px solid #ddd; border-radius:8px; font-size:0.9rem; resize:vertical; font-family:inherit; box-sizing:border-box;"></textarea>
-                    </div>
-                    <div style="display:flex; justify-content:flex-end; gap:10px;">
-                        <button type="button" class="btn btn-secondary" onclick="closeComposeModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary" id="composeSendBtn">
-                            <i data-lucide="send" style="width:14px;height:14px;"></i> Send Message
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Message View Modal -->
     <div id="msgViewModal" class="modal-backdrop hidden" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1200; align-items:center; justify-content:center;">
