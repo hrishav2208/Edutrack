@@ -2740,7 +2740,8 @@ async function handleComposeSend(e) {
       method: 'POST',
       body: { target_type: type, target_value: targetValue, subject, body }
     });
-    closeComposeModal();
+    document.getElementById('composeSubject').value = '';
+    document.getElementById('composeBody').value = '';
     _showToast(`✅ Message sent to ${res.recipients_count} recipient(s)!`);
     _pollUnreadCount();
   } catch(err) {
