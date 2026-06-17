@@ -1114,6 +1114,9 @@
   }
 
   function showLanding() {
+    if (!window.history.state || window.history.state.screen !== 'landing') {
+      window.history.replaceState({ screen: 'landing' }, '', window.location.pathname);
+    }
     if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
     document.body.classList.add('auth-login');
     document.getElementById('landingScreen')?.classList.remove('hidden');
@@ -1131,6 +1134,9 @@
   }
 
   function showLogin() {
+    if (!window.history.state || window.history.state.screen !== 'login') {
+      window.history.pushState({ screen: 'login' }, '', '#login');
+    }
     if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
     document.body.classList.add('auth-login');
     document.getElementById('landingScreen')?.classList.add('hidden');
@@ -1275,8 +1281,18 @@
     document.getElementById('sidebarBackdrop')?.addEventListener('click', closeMobileSidebar);
 
     const me = await tryApi();
-    // Always start on landing page on every refresh — user must log in again
+    // Always start on landing page on every refresh - user must log in again
     showLanding();
+
+    window.addEventListener('popstate', (e) => {
+      if (e.state && e.state.screen === 'login') {
+        showLogin();
+      } else if (!e.state || e.state.screen === 'landing') {
+        showLanding();
+      } else {
+        showLanding();
+      }
+    });
 
     document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
