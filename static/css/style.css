@@ -418,23 +418,6 @@ body.auth-login .navbar {
                pulse-glow 4s ease-in-out infinite 1s;
 }
 
-/* shimmer top bar on the card */
-.login-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        var(--primary-500) 30%,
-        #7ec8e3 50%,
-        var(--primary-500) 70%,
-        transparent 100%);
-    background-size: 200% 100%;
-    animation: shimmer 2.5s linear infinite;
-}
-
 .login-header {
     text-align: center;
     margin-bottom: var(--space-4);
@@ -446,7 +429,6 @@ body.auth-login .navbar {
     height: 56px;
     color: var(--primary-600);
     margin-bottom: var(--space-2);
-    animation: iconBobble 3s ease-in-out infinite;
     filter: drop-shadow(0 4px 8px rgba(59,101,130,0.3));
 }
 
