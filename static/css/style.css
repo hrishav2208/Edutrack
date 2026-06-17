@@ -174,7 +174,10 @@ body.auth-login .navbar {
 .nav-right {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
+    flex-shrink: 0;
+    min-width: 0;
+    overflow: visible;
 }
 
 .nav-icon-btn {
@@ -213,7 +216,8 @@ body.auth-login .navbar {
 .user-menu {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .user-avatar {
@@ -230,9 +234,13 @@ body.auth-login .navbar {
 }
 
 .user-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--gray-700);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
 }
 
 /* ===================================
@@ -1281,7 +1289,30 @@ textarea:focus {
     .nav-subtitle {
         display: none;
     }
-    
+
+    .nav-container {
+        padding: 0 12px;
+        overflow: visible;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .nav-right {
+        gap: 4px;
+    }
+
+    .user-menu {
+        gap: 4px;
+    }
+
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
@@ -2986,6 +3017,8 @@ textarea:focus {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .notif-list {
@@ -3078,18 +3111,61 @@ textarea:focus {
     display: flex;
     flex-direction: row;
     height: 100%;
-    gap: 10px;
+    min-height: 0;
+    flex: 1;
+    gap: 0;
 }
 .inbox-list-col {
     flex: 1;
     overflow-y: auto;
     border-right: 1px solid var(--gray-200);
-    padding-right: 8px;
+    min-width: 0;
 }
 .inbox-compose-col {
-    flex: 1.2;
+    flex: 1.15;
     overflow-y: auto;
-    padding-left: 8px;
+    padding: 12px 14px;
+    background: var(--primary-50);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.inbox-compose-col h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-700);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--primary-200);
+}
+.inbox-compose-col input,
+.inbox-compose-col select,
+.inbox-compose-col textarea {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    background: white;
+    color: var(--gray-800);
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+.inbox-compose-col input:focus,
+.inbox-compose-col select:focus,
+.inbox-compose-col textarea:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
+}
+.inbox-compose-col textarea {
+    resize: vertical;
+    min-height: 80px;
 }
 
 @media (max-width: 768px) {
@@ -3099,13 +3175,11 @@ textarea:focus {
     .inbox-list-col {
         border-right: none;
         border-bottom: 1px solid var(--gray-200);
-        padding-right: 0;
-        padding-bottom: 10px;
-        min-height: 180px;
+        min-height: 140px;
+        max-height: 200px;
     }
     .inbox-compose-col {
-        padding-left: 0;
-        padding-top: 10px;
+        padding: 10px 12px;
     }
 }
 

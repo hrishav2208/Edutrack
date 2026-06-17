@@ -352,38 +352,38 @@
                                     </div>
                                 </div>
                                 <div class="inbox-compose-col" id="inboxComposeWrapper" style="display:none;">
-                                    <h4 style="margin:0 0 10px 0; font-size:1rem; color:var(--gray-700);"><i data-lucide="send" style="width:16px;height:16px;vertical-align:middle;"></i> Compose</h4>
+                                    <h4><i data-lucide="send" style="width:15px;height:15px;"></i> Compose</h4>
                                     <form id="composeForm">
-                                        <div style="margin-bottom:0.75rem;">
-                                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                                <select id="composeTargetType" class="select" style="width:110px; padding:0.4rem; font-size:0.85rem;" onchange="onComposeTargetTypeChange()">
+                                        <div style="margin-bottom:0.6rem;">
+                                            <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:4px;">
+                                                <select id="composeTargetType" onchange="onComposeTargetTypeChange()">
                                                     <option value="user">Individual</option>
                                                     <option value="role">Role Group</option>
                                                     <option value="dept">Department</option>
                                                 </select>
-                                                <select id="composeTargetUser" class="select" style="flex:1; min-width:140px; padding:0.4rem; font-size:0.85rem;">
+                                                <select id="composeTargetUser" style="flex:1; min-width:120px;">
                                                     <option value="">Loading users...</option>
                                                 </select>
-                                                <select id="composeTargetRole" class="select hidden" style="flex:1; min-width:140px; padding:0.4rem; font-size:0.85rem;">
+                                                <select id="composeTargetRole" class="hidden" style="flex:1; min-width:120px;">
                                                     <option value="student">Students</option>
                                                     <option value="teacher">Teachers</option>
                                                     <option value="parent">Parents</option>
                                                     <option value="all">Everyone</option>
                                                 </select>
-                                                <select id="composeTargetDept" class="select hidden" style="flex:1; min-width:140px; padding:0.4rem; font-size:0.85rem;">
+                                                <select id="composeTargetDept" class="hidden" style="flex:1; min-width:120px;">
                                                     <option value="">Select dept...</option>
                                                 </select>
                                             </div>
-                                            <div id="composeRecipientPreview" style="font-size:0.75rem; color:#4a6b8a; min-height:16px; margin-top:4px;"></div>
+                                            <div id="composeRecipientPreview" style="font-size:0.75rem; color:var(--primary-600); min-height:14px;"></div>
                                         </div>
-                                        <div style="margin-bottom:0.75rem;">
-                                            <input type="text" id="composeSubject" placeholder="Subject (optional)" style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:6px; font-size:0.85rem;">
+                                        <div style="margin-bottom:0.6rem;">
+                                            <input type="text" id="composeSubject" placeholder="Subject (optional)">
                                         </div>
-                                        <div style="margin-bottom:0.75rem;">
-                                            <textarea id="composeBody" placeholder="Message body..." required rows="4" style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:6px; font-size:0.85rem; resize:vertical; font-family:inherit;"></textarea>
+                                        <div style="margin-bottom:0.6rem;">
+                                            <textarea id="composeBody" placeholder="Message body..." required rows="4"></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-primary" id="composeSendBtn" style="width:100%; font-size:0.85rem; padding:0.5rem;">
-                                            <i data-lucide="send" style="width:14px;height:14px;"></i> Send Message
+                                        <button type="submit" class="btn btn-primary" id="composeSendBtn" style="width:100%; font-size:0.83rem; padding:0.45rem;">
+                                            <i data-lucide="send" style="width:13px;height:13px;"></i> Send Message
                                         </button>
                                     </form>
                                 </div>

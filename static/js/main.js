@@ -2472,7 +2472,18 @@ window.switchNotifTab = function(tab) {
     document.getElementById(`notifTabContent${t.charAt(0).toUpperCase() + t.slice(1)}`)?.classList.toggle('hidden', t !== tab);
     document.getElementById(`notifTab${t.charAt(0).toUpperCase() + t.slice(1)}`)?.classList.toggle('active', t === tab);
   });
-  if (tab === 'inbox') loadInbox();
+  if (tab === 'inbox') {
+    loadInbox();
+    // Show compose pane only for admin/teacher
+    const role = window._currentUserRole || '';
+    const wrapper = document.getElementById('inboxComposeWrapper');
+    if (wrapper) {
+      wrapper.style.display = (role === 'admin' || role === 'teacher') ? 'flex' : 'none';
+      if ((role === 'admin' || role === 'teacher') && (!window._recipientsList || !window._recipientsList.length)) {
+        if (typeof window.loadComposeRecipients === 'function') window.loadComposeRecipients();
+      }
+    }
+  }
   if (tab === 'sent') loadSent();
 };
 
@@ -2705,8 +2716,11 @@ document.addEventListener('DOMContentLoaded', () => {
 window._startNotificationsForUser = function(role) {
   window._currentUserRole = role;
   startNotifPolling();
-  const footer = document.getElementById('notifComposeFooter');
-  if (footer) footer.style.display = (role === 'admin' || role === 'teacher') ? 'block' : 'none';
+  // Show/hide compose pane in inbox based on role
+  const wrapper = document.getElementById('inboxComposeWrapper');
+  if (wrapper) {
+    wrapper.style.display = (role === 'admin' || role === 'teacher') ? 'flex' : 'none';
+  }
 };
 
 window._stopNotifications = function() {
