@@ -316,9 +316,23 @@
     navigate(role, items[0].id);
   }
 
-  function navigate(role, sectionId) {
+  function navigate(role, sectionId, pushHistory = true) {
     if (sessionPollInterval) { clearInterval(sessionPollInterval); sessionPollInterval = null; }
     showSection(role, sectionId);
+
+    // Determine the home section for this role
+    const homeSection = (NAV[role] || NAV.student)[0].id;
+    const isHome = sectionId === homeSection;
+
+    // Push or replace history state
+    if (pushHistory) {
+      if (isHome) {
+        window.history.replaceState({ screen: 'section', role, sectionId }, '', '#' + sectionId);
+      } else {
+        window.history.pushState({ screen: 'section', role, sectionId }, '', '#' + sectionId);
+      }
+    }
+
     if (sectionId === 'admin-view-people') loadDirectoryAdmin();
     if (sectionId === 'admin-view-fees') loadFeesAdmin();
     if (sectionId === 'admin-view-salary') loadSalaryAdmin();
@@ -1161,6 +1175,10 @@
     state.role = role;
     state.user = user;
 
+    // Push dashboard state so back button can return to login
+    const homeSection = (NAV[role] || NAV.student)[0].id;
+    window.history.pushState({ screen: 'section', role, sectionId: homeSection }, '', '#' + homeSection);
+
     ['adminDashboard', 'teacherDashboard', 'studentDashboard', 'parentDashboard'].forEach((id) => {
       document.getElementById(id)?.classList.add('hidden');
     });
@@ -1285,9 +1303,38 @@
     showLanding();
 
     window.addEventListener('popstate', (e) => {
-      if (e.state && e.state.screen === 'login') {
+      const s = e.state;
+      if (!s) {
+        // No state — went all the way back, show landing
+        showLanding();
+        return;
+      }
+
+      if (s.screen === 'section' && s.role && s.sectionId) {
+        // Navigating between sections — restore the section without pushing new history
+        const homeSection = (NAV[s.role] || NAV.student)[0].id;
+        const isHome = s.sectionId === homeSection;
+
+        // Make sure the right dashboard is visible
+        if (!state.user) {
+          // User logged out meanwhile — go to landing
+          showLanding();
+          return;
+        }
+        document.getElementById('landingScreen')?.classList.add('hidden');
+        document.getElementById('loginScreen')?.classList.add('hidden');
+        document.getElementById('mainDashboard')?.classList.remove('hidden');
+        ['adminDashboard','teacherDashboard','studentDashboard','parentDashboard'].forEach(id => {
+          document.getElementById(id)?.classList.add('hidden');
+        });
+        document.getElementById(DASH_MAP[s.role])?.classList.remove('hidden');
+
+        // Navigate to that section without re-pushing history
+        navigate(s.role, s.sectionId, false);
+
+      } else if (s.screen === 'login') {
         showLogin();
-      } else if (!e.state || e.state.screen === 'landing') {
+      } else if (s.screen === 'landing') {
         showLanding();
       } else {
         showLanding();
