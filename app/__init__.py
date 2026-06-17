@@ -192,6 +192,7 @@ def create_app(config_name=None):
     from app.curriculum import curriculum_bp
     from app.reports import reports_bp
     from app.profile import profile_bp
+    from app.departments import departments_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(attendance_bp, url_prefix="/api/attendance")
@@ -202,6 +203,7 @@ def create_app(config_name=None):
     app.register_blueprint(curriculum_bp, url_prefix="/api/curriculum")
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
     app.register_blueprint(profile_bp, url_prefix="/api/profile")
+    app.register_blueprint(departments_bp, url_prefix="/api/departments")
 
     @app.route("/api/admin/otp-logs", methods=["GET"])
     def legacy_otp_logs():

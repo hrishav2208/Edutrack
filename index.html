@@ -370,8 +370,8 @@
                                                     <option value="parent">Parents</option>
                                                     <option value="all">Everyone</option>
                                                 </select>
-                                                <select id="composeTargetDept" class="hidden" style="flex:1; min-width:120px;">
-                                                    <option value="">Select dept...</option>
+                                                <select id="composeTargetDept" class="hidden dept-dynamic-dropdown" style="flex:1; min-width:120px;">
+                                                    <option value="dept">Department</option>
                                                 </select>
                                             </div>
                                             <div id="composeRecipientPreview" style="font-size:0.75rem; color:var(--primary-600); min-height:14px;"></div>
@@ -714,7 +714,7 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Department</label>
-                                        <select id="addTeacherDept" class="select">
+                                        <select id="addTeacherDept" class="select dept-dynamic-dropdown">
                                             <option value="">Loading departments...</option>
                                         </select>
                                     </div>
@@ -756,7 +756,7 @@
                                     <div class="form-group"><label>Email <span class="small">(optional)</span></label><input type="email" id="addStudentEmail" placeholder="auto-generated if blank"></div>
                                     <div class="form-group">
                                         <label>Department</label>
-                                        <select id="addStudentDept" class="select">
+                                        <select id="addStudentDept" class="select dept-dynamic-dropdown">
                                             <option value="">Loading departments...</option>
                                         </select>
                                     </div>
@@ -875,6 +875,51 @@
                         </div>
                         <button type="button" class="btn btn-primary" id="btnSaveCampus">Save campus boundary</button>
                         <p class="small" style="margin-top:12px">Tip: open maps, copy your college coordinates, paste here. Same project folder works on any PC — only this database file stores your values.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="admin-view-departments" class="app-section hidden">
+                <div class="container">
+                    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h1>Manage Departments</h1>
+                            <p>Overview of departments, staff, student capacity, and fee fulfillment.</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="window.openAddDeptModal()">
+                            <i data-lucide="plus"></i> Add Dept
+                        </button>
+                    </div>
+
+                    <!-- Transfer Hub Card -->
+                    <div class="card" style="margin-bottom:20px; background:var(--primary-50); border:1px solid var(--primary-200);">
+                        <div class="card-header"><i data-lucide="arrow-right-left"></i> Quick Transfer User</div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end;">
+                            <div style="flex:1; min-width:150px;">
+                                <label style="font-size:0.8rem;font-weight:600;margin-bottom:4px;display:block;">User Role</label>
+                                <select id="deptTransferRole" class="select" onchange="window.loadDeptTransferUsers()">
+                                    <option value="student">Student</option>
+                                    <option value="teacher">Teacher</option>
+                                </select>
+                            </div>
+                            <div style="flex:2; min-width:200px;">
+                                <label style="font-size:0.8rem;font-weight:600;margin-bottom:4px;display:block;">Select User</label>
+                                <select id="deptTransferUser" class="select">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div style="flex:1; min-width:150px;">
+                                <label style="font-size:0.8rem;font-weight:600;margin-bottom:4px;display:block;">New Dept</label>
+                                <select id="deptTransferTarget" class="select dept-dynamic-dropdown">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="window.submitDeptTransfer()">Transfer</button>
+                        </div>
+                    </div>
+
+                    <!-- Department Stats Grid -->
+                    <div class="stats-grid" id="deptStatsGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                        <div>Loading departments...</div>
                     </div>
                 </div>
             </div>
@@ -1549,12 +1594,8 @@
             </div>
             
             <div class="modal-filters">
-                <select id="departmentFilter" class="select">
+                <select id="departmentFilter" class="select dept-dynamic-dropdown">
                     <option value="all">All Departments</option>
-                    <option value="cse">Computer Science</option>
-                    <option value="ece">Electronics</option>
-                    <option value="me">Mechanical</option>
-                    <option value="ce">Civil</option>
                 </select>
                 <select id="severityFilter" class="select">
                     <option value="all">All Severity</option>
@@ -1755,7 +1796,7 @@
                     <div class="form-row" id="editFormGroupDeptSalary" style="display:none; gap:1rem; margin-bottom:1rem; display:flex;">
                         <div class="form-group" style="flex:1;">
                             <label>Department</label>
-                            <select id="editProfileDept" class="select" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;"></select>
+                            <select id="editProfileDept" class="select dept-dynamic-dropdown" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;"></select>
                         </div>
                         <div class="form-group" id="editFormGroupSalary" style="flex:1;">
                             <label>Monthly Salary (₹)</label>

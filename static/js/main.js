@@ -14,6 +14,7 @@
       { id: 'admin-view-fees', label: 'Fees', icon: 'wallet' },
       { id: 'admin-view-salary', label: 'Salaries', icon: 'banknote' },
       { id: 'admin-view-campus', label: 'Campus GPS', icon: 'map-pin' },
+      { id: 'admin-view-departments', label: 'Manage Dept', icon: 'building' },
       { id: 'admin-view-otp', label: 'OTP Outbox', icon: 'inbox' },
     ],
     teacher: [
@@ -337,6 +338,7 @@
     if (sectionId === 'admin-view-fees') loadFeesAdmin();
     if (sectionId === 'admin-view-salary') loadSalaryAdmin();
     if (sectionId === 'admin-view-campus') loadCampusAdmin();
+    if (sectionId === 'admin-view-departments') loadDepartmentsAdmin();
     if (sectionId === 'teacher-view-home') loadTeacherDashboard();
     if (sectionId === 'teacher-view-attendance') {
       const d = document.getElementById('manualAttDate');
@@ -1186,7 +1188,8 @@
     if (panel) panel.classList.remove('hidden');
     
     if (role === 'admin') {
-        apiJson('/api/reports/admin-stats').then(stats => {
+      window.loadDeptTransferDropdowns();
+      apiJson('/api/reports/admin-stats').then(stats => {
             const e1 = document.getElementById('adminStatTotalStudents');
             if (e1) e1.textContent = stats.total_students;
             const e2 = document.getElementById('adminStatActiveTeachers');
@@ -2775,7 +2778,170 @@ window._stopNotifications = function() {
 };
 
 // ============================================================
-//  LOGIN SCREEN – PARTICLE NETWORK CANVAS ANIMATION
+//  DEPARTMENT MANAGEMENT (ADMIN)
+// ============================================================
+
+window.loadDepartmentsAdmin = async function() {
+    const grid = document.getElementById('deptStatsGrid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="spinner">Loading...</div>';
+
+    try {
+        const res = await apiJson('/api/departments/stats');
+        if (!res.stats || res.stats.length === 0) {
+            grid.innerHTML = '<p>No departments found.</p>';
+            return;
+        }
+
+        let html = '';
+        res.stats.forEach(s => {
+            html += `
+            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <h3 style="margin:0; font-size:1.1rem; color:var(--gray-900);">${escapeHtml(s.name)}</h3>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem;" onclick="window.renameDept('${escapeHtml(s.name)}')"><i data-lucide="edit-2" style="width:12px;height:12px;"></i></button>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem; color:red;" onclick="window.deleteDept('${escapeHtml(s.name)}')"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:20px; font-size:0.85rem; color:var(--gray-600); margin-bottom:15px;">
+                        <div><i data-lucide="users" style="width:14px;height:14px;"></i> ${s.students} Students</div>
+                        <div><i data-lucide="graduation-cap" style="width:14px;height:14px;"></i> ${s.teachers} Teachers</div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; margin-bottom:6px; color:var(--gray-700);">
+                        <span>Fee Fulfillment</span>
+                        <span style="color:${s.fee_pct >= 80 ? 'var(--success-600)' : 'var(--primary-600)'}">${s.fee_pct}%</span>
+                    </div>
+                    <div style="width:100%; background:var(--gray-200); height:6px; border-radius:3px; overflow:hidden;">
+                        <div style="width:${s.fee_pct}%; background:${s.fee_pct >= 80 ? 'var(--success-500)' : 'var(--primary-500)'}; height:100%; border-radius:3px;"></div>
+                    </div>
+                </div>
+            </div>`;
+        });
+        grid.innerHTML = html;
+        refreshIcons();
+        window.loadDeptTransferDropdowns();
+    } catch (e) {
+        grid.innerHTML = '<p class="error-text">Failed to load department stats.</p>';
+    }
+};
+
+window.openAddDeptModal = async function() {
+    const newName = prompt("Enter new department name:");
+    if (!newName) return;
+    
+    try {
+        // Fetch current to append
+        const res = await apiJson('/api/auth/admin/departments');
+        let list = res.departments || [];
+        if (list.includes(newName)) {
+            alert("Department already exists.");
+            return;
+        }
+        list.push(newName);
+        await apiJson('/api/auth/admin/departments', { method: 'POST', body: { departments: list } });
+        _showToast(`Added department: ${newName}`);
+        loadDepartmentsAdmin();
+    } catch(e) {
+        alert("Error adding department: " + e.message);
+    }
+};
+
+window.renameDept = async function(oldName) {
+    const newName = prompt(`Rename '${oldName}' to:`, oldName);
+    if (!newName || newName === oldName) return;
+    
+    try {
+        await apiJson('/api/departments/rename', { method: 'POST', body: { old_name: oldName, new_name: newName } });
+        _showToast(`Renamed ${oldName} to ${newName}`);
+        loadDepartmentsAdmin();
+    } catch(e) {
+        alert("Error renaming department: " + e.message);
+    }
+};
+
+window.deleteDept = async function(name) {
+    if (!confirm(`Are you sure you want to delete '${name}'?`)) return;
+    try {
+        await apiJson('/api/departments/delete', { method: 'POST', body: { name } });
+        _showToast(`Deleted department: ${name}`);
+        loadDepartmentsAdmin();
+    } catch(e) {
+        alert(e.message);
+    }
+};
+
+window.loadDeptTransferDropdowns = async function() {
+    const res = await apiJson('/api/auth/admin/departments');
+    const depts = res.departments || [];
+    const targetSel = document.getElementById('deptTransferTarget');
+    if (targetSel) {
+        targetSel.innerHTML = '<option value="">Select Dept...</option>' + depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+    }
+    
+    // Also update dynamic dropdowns globally
+    document.querySelectorAll('.dept-dynamic-dropdown').forEach(sel => {
+        const val = sel.value;
+        sel.innerHTML = '<option value="">Select Dept...</option>' + depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+        sel.value = val; // Try to retain previous selection
+    });
+    
+    window.loadDeptTransferUsers();
+};
+
+window.loadDeptTransferUsers = async function() {
+    const type = document.getElementById('deptTransferRole')?.value || 'student';
+    const sel = document.getElementById('deptTransferUser');
+    if (!sel) return;
+    
+    sel.innerHTML = '<option value="">Loading...</option>';
+    try {
+        const res = await apiJson(`/api/directory/${type}s`);
+        const users = type === 'student' ? res.students : res.teachers;
+        if (!users || !users.length) {
+            sel.innerHTML = '<option value="">No users found</option>';
+            return;
+        }
+        
+        sel.innerHTML = '<option value="">Select user...</option>' + users.map(u => 
+            `<option value="${u.id}">${escapeHtml(u.name)} (${type==='student'?u.roll_no:u.department})</option>`
+        ).join('');
+    } catch(e) {
+        sel.innerHTML = '<option value="">Failed to load</option>';
+    }
+};
+
+window.submitDeptTransfer = async function() {
+    const type = document.getElementById('deptTransferRole').value;
+    const user_id = document.getElementById('deptTransferUser').value;
+    const new_dept = document.getElementById('deptTransferTarget').value;
+    
+    if (!user_id || !new_dept) {
+        alert("Please select a user and a target department.");
+        return;
+    }
+    
+    try {
+        const btn = document.querySelector('button[onclick="window.submitDeptTransfer()"]');
+        if (btn) btn.disabled = true;
+        
+        const res = await apiJson('/api/departments/transfer', {
+            method: 'POST',
+            body: { type, id: parseInt(user_id), new_dept }
+        });
+        
+        _showToast(res.message);
+        loadDepartmentsAdmin();
+    } catch(e) {
+        alert(e.message);
+    } finally {
+        const btn = document.querySelector('button[onclick="window.submitDeptTransfer()"]');
+        if (btn) btn.disabled = false;
+    }
+};
 // ============================================================
 })();
 
