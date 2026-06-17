@@ -2689,3 +2689,103 @@ window._stopNotifications = function() {
   window._currentUserRole = null;
 };
 
+// ============================================================
+//  LOGIN SCREEN – PARTICLE NETWORK CANVAS ANIMATION
+// ============================================================
+(function initLoginParticles() {
+  const canvas = document.getElementById('loginParticleCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let W, H, particles, animId;
+  const NUM_PARTICLES = 70;
+  const MAX_DIST = 140;    // max px distance to draw a connecting line
+  const SPEED  = 0.45;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function mkParticle() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * SPEED * 2,
+      vy: (Math.random() - 0.5) * SPEED * 2,
+      r:  Math.random() * 2 + 1.2,
+      a:  Math.random() * 0.5 + 0.25,
+    };
+  }
+
+  function init() {
+    resize();
+    particles = Array.from({ length: NUM_PARTICLES }, mkParticle);
+  }
+
+  function draw() {
+    // Stop if the login screen is no longer visible
+    const screen = document.getElementById('loginScreen');
+    if (screen && screen.classList.contains('hidden')) {
+      cancelAnimationFrame(animId);
+      return;
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Update & draw dots
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      // Bounce off edges
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(160, 210, 255, ${p.a})`;
+      ctx.fill();
+    }
+
+    // Draw connecting lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i];
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          const alpha = (1 - dist / MAX_DIST) * 0.3;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(120, 190, 240, ${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    // Re-distribute particles proportionally when window resizes
+    if (particles) {
+      for (const p of particles) {
+        p.x = Math.random() * W;
+        p.y = Math.random() * H;
+      }
+    }
+  });
+
+  // Start on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { init(); draw(); });
+  } else {
+    init();
+    draw();
+  }
+})();

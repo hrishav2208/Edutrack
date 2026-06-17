@@ -35,6 +35,71 @@
 
     <!-- Login Screen -->
     <div id="loginScreen" class="login-screen">
+
+        <!-- Particle Canvas (JS-driven) -->
+        <canvas id="loginParticleCanvas"></canvas>
+
+        <!-- Glowing Ring Pulses -->
+        <div class="login-ring" style="width:160px;height:160px;top:12%;left:8%;animation-delay:0s;animation-duration:5s;"></div>
+        <div class="login-ring" style="width:100px;height:100px;top:65%;right:10%;animation-delay:1.5s;animation-duration:4s;"></div>
+        <div class="login-ring" style="width:200px;height:200px;bottom:15%;left:20%;animation-delay:3s;animation-duration:6s;"></div>
+
+        <!-- CSS Particle Dots -->
+        <div class="login-particle" style="width:4px;height:4px;top:20%;left:15%;animation-duration:3.2s;animation-delay:0s;"></div>
+        <div class="login-particle" style="width:6px;height:6px;top:35%;left:72%;animation-duration:4.1s;animation-delay:0.8s;"></div>
+        <div class="login-particle" style="width:3px;height:3px;top:78%;left:40%;animation-duration:2.8s;animation-delay:1.4s;"></div>
+        <div class="login-particle" style="width:5px;height:5px;top:55%;left:85%;animation-duration:3.9s;animation-delay:0.3s;"></div>
+        <div class="login-particle" style="width:4px;height:4px;top:10%;left:60%;animation-duration:5s;animation-delay:2s;"></div>
+        <div class="login-particle" style="width:7px;height:7px;top:90%;left:25%;animation-duration:4.5s;animation-delay:1.1s;"></div>
+
+        <!-- Flying Side Icons (LEFT side) -->
+        <div class="login-float-icon lfi-left" style="width:64px;height:64px;top:18%;left:3%;animation-duration:9s;animation-delay:0s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="login-float-icon lfi-left" style="width:50px;height:50px;top:55%;left:5%;animation-duration:12s;animation-delay:3s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="login-float-icon lfi-left" style="width:44px;height:44px;top:80%;left:1%;animation-duration:8s;animation-delay:5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+
+        <!-- Flying Side Icons (RIGHT side) -->
+        <div class="login-float-icon lfi-right" style="width:70px;height:70px;top:22%;right:3%;animation-duration:10s;animation-delay:1.5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div class="login-float-icon lfi-right" style="width:52px;height:52px;top:62%;right:4%;animation-duration:11s;animation-delay:4s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="login-float-icon lfi-right" style="width:42px;height:42px;top:42%;right:2%;animation-duration:7s;animation-delay:2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+
+        <!-- Rising Bubble Icons (bottom, floating up) -->
+        <div class="login-float-icon lfi-rise" style="width:56px;height:56px;left:8%;animation-duration:14s;animation-delay:0s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:48px;height:48px;left:25%;animation-duration:17s;animation-delay:2.5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:60px;height:60px;left:60%;animation-duration:13s;animation-delay:5s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:40px;height:40px;left:80%;animation-duration:19s;animation-delay:7s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="login-float-icon lfi-rise" style="width:46px;height:46px;left:45%;animation-duration:15s;animation-delay:9s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+
+        <!-- Anchored bobbling icons (decorative corners) -->
+        <div class="login-float-icon lfi-bob" style="width:80px;height:80px;top:5%;left:2%;animation-duration:4s;opacity:0.4;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="login-float-icon lfi-bob" style="width:68px;height:68px;bottom:5%;right:3%;animation-duration:5s;animation-delay:1s;opacity:0.35;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+
+
         <div class="login-card">
             <div class="login-header">
                 <i data-lucide="graduation-cap" class="login-icon"></i>
