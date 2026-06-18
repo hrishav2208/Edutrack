@@ -3045,6 +3045,8 @@ window.submitDeptTransfer = async function() {
 
     ctx.clearRect(0, 0, W, H);
 
+    // Update & draw dots
+    for (const p of particles) {
       p.x += p.vx;
       p.y += p.vy;
       // Bounce off edges
@@ -3093,6 +3095,7 @@ window.submitDeptTransfer = async function() {
 
   // Start on DOM ready
   if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { init(); draw(); });
   } else {
     init();
     draw();
