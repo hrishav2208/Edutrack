@@ -658,6 +658,53 @@
 
             <!-- Admin Dashboard -->
             <div id="adminDashboard" class="hidden">
+                <div id="admin-view-timetable" class="app-section hidden">
+                    <div class="container">
+                        <div class="page-header">
+                            <h1>Timetable Management</h1>
+                            <p>Set permanent or temporary class schedules</p>
+                        </div>
+                        <div class="stack-cards">
+                            <div class="card">
+                                <h3 class="card-title">Add Timetable Entry</h3>
+                                <form id="adminAddTimetableForm">
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Course Code</label><input type="text" id="ttCourseCode" required placeholder="e.g. CS101"></div>
+                                        <div class="form-group"><label>Department</label>
+                                            <select id="ttDepartment" class="select dept-dynamic-dropdown" required><option value="">Loading...</option></select>
+                                        </div>
+                                        <div class="form-group"><label>Teacher</label><select id="ttTeacher" class="select" required><option value="">Loading...</option></select></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Day of Week</label>
+                                            <select id="ttDayOfWeek" class="select" required>
+                                                <option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group"><label>Start Time</label><input type="time" id="ttStartTime" required></div>
+                                        <div class="form-group"><label>End Time</label><input type="time" id="ttEndTime" required></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><label>Room Name</label><input type="text" id="ttRoomName" placeholder="e.g. Room 101"></div>
+                                        <div class="form-group" style="display:flex; align-items:center; gap: 10px; padding-top: 25px;">
+                                            <input type="checkbox" id="ttIsTemporary" style="width: auto;"> <label for="ttIsTemporary" style="margin:0;">Temporary Change?</label>
+                                        </div>
+                                        <div class="form-group"><label>Temp Date</label><input type="date" id="ttTempDate"></div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Save Entry</button>
+                                </form>
+                            </div>
+                            <div class="card">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead><tr><th>Day/Date</th><th>Time</th><th>Course</th><th>Dept</th><th>Teacher</th><th>Room</th><th>Actions</th></tr></thead>
+                                        <tbody id="adminTimetableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="admin-view-home" class="app-section">
                     <div class="container">
                         <div class="page-header">
@@ -1188,6 +1235,22 @@
 
             <!-- Teacher Dashboard -->
             <div id="teacherDashboard" class="hidden">
+                <div id="teacher-view-timetable" class="app-section hidden">
+                    <div class="container">
+                        <div class="page-header">
+                            <h1>My Timetable</h1>
+                            <p>Your class schedule for the week</p>
+                        </div>
+                        <div class="card">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>Day/Date</th><th>Time</th><th>Course</th><th>Dept</th><th>Room</th><th>Type</th></tr></thead>
+                                    <tbody id="teacherTimetableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="teacher-view-home" class="app-section">
                     <div class="container">
                         <div class="page-header">
@@ -1539,6 +1602,22 @@
 
             <!-- Student Dashboard -->
             <div id="studentDashboard" class="hidden">
+                <div id="student-view-timetable" class="app-section hidden">
+                    <div class="container">
+                        <div class="page-header">
+                            <h1>Daily Timetable</h1>
+                            <p>View your classes and attendance status</p>
+                        </div>
+                        <div class="card" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px;">
+                            <button class="btn btn-secondary" onclick="changeTimetableDate(-1)" style="display:flex;align-items:center;gap:4px;"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>
+                            <h3 style="margin: 0;" id="studentTimetableDateDisplay">Today</h3>
+                            <button class="btn btn-secondary" onclick="changeTimetableDate(1)" style="display:flex;align-items:center;gap:4px;">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>
+                        </div>
+                        <div class="stack-cards" id="studentTimetableContainer">
+                            <div class="card"><p style="text-align:center; color:var(--gray-500);">Loading timetable...</p></div>
+                        </div>
+                    </div>
+                </div>
                 <div id="student-view-home" class="app-section">
                     <div class="container">
                         <div class="page-header">
