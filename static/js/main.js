@@ -3045,8 +3045,6 @@ window.submitDeptTransfer = async function() {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Update & draw dots
-    for (const p of particles) {
       p.x += p.vx;
       p.y += p.vy;
       // Bounce off edges
@@ -3111,179 +3109,304 @@ window.submitDeptTransfer = async function() {
     loadTimetableStudent();
   };
 
+  // ── Student Timetable ────────────────────────────────────────────────
   async function loadTimetableStudent() {
     if (state.role !== 'student') return;
     const container = document.getElementById('studentTimetableContainer');
-    const display = document.getElementById('studentTimetableDateDisplay');
+    const display   = document.getElementById('studentTimetableDateDisplay');
     if (!container || !display) return;
 
-    const today = new Date();
+    const today   = new Date();
     const isToday = currentTimetableDate.toDateString() === today.toDateString();
-    
-    let dateStr = currentTimetableDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    let dateStr   = currentTimetableDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
     if (isToday) dateStr = 'Today, ' + dateStr;
     display.textContent = dateStr;
 
-    container.innerHTML = '<div class="card"><p style="text-align:center; color:var(--gray-500);">Loading timetable...</p></div>';
+    container.innerHTML = '<div class="card"><p style="text-align:center;color:var(--gray-500);">Loading timetable...</p></div>';
 
-    if (!state.apiOnline) return;
-
-    const yyyy = currentTimetableDate.getFullYear();
-    const mm = String(currentTimetableDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(currentTimetableDate.getDate()).padStart(2, '0');
-    const isoDate = `${yyyy}-${mm}-${dd}`;
-    
+    const yyyy      = currentTimetableDate.getFullYear();
+    const mm        = String(currentTimetableDate.getMonth() + 1).padStart(2, '0');
+    const dd        = String(currentTimetableDate.getDate()).padStart(2, '0');
+    const isoDate   = `${yyyy}-${mm}-${dd}`;
     const dayOfWeek = currentTimetableDate.toLocaleDateString('en-US', { weekday: 'long' });
 
     try {
+      // Pass date so backend can check attendance; only filter by day
       const res = await apiJson(`/api/timetable/?date=${isoDate}&day=${dayOfWeek}`);
-      const tt = res.timetable || [];
-      
+      const tt  = res.timetable || [];
+
       if (tt.length === 0) {
-        container.innerHTML = '<div class="card"><p style="text-align:center; color:var(--gray-500);">No classes scheduled for this day.</p></div>';
+        container.innerHTML = '<div class="card"><p style="text-align:center;color:var(--gray-500);">No classes scheduled for this day.</p></div>';
         return;
       }
 
       container.innerHTML = tt.map(item => {
         let attHtml = '';
+        // Only show Attended badge if server confirms attendance record exists with present=true
         if (item.attendance_status === 'Attended') {
-            attHtml = `<span class="badge badge-success" style="font-size:0.85rem; padding: 4px 8px;"><i data-lucide="check-circle" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> Attended</span>`;
+          attHtml = `<span class="badge badge-success" style="font-size:0.85rem;padding:4px 10px;"><i data-lucide="check-circle" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:3px;"></i>Attended</span>`;
         } else if (item.attendance_status === 'Absent') {
-            attHtml = `<span class="badge badge-danger" style="font-size:0.85rem; padding: 4px 8px;"><i data-lucide="x-circle" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> Absent</span>`;
+          attHtml = `<span class="badge badge-danger" style="font-size:0.85rem;padding:4px 10px;"><i data-lucide="x-circle" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:3px;"></i>Absent</span>`;
         } else {
-            attHtml = `<span class="badge badge-warning" style="font-size:0.85rem; padding: 4px 8px;">Pending</span>`;
+          // 'Pending' or no attendance_status key at all — do NOT auto-mark
+          attHtml = `<span class="badge badge-warning" style="font-size:0.85rem;padding:4px 10px;"><i data-lucide="clock" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:3px;"></i>Pending</span>`;
         }
-        
+
         return `
-        <div class="card" style="border-left: 4px solid var(--primary-500); display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h4 style="margin:0 0 5px 0; color:var(--primary-700);">${escapeHtml(item.course_code)} <span style="font-size:0.85rem; color:var(--gray-500); font-weight:normal;">— ${escapeHtml(item.teacher_name)}</span></h4>
-                <p style="margin:0; font-size:0.9rem; color:var(--gray-600);">
-                    <i data-lucide="clock" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> ${item.start_time} - ${item.end_time} &nbsp;|&nbsp;
-                    <i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> ${escapeHtml(item.room_name || 'TBA')}
-                </p>
-                ${item.is_temporary ? `<p style="margin:5px 0 0 0; font-size:0.8rem; color:var(--warning);"><i data-lucide="alert-circle" style="width:12px;height:12px;vertical-align:text-bottom;"></i> Temporary Schedule Change</p>` : ''}
-            </div>
-            <div>
-                ${attHtml}
-            </div>
+        <div class="card" style="border-left:4px solid var(--primary-500);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div>
+            <h4 style="margin:0 0 4px 0;color:var(--primary-700);">${escapeHtml(item.course_code)}</h4>
+            <p style="margin:0 0 3px 0;font-size:0.9rem;color:var(--gray-600);">
+              <i data-lucide="user" style="width:13px;height:13px;vertical-align:text-bottom;margin-right:2px;"></i>
+              <strong>${escapeHtml(item.teacher_name || 'TBA')}</strong>
+            </p>
+            <p style="margin:0;font-size:0.85rem;color:var(--gray-500);">
+              <i data-lucide="clock" style="width:13px;height:13px;vertical-align:text-bottom;margin-right:2px;"></i>${item.start_time} - ${item.end_time}
+              &nbsp;|&nbsp;
+              <i data-lucide="map-pin" style="width:13px;height:13px;vertical-align:text-bottom;margin-right:2px;"></i>${escapeHtml(item.room_name || 'TBA')}
+            </p>
+            ${item.is_temporary ? `<p style="margin:4px 0 0;font-size:0.78rem;color:var(--warning);"><i data-lucide="alert-triangle" style="width:12px;height:12px;vertical-align:text-bottom;"></i> Temporary Schedule Change</p>` : ''}
+          </div>
+          <div>${attHtml}</div>
         </div>`;
       }).join('');
       refreshIcons();
     } catch (e) {
-      container.innerHTML = `<div class="card"><p style="text-align:center; color:var(--danger);">${e.message}</p></div>`;
+      container.innerHTML = `<div class="card"><p style="text-align:center;color:var(--danger);">${escapeHtml(e.message)}</p></div>`;
     }
   }
 
+  // ── Teacher Timetable ────────────────────────────────────────────────
   async function loadTimetableTeacher() {
     if (state.role !== 'teacher') return;
     const tb = document.getElementById('teacherTimetableBody');
     if (!tb) return;
-    
-    showTableSkeleton('teacherTimetableBody', 6, 3);
-    if (!state.apiOnline) return;
+
+    showTableSkeleton('teacherTimetableBody', 7, 3);
+
+    try {
+      populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    } catch (e) { /* ignore */ }
 
     try {
       const res = await apiJson('/api/timetable/');
-      const tt = res.timetable || [];
+      const tt  = res.timetable || [];
       if (tt.length === 0) {
-        tb.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--gray-500);">No timetable entries found.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray-500);">No timetable entries found. Add one above!</td></tr>';
         return;
       }
-      
       tb.innerHTML = tt.map(item => `
         <tr>
-            <td>${item.temporary_date ? escapeHtml(item.temporary_date) : escapeHtml(item.day_of_week)}</td>
-            <td>${item.start_time} - ${item.end_time}</td>
-            <td><strong>${escapeHtml(item.course_code)}</strong></td>
-            <td>${escapeHtml(item.department)}</td>
-            <td>${escapeHtml(item.room_name || 'TBA')}</td>
-            <td>${item.is_temporary ? '<span class="badge badge-warning">Temporary</span>' : '<span class="badge badge-secondary">Permanent</span>'}</td>
+          <td>${item.temporary_date ? escapeHtml(item.temporary_date) + ' <span class="badge badge-warning" style="font-size:0.7rem;">Temp</span>' : escapeHtml(item.day_of_week)}</td>
+          <td>${item.start_time} - ${item.end_time}</td>
+          <td><strong>${escapeHtml(item.course_code)}</strong></td>
+          <td>${escapeHtml(item.department)}</td>
+          <td>${escapeHtml(item.room_name || 'TBA')}</td>
+          <td>${item.is_temporary ? '<span class="badge badge-warning">Temporary</span>' : '<span class="badge badge-secondary">Permanent</span>'}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-sm btn-secondary" style="margin-right:4px;" onclick="openEditTimetableModal(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+              <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTimetableEntry(${item.id})">
+              <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+            </button>
+          </td>
         </tr>
       `).join('');
+      refreshIcons();
     } catch (e) {
-      tb.innerHTML = `<tr><td colspan="6" style="color:var(--danger);">${e.message}</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="7" style="color:var(--danger);">${escapeHtml(e.message)}</td></tr>`;
     }
   }
 
+  // ── Admin Timetable ──────────────────────────────────────────────────
   async function loadTimetableAdmin() {
     if (state.role !== 'admin') return;
     const tb = document.getElementById('adminTimetableBody');
     if (!tb) return;
 
-    showTableSkeleton('adminTimetableBody', 7, 4);
-    
+    showTableSkeleton('adminTimetableBody', 8, 4);
+
     try {
-        const teachers = await apiJson('/api/directory/teachers');
-        const teacherSelect = document.getElementById('ttTeacher');
-        if (teacherSelect) {
-            teacherSelect.innerHTML = '<option value="">Select Teacher</option>' + teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
-        }
-        populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
-    } catch (e) { console.error('Failed to load form dropdowns', e); }
+      const teachers = await apiJson('/api/directory/teachers');
+      const sel = document.getElementById('ttTeacher');
+      if (sel) sel.innerHTML = '<option value="">Select Teacher</option>' + teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+      populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    } catch (e) { console.error('Failed to load dropdowns', e); }
 
     try {
       const res = await apiJson('/api/timetable/');
-      const tt = res.timetable || [];
-      
+      const tt  = res.timetable || [];
       if (tt.length === 0) {
-        tb.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--gray-500);">No timetable entries found.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);">No timetable entries. Add one above!</td></tr>';
         return;
       }
-
       tb.innerHTML = tt.map(item => `
         <tr>
-            <td>${item.temporary_date ? escapeHtml(item.temporary_date) + " (Temp)" : escapeHtml(item.day_of_week)}</td>
-            <td>${item.start_time} - ${item.end_time}</td>
-            <td>${escapeHtml(item.course_code)}</td>
-            <td>${escapeHtml(item.department)}</td>
-            <td>${escapeHtml(item.teacher_name)}</td>
-            <td>${escapeHtml(item.room_name || 'TBA')}</td>
-            <td>
-                <button class="btn btn-sm btn-danger" onclick="deleteTimetableEntry(${item.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
-            </td>
+          <td>${item.temporary_date ? escapeHtml(item.temporary_date) + ' <span class="badge badge-warning" style="font-size:0.7rem;">Temp</span>' : escapeHtml(item.day_of_week)}</td>
+          <td>${item.start_time} - ${item.end_time}</td>
+          <td>${escapeHtml(item.course_code)}</td>
+          <td>${escapeHtml(item.department)}</td>
+          <td>${escapeHtml(item.teacher_name)}</td>
+          <td>${escapeHtml(item.room_name || 'TBA')}</td>
+          <td>${item.is_temporary ? '<span class="badge badge-warning">Temporary</span>' : '<span class="badge badge-secondary">Permanent</span>'}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-sm btn-secondary" style="margin-right:4px;" onclick="openEditTimetableModal(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+              <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTimetableEntry(${item.id})">
+              <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+            </button>
+          </td>
         </tr>
       `).join('');
       refreshIcons();
     } catch (e) {
-      tb.innerHTML = `<tr><td colspan="7" style="color:var(--danger);">${e.message}</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="8" style="color:var(--danger);">${escapeHtml(e.message)}</td></tr>`;
     }
   }
 
-  window.deleteTimetableEntry = async function(id) {
-      if(!confirm("Are you sure you want to delete this timetable entry?")) return;
-      try {
-          const res = await apiJson(`/api/timetable/${id}`, { method: 'DELETE' });
-          if (res.ok || res.message) {
-              loadTimetableAdmin();
+  // ── Edit Modal ───────────────────────────────────────────────────────
+  window.openEditTimetableModal = function(item) {
+    let modal = document.getElementById('ttEditModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'ttEditModal';
+      modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);';
+      modal.innerHTML = `
+        <div class="card" style="width:100%;max-width:520px;padding:28px;position:relative;">
+          <button onclick="document.getElementById('ttEditModal').remove()" style="position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--gray-500);">&times;</button>
+          <h3 class="card-title" style="margin-bottom:18px;">Edit Timetable Entry</h3>
+          <form id="ttEditForm">
+            <input type="hidden" id="ttEditId">
+            <div class="form-row">
+              <div class="form-group"><label>Course Code</label><input type="text" id="ttEditCourseCode" required></div>
+              <div class="form-group"><label>Day of Week</label>
+                <select id="ttEditDayOfWeek" class="select" required>
+                  <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Start Time</label><input type="time" id="ttEditStartTime" required></div>
+              <div class="form-group"><label>End Time</label><input type="time" id="ttEditEndTime" required></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Room Name</label><input type="text" id="ttEditRoomName"></div>
+              <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:22px;">
+                <input type="checkbox" id="ttEditIsTemporary" style="width:auto;"> <label for="ttEditIsTemporary" style="margin:0;">Temporary?</label>
+              </div>
+              <div class="form-group"><label>Temp Date</label><input type="date" id="ttEditTempDate"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:6px;">Save Changes</button>
+          </form>
+        </div>`;
+      document.body.appendChild(modal);
+
+      document.getElementById('ttEditForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        const id = document.getElementById('ttEditId').value;
+        try {
+          const body = {
+            course_code:    document.getElementById('ttEditCourseCode').value,
+            day_of_week:    document.getElementById('ttEditDayOfWeek').value,
+            start_time:     document.getElementById('ttEditStartTime').value,
+            end_time:       document.getElementById('ttEditEndTime').value,
+            room_name:      document.getElementById('ttEditRoomName').value,
+            is_temporary:   document.getElementById('ttEditIsTemporary').checked,
+            temporary_date: document.getElementById('ttEditTempDate').value || null
+          };
+          const res = await apiJson(`/api/timetable/${id}`, { method: 'PUT', body });
+          if (res.message) {
+            document.getElementById('ttEditModal').remove();
+            if (state.role === 'admin') loadTimetableAdmin();
+            else if (state.role === 'teacher') loadTimetableTeacher();
+          } else {
+            alert(res.error || 'Failed to update entry');
           }
-      } catch (e) {
-          alert(e.message);
-      }
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // Populate fields
+    document.getElementById('ttEditId').value            = item.id;
+    document.getElementById('ttEditCourseCode').value    = item.course_code;
+    document.getElementById('ttEditDayOfWeek').value     = item.day_of_week;
+    document.getElementById('ttEditStartTime').value     = item.start_time;
+    document.getElementById('ttEditEndTime').value       = item.end_time;
+    document.getElementById('ttEditRoomName').value      = item.room_name || '';
+    document.getElementById('ttEditIsTemporary').checked = item.is_temporary;
+    document.getElementById('ttEditTempDate').value      = item.temporary_date || '';
+    modal.style.display = 'flex';
   };
 
+  // ── Delete ───────────────────────────────────────────────────────────
+  window.deleteTimetableEntry = async function(id) {
+    if (!confirm('Are you sure you want to delete this timetable entry?')) return;
+    try {
+      const res = await apiJson(`/api/timetable/${id}`, { method: 'DELETE' });
+      if (res.message) {
+        if (state.role === 'admin') loadTimetableAdmin();
+        else if (state.role === 'teacher') loadTimetableTeacher();
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  // ── Admin Add Form ───────────────────────────────────────────────────
   const adminAddTimetableForm = document.getElementById('adminAddTimetableForm');
   if (adminAddTimetableForm) {
-      adminAddTimetableForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const btn = adminAddTimetableForm.querySelector('button[type="submit"]');
-          btn.disabled = true;
-          try {
-              const body = {
-                  course_code: document.getElementById('ttCourseCode').value,
-                  department: document.getElementById('ttDepartment').value,
-                  teacher_id: document.getElementById('ttTeacher').value,
-                  day_of_week: document.getElementById('ttDayOfWeek').value,
-                  start_time: document.getElementById('ttStartTime').value,
-                  end_time: document.getElementById('ttEndTime').value,
-                  room_name: document.getElementById('ttRoomName').value,
-                  is_temporary: document.getElementById('ttIsTemporary').checked,
-                  temporary_date: document.getElementById('ttTempDate').value || null
+    adminAddTimetableForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = adminAddTimetableForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      try {
+        const body = {
+          course_code:    document.getElementById('ttCourseCode').value,
+          department:     document.getElementById('ttDepartment').value,
+          teacher_id:     document.getElementById('ttTeacher').value,
+          day_of_week:    document.getElementById('ttDayOfWeek').value,
+          start_time:     document.getElementById('ttStartTime').value,
+          end_time:       document.getElementById('ttEndTime').value,
+          room_name:      document.getElementById('ttRoomName').value,
+          is_temporary:   document.getElementById('ttIsTemporary').checked,
+          temporary_date: document.getElementById('ttTempDate').value || null
+        };
+        const res = await apiJson('/api/timetable/', { method: 'POST', body });
+        if (res.id) {
+          adminAddTimetableForm.reset();
+          loadTimetableAdmin();
+        } else {
+          alert(res.error || 'Failed to save timetable entry');
+        }
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // ── Teacher Add Form ─────────────────────────────────────────────────
+  const teacherAddTimetableForm = document.getElementById('teacherAddTimetableForm');
+  if (teacherAddTimetableForm) {
+                  start_time: document.getElementById('ttTeacherStartTime').value,
+                  end_time: document.getElementById('ttTeacherEndTime').value,
+                  room_name: document.getElementById('ttTeacherRoomName').value,
+                  is_temporary: document.getElementById('ttTeacherIsTemporary').checked,
+                  temporary_date: document.getElementById('ttTeacherTempDate').value || null
               };
               const res = await apiJson('/api/timetable/', { method: 'POST', body });
               if (res.id) {
-                  adminAddTimetableForm.reset();
-                  loadTimetableAdmin();
+                  teacherAddTimetableForm.reset();
+                  loadTimetableTeacher();
               } else {
                   alert(res.error || 'Failed to save timetable entry');
               }
