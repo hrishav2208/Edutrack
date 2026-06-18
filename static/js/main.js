@@ -2239,18 +2239,22 @@ window.renderOtpOutbox = async function() {
 
 
 // --- Department Management Logic ---
-let activeDepartments = [];
+window.activeDepartments = window.activeDepartments || [];
 
-async function loadDepartments() {
+window.loadDepartments = async function loadDepartments() {
   try {
     const data = await apiJson('/api/auth/admin/departments');
-    activeDepartments = data.departments || ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    window.activeDepartments = data.departments || ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    activeDepartments = window.activeDepartments; // keep local alias in sync
     renderDepartmentTags();
   } catch (err) {
     console.error('Failed to load departments', err);
-    activeDepartments = ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    window.activeDepartments = ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    activeDepartments = window.activeDepartments;
   }
 }
+let activeDepartments = window.activeDepartments;
+async function loadDepartments() { return window.loadDepartments(); }
 
 function renderDepartmentTags() {
   const container = document.getElementById('deptTagsContainer');
@@ -2323,6 +2327,9 @@ function populateDeptDropdowns(departments) {
     }
   });
 }
+
+// Make populateDeptDropdowns globally accessible
+window.populateDeptDropdowns = populateDeptDropdowns;
 
 window.openEditProfileModal = function(type, dataStr) {
   const data = JSON.parse(decodeURIComponent(dataStr));
@@ -3204,10 +3211,10 @@ window.submitDeptTransfer = async function() {
 
     // Always load departments fresh so "Loading..." never sticks
     try {
-      if (!activeDepartments.length) await loadDepartments();
-      populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      if (!window.activeDepartments || !window.activeDepartments.length) await window.loadDepartments();
+      window.populateDeptDropdowns(window.activeDepartments.length ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
     } catch (e) {
-      populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      window.populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
     }
 
     try {
@@ -3280,10 +3287,10 @@ window.submitDeptTransfer = async function() {
 
     try {
       // Ensure departments are loaded before teachers
-      if (!activeDepartments.length) await loadDepartments();
+      if (!window.activeDepartments || !window.activeDepartments.length) await window.loadDepartments();
       const teachers = await apiJson('/api/directory/teachers');
       window.allTimetableTeachers = teachers;
-      populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      window.populateDeptDropdowns(window.activeDepartments.length ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
       window.updateTeacherDropdown('ttDepartment', 'ttTeacher');
       
       // Ensure change listener is attached only once
@@ -3294,7 +3301,7 @@ window.submitDeptTransfer = async function() {
       }
     } catch (e) {
       console.error('Failed to load dropdowns', e);
-      populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      window.populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
     }
 
     try {
@@ -3412,7 +3419,7 @@ window.submitDeptTransfer = async function() {
     document.getElementById('ttEditCourseCode').value    = item.course_code;
     
     // Setup and Select Department
-    populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    window.populateDeptDropdowns(window.activeDepartments && window.activeDepartments.length ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
     const editDept = document.getElementById('ttEditDepartment');
     if (editDept) {
       editDept.value = item.department || '';
