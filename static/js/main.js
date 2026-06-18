@@ -2300,13 +2300,28 @@ window.removeDepartment = async function(dept) {
 
 // --- Edit Profile Logic ---
 function populateDeptDropdowns(departments) {
-  const deptOptions = departments.map(d => `<option value="${d}">${d}</option>`).join('');
-  const teacherSel = document.getElementById('addTeacherDept');
-  const studentSel = document.getElementById('addStudentDept');
-  const editDeptSel = document.getElementById('editProfileDept');
-  if (teacherSel) teacherSel.innerHTML = deptOptions;
-  if (studentSel) studentSel.innerHTML = deptOptions;
-  if (editDeptSel) editDeptSel.innerHTML = deptOptions;
+  const deptOptions = `<option value="">Select Department</option>` + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  // Fill all named dept dropdowns
+  ['addTeacherDept', 'addStudentDept', 'editProfileDept',
+   'ttDepartment', 'ttTeacherDepartment', 'ttEditDepartment'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const cur = el.value;
+      el.innerHTML = deptOptions;
+      if (cur) el.value = cur; // restore previously selected value
+    }
+  });
+
+  // Also fill any other elements with the dept-dynamic-dropdown class
+  document.querySelectorAll('.dept-dynamic-dropdown').forEach(el => {
+    if (!el.id || !['addTeacherDept','addStudentDept','editProfileDept',
+                     'ttDepartment','ttTeacherDepartment','ttEditDepartment'].includes(el.id)) {
+      const cur = el.value;
+      el.innerHTML = deptOptions;
+      if (cur) el.value = cur;
+    }
+  });
 }
 
 window.openEditProfileModal = function(type, dataStr) {
@@ -3187,9 +3202,13 @@ window.submitDeptTransfer = async function() {
 
     showTableSkeleton('teacherTimetableBody', 7, 3);
 
+    // Always load departments fresh so "Loading..." never sticks
     try {
+      if (!activeDepartments.length) await loadDepartments();
       populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    }
 
     try {
       const res = await apiJson('/api/timetable/');
@@ -3260,18 +3279,23 @@ window.submitDeptTransfer = async function() {
     showTableSkeleton('adminTimetableBody', 8, 4);
 
     try {
+      // Ensure departments are loaded before teachers
+      if (!activeDepartments.length) await loadDepartments();
       const teachers = await apiJson('/api/directory/teachers');
       window.allTimetableTeachers = teachers;
       populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
       window.updateTeacherDropdown('ttDepartment', 'ttTeacher');
       
-      // Ensure listener is attached if not already done
+      // Ensure change listener is attached only once
       const mainDeptSel = document.getElementById('ttDepartment');
       if (mainDeptSel && !mainDeptSel.hasAttribute('data-teacher-listener')) {
         mainDeptSel.addEventListener('change', () => window.updateTeacherDropdown('ttDepartment', 'ttTeacher'));
         mainDeptSel.setAttribute('data-teacher-listener', 'true');
       }
-    } catch (e) { console.error('Failed to load dropdowns', e); }
+    } catch (e) {
+      console.error('Failed to load dropdowns', e);
+      populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    }
 
     try {
       const res = await apiJson('/api/timetable/');
