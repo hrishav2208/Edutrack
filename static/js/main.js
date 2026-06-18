@@ -1933,8 +1933,8 @@
           }
         });
       }, {
-        threshold: 0.12,
-        rootMargin: '0px 0px -40px 0px'
+        threshold: 0.05,
+        rootMargin: '0px 0px 0px 0px'
       });
       revealElements.forEach(el => revealObserver.observe(el));
     }
@@ -3400,25 +3400,35 @@ window.submitDeptTransfer = async function() {
   // ── Teacher Add Form ─────────────────────────────────────────────────
   const teacherAddTimetableForm = document.getElementById('teacherAddTimetableForm');
   if (teacherAddTimetableForm) {
-                  start_time: document.getElementById('ttTeacherStartTime').value,
-                  end_time: document.getElementById('ttTeacherEndTime').value,
-                  room_name: document.getElementById('ttTeacherRoomName').value,
-                  is_temporary: document.getElementById('ttTeacherIsTemporary').checked,
-                  temporary_date: document.getElementById('ttTeacherTempDate').value || null
-              };
-              const res = await apiJson('/api/timetable/', { method: 'POST', body });
-              if (res.id) {
-                  teacherAddTimetableForm.reset();
-                  loadTimetableTeacher();
-              } else {
-                  alert(res.error || 'Failed to save timetable entry');
-              }
-          } catch (err) {
-              alert(err.message);
-          } finally {
-              btn.disabled = false;
-          }
-      });
+    teacherAddTimetableForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = teacherAddTimetableForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      try {
+        const body = {
+          course_code:    document.getElementById('ttTeacherCourseCode').value,
+          department:     document.getElementById('ttTeacherDepartment').value,
+          day_of_week:    document.getElementById('ttTeacherDayOfWeek').value,
+          start_time:     document.getElementById('ttTeacherStartTime').value,
+          end_time:       document.getElementById('ttTeacherEndTime').value,
+          room_name:      document.getElementById('ttTeacherRoomName').value,
+          is_temporary:   document.getElementById('ttTeacherIsTemporary').checked,
+          temporary_date: document.getElementById('ttTeacherTempDate').value || null
+        };
+        const res = await apiJson('/api/timetable/', { method: 'POST', body });
+        if (res.id) {
+          teacherAddTimetableForm.reset();
+          loadTimetableTeacher();
+        } else {
+          alert(res.error || 'Failed to save timetable entry');
+        }
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 
 })();
+
