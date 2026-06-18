@@ -10,6 +10,7 @@
   const NAV = {
     admin: [
       { id: 'admin-view-home', label: 'Home', icon: 'layout-dashboard' },
+      { id: 'admin-view-timetable', label: 'Timetable', icon: 'calendar' },
       { id: 'admin-view-people', label: 'Directory', icon: 'users' },
       { id: 'admin-view-fees', label: 'Fees', icon: 'wallet' },
       { id: 'admin-view-salary', label: 'Salaries', icon: 'banknote' },
@@ -19,11 +20,13 @@
     ],
     teacher: [
       { id: 'teacher-view-home', label: 'Home', icon: 'layout-dashboard' },
+      { id: 'teacher-view-timetable', label: 'My Timetable', icon: 'calendar' },
       { id: 'teacher-view-attendance', label: 'Attendance', icon: 'clipboard-check' },
       { id: 'teacher-view-marks', label: 'Marks', icon: 'award' },
     ],
     student: [
       { id: 'student-view-home', label: 'Home', icon: 'layout-dashboard' },
+      { id: 'student-view-timetable', label: 'Timetable', icon: 'calendar' },
       { id: 'student-view-marks', label: 'My marks', icon: 'file-text' },
     ],
     parent: [
@@ -347,10 +350,13 @@
       sessionPollInterval = setInterval(fetchActiveSessionStatus, 3000);
     }
     if (sectionId === 'teacher-view-marks') loadMarkStudentSelect();
+    if (sectionId === 'teacher-view-timetable') loadTimetableTeacher();
+    if (sectionId === 'admin-view-timetable') loadTimetableAdmin();
     if (sectionId === 'student-view-home') {
       checkActiveSessionStudent();
       loadStudentAttendanceSummary();
     }
+    if (sectionId === 'student-view-timetable') loadTimetableStudent();
     if (sectionId === 'student-view-marks') loadStudentMarks();
     if (sectionId === 'parent-view-fees') loadParentFees();
   }
@@ -3089,9 +3095,204 @@ window.submitDeptTransfer = async function() {
 
   // Start on DOM ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { init(); draw(); });
   } else {
     init();
     draw();
   }
+  
+  // ===================================================================
+  // TIMETABLE LOGIC
+  // ===================================================================
+
+  let currentTimetableDate = new Date();
+
+  window.changeTimetableDate = function(offset) {
+    currentTimetableDate.setDate(currentTimetableDate.getDate() + offset);
+    loadTimetableStudent();
+  };
+
+  async function loadTimetableStudent() {
+    if (state.role !== 'student') return;
+    const container = document.getElementById('studentTimetableContainer');
+    const display = document.getElementById('studentTimetableDateDisplay');
+    if (!container || !display) return;
+
+    const today = new Date();
+    const isToday = currentTimetableDate.toDateString() === today.toDateString();
+    
+    let dateStr = currentTimetableDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    if (isToday) dateStr = 'Today, ' + dateStr;
+    display.textContent = dateStr;
+
+    container.innerHTML = '<div class="card"><p style="text-align:center; color:var(--gray-500);">Loading timetable...</p></div>';
+
+    if (!state.apiOnline) return;
+
+    const yyyy = currentTimetableDate.getFullYear();
+    const mm = String(currentTimetableDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(currentTimetableDate.getDate()).padStart(2, '0');
+    const isoDate = `${yyyy}-${mm}-${dd}`;
+    
+    const dayOfWeek = currentTimetableDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+    try {
+      const res = await apiJson(`/api/timetable/?date=${isoDate}&day=${dayOfWeek}`);
+      const tt = res.timetable || [];
+      
+      if (tt.length === 0) {
+        container.innerHTML = '<div class="card"><p style="text-align:center; color:var(--gray-500);">No classes scheduled for this day.</p></div>';
+        return;
+      }
+
+      container.innerHTML = tt.map(item => {
+        let attHtml = '';
+        if (item.attendance_status === 'Attended') {
+            attHtml = `<span class="badge badge-success" style="font-size:0.85rem; padding: 4px 8px;"><i data-lucide="check-circle" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> Attended</span>`;
+        } else if (item.attendance_status === 'Absent') {
+            attHtml = `<span class="badge badge-danger" style="font-size:0.85rem; padding: 4px 8px;"><i data-lucide="x-circle" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> Absent</span>`;
+        } else {
+            attHtml = `<span class="badge badge-warning" style="font-size:0.85rem; padding: 4px 8px;">Pending</span>`;
+        }
+        
+        return `
+        <div class="card" style="border-left: 4px solid var(--primary-500); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin:0 0 5px 0; color:var(--primary-700);">${escapeHtml(item.course_code)} <span style="font-size:0.85rem; color:var(--gray-500); font-weight:normal;">— ${escapeHtml(item.teacher_name)}</span></h4>
+                <p style="margin:0; font-size:0.9rem; color:var(--gray-600);">
+                    <i data-lucide="clock" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> ${item.start_time} - ${item.end_time} &nbsp;|&nbsp;
+                    <i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:text-bottom;margin-right:2px;"></i> ${escapeHtml(item.room_name || 'TBA')}
+                </p>
+                ${item.is_temporary ? `<p style="margin:5px 0 0 0; font-size:0.8rem; color:var(--warning);"><i data-lucide="alert-circle" style="width:12px;height:12px;vertical-align:text-bottom;"></i> Temporary Schedule Change</p>` : ''}
+            </div>
+            <div>
+                ${attHtml}
+            </div>
+        </div>`;
+      }).join('');
+      refreshIcons();
+    } catch (e) {
+      container.innerHTML = `<div class="card"><p style="text-align:center; color:var(--danger);">${e.message}</p></div>`;
+    }
+  }
+
+  async function loadTimetableTeacher() {
+    if (state.role !== 'teacher') return;
+    const tb = document.getElementById('teacherTimetableBody');
+    if (!tb) return;
+    
+    showTableSkeleton('teacherTimetableBody', 6, 3);
+    if (!state.apiOnline) return;
+
+    try {
+      const res = await apiJson('/api/timetable/');
+      const tt = res.timetable || [];
+      if (tt.length === 0) {
+        tb.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--gray-500);">No timetable entries found.</td></tr>';
+        return;
+      }
+      
+      tb.innerHTML = tt.map(item => `
+        <tr>
+            <td>${item.temporary_date ? escapeHtml(item.temporary_date) : escapeHtml(item.day_of_week)}</td>
+            <td>${item.start_time} - ${item.end_time}</td>
+            <td><strong>${escapeHtml(item.course_code)}</strong></td>
+            <td>${escapeHtml(item.department)}</td>
+            <td>${escapeHtml(item.room_name || 'TBA')}</td>
+            <td>${item.is_temporary ? '<span class="badge badge-warning">Temporary</span>' : '<span class="badge badge-secondary">Permanent</span>'}</td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      tb.innerHTML = `<tr><td colspan="6" style="color:var(--danger);">${e.message}</td></tr>`;
+    }
+  }
+
+  async function loadTimetableAdmin() {
+    if (state.role !== 'admin') return;
+    const tb = document.getElementById('adminTimetableBody');
+    if (!tb) return;
+
+    showTableSkeleton('adminTimetableBody', 7, 4);
+    
+    try {
+        const teachers = await apiJson('/api/directory/teachers');
+        const teacherSelect = document.getElementById('ttTeacher');
+        if (teacherSelect) {
+            teacherSelect.innerHTML = '<option value="">Select Teacher</option>' + teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+        }
+        populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    } catch (e) { console.error('Failed to load form dropdowns', e); }
+
+    try {
+      const res = await apiJson('/api/timetable/');
+      const tt = res.timetable || [];
+      
+      if (tt.length === 0) {
+        tb.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--gray-500);">No timetable entries found.</td></tr>';
+        return;
+      }
+
+      tb.innerHTML = tt.map(item => `
+        <tr>
+            <td>${item.temporary_date ? escapeHtml(item.temporary_date) + " (Temp)" : escapeHtml(item.day_of_week)}</td>
+            <td>${item.start_time} - ${item.end_time}</td>
+            <td>${escapeHtml(item.course_code)}</td>
+            <td>${escapeHtml(item.department)}</td>
+            <td>${escapeHtml(item.teacher_name)}</td>
+            <td>${escapeHtml(item.room_name || 'TBA')}</td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteTimetableEntry(${item.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+            </td>
+        </tr>
+      `).join('');
+      refreshIcons();
+    } catch (e) {
+      tb.innerHTML = `<tr><td colspan="7" style="color:var(--danger);">${e.message}</td></tr>`;
+    }
+  }
+
+  window.deleteTimetableEntry = async function(id) {
+      if(!confirm("Are you sure you want to delete this timetable entry?")) return;
+      try {
+          const res = await apiJson(`/api/timetable/${id}`, { method: 'DELETE' });
+          if (res.ok || res.message) {
+              loadTimetableAdmin();
+          }
+      } catch (e) {
+          alert(e.message);
+      }
+  };
+
+  const adminAddTimetableForm = document.getElementById('adminAddTimetableForm');
+  if (adminAddTimetableForm) {
+      adminAddTimetableForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = adminAddTimetableForm.querySelector('button[type="submit"]');
+          btn.disabled = true;
+          try {
+              const body = {
+                  course_code: document.getElementById('ttCourseCode').value,
+                  department: document.getElementById('ttDepartment').value,
+                  teacher_id: document.getElementById('ttTeacher').value,
+                  day_of_week: document.getElementById('ttDayOfWeek').value,
+                  start_time: document.getElementById('ttStartTime').value,
+                  end_time: document.getElementById('ttEndTime').value,
+                  room_name: document.getElementById('ttRoomName').value,
+                  is_temporary: document.getElementById('ttIsTemporary').checked,
+                  temporary_date: document.getElementById('ttTempDate').value || null
+              };
+              const res = await apiJson('/api/timetable/', { method: 'POST', body });
+              if (res.id) {
+                  adminAddTimetableForm.reset();
+                  loadTimetableAdmin();
+              } else {
+                  alert(res.error || 'Failed to save timetable entry');
+              }
+          } catch (err) {
+              alert(err.message);
+          } finally {
+              btn.disabled = false;
+          }
+      });
+  }
+
 })();

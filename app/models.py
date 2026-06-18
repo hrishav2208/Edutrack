@@ -227,3 +227,20 @@ class Message(db.Model):
 
     sender = db.relationship("User", foreign_keys=[sender_id], backref="sent_messages")
     recipient = db.relationship("User", foreign_keys=[recipient_id], backref="received_messages")
+
+
+class TimetableEntry(db.Model):
+    """Represents a scheduled class session."""
+    __tablename__ = "timetable_entries"
+    id = db.Column(db.Integer, primary_key=True)
+    day_of_week = db.Column(db.String(10), nullable=False) # Monday, Tuesday, etc.
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    course_code = db.Column(db.String(40), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=False)
+    department = db.Column(db.String(80), nullable=False)
+    room_name = db.Column(db.String(80), default="")
+    is_temporary = db.Column(db.Boolean, default=False)
+    temporary_date = db.Column(db.Date, nullable=True) # Used if this is a one-off reschedule
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
