@@ -3223,6 +3223,35 @@ window.submitDeptTransfer = async function() {
   }
 
   // ── Admin Timetable ──────────────────────────────────────────────────
+  window.allTimetableTeachers = [];
+
+  window.updateTeacherDropdown = function(deptSelectId, teacherSelectId, currentTeacherId = null) {
+    const dept = document.getElementById(deptSelectId)?.value;
+    const tSel = document.getElementById(teacherSelectId);
+    if (!tSel || !window.allTimetableTeachers) return;
+    
+    if (!dept) {
+      tSel.innerHTML = '<option value="">Select Dept First</option>';
+      return;
+    }
+    
+    const filtered = window.allTimetableTeachers.filter(t => t.department === dept);
+    if (filtered.length === 0) {
+      tSel.innerHTML = '<option value="">No teachers in this dept</option>';
+    } else {
+      tSel.innerHTML = '<option value="">Select Teacher</option>' + filtered.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+    }
+    if (currentTeacherId) tSel.value = currentTeacherId;
+  };
+
+  // Add event listener to the admin add form department dropdown once
+  document.addEventListener('DOMContentLoaded', () => {
+    const mainDeptSel = document.getElementById('ttDepartment');
+    if (mainDeptSel) {
+      mainDeptSel.addEventListener('change', () => window.updateTeacherDropdown('ttDepartment', 'ttTeacher'));
+    }
+  });
+
   async function loadTimetableAdmin() {
     if (state.role !== 'admin') return;
     const tb = document.getElementById('adminTimetableBody');
@@ -3232,9 +3261,16 @@ window.submitDeptTransfer = async function() {
 
     try {
       const teachers = await apiJson('/api/directory/teachers');
-      const sel = document.getElementById('ttTeacher');
-      if (sel) sel.innerHTML = '<option value="">Select Teacher</option>' + teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+      window.allTimetableTeachers = teachers;
       populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      window.updateTeacherDropdown('ttDepartment', 'ttTeacher');
+      
+      // Ensure listener is attached if not already done
+      const mainDeptSel = document.getElementById('ttDepartment');
+      if (mainDeptSel && !mainDeptSel.hasAttribute('data-teacher-listener')) {
+        mainDeptSel.addEventListener('change', () => window.updateTeacherDropdown('ttDepartment', 'ttTeacher'));
+        mainDeptSel.setAttribute('data-teacher-listener', 'true');
+      }
     } catch (e) { console.error('Failed to load dropdowns', e); }
 
     try {
@@ -3354,16 +3390,16 @@ window.submitDeptTransfer = async function() {
     // Setup and Select Department
     populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
     const editDept = document.getElementById('ttEditDepartment');
-    if (editDept) editDept.value = item.department || '';
+    if (editDept) {
+      editDept.value = item.department || '';
+      editDept.addEventListener('change', () => window.updateTeacherDropdown('ttEditDepartment', 'ttEditTeacher'));
+    }
 
     // Setup and Select Teacher (Admin only can fetch all teachers)
     if (state.role === 'admin') {
       apiJson('/api/directory/teachers').then(teachers => {
-        const sel = document.getElementById('ttEditTeacher');
-        if (sel) {
-          sel.innerHTML = '<option value="">Select Teacher</option>' + teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
-          sel.value = item.teacher_id || '';
-        }
+        window.allTimetableTeachers = teachers;
+        window.updateTeacherDropdown('ttEditDepartment', 'ttEditTeacher', item.teacher_id);
       }).catch(e => console.error('Failed to load teachers for modal', e));
     }
 
