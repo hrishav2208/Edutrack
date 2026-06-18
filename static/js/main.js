@@ -3277,20 +3277,28 @@ window.submitDeptTransfer = async function() {
       modal.id = 'ttEditModal';
       modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);';
       modal.innerHTML = `
-        <div class="card" style="width:100%;max-width:520px;padding:28px;position:relative;">
+        <div class="card" style="width:100%;max-width:600px;padding:28px;position:relative;">
           <button onclick="document.getElementById('ttEditModal').remove()" style="position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--gray-500);">&times;</button>
           <h3 class="card-title" style="margin-bottom:18px;">Edit Timetable Entry</h3>
           <form id="ttEditForm">
             <input type="hidden" id="ttEditId">
             <div class="form-row">
               <div class="form-group"><label>Course Code</label><input type="text" id="ttEditCourseCode" required></div>
+              <div class="form-group"><label>Department</label>
+                <select id="ttEditDepartment" class="select dept-dynamic-dropdown" required></select>
+              </div>
+              <div class="form-group"><label>Teacher</label>
+                <select id="ttEditTeacher" class="select" ${state.role !== 'admin' ? 'disabled' : ''}>
+                  <option value="${item.teacher_id}">${escapeHtml(item.teacher_name || 'Keep Existing')}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
               <div class="form-group"><label>Day of Week</label>
                 <select id="ttEditDayOfWeek" class="select" required>
                   <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option>
                 </select>
               </div>
-            </div>
-            <div class="form-row">
               <div class="form-group"><label>Start Time</label><input type="time" id="ttEditStartTime" required></div>
               <div class="form-group"><label>End Time</label><input type="time" id="ttEditEndTime" required></div>
             </div>
@@ -3314,6 +3322,8 @@ window.submitDeptTransfer = async function() {
         try {
           const body = {
             course_code:    document.getElementById('ttEditCourseCode').value,
+            department:     document.getElementById('ttEditDepartment').value,
+            teacher_id:     document.getElementById('ttEditTeacher').value,
             day_of_week:    document.getElementById('ttEditDayOfWeek').value,
             start_time:     document.getElementById('ttEditStartTime').value,
             end_time:       document.getElementById('ttEditEndTime').value,
@@ -3340,6 +3350,23 @@ window.submitDeptTransfer = async function() {
     // Populate fields
     document.getElementById('ttEditId').value            = item.id;
     document.getElementById('ttEditCourseCode').value    = item.course_code;
+    
+    // Setup and Select Department
+    populateDeptDropdowns(activeDepartments.length ? activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+    const editDept = document.getElementById('ttEditDepartment');
+    if (editDept) editDept.value = item.department || '';
+
+    // Setup and Select Teacher (Admin only can fetch all teachers)
+    if (state.role === 'admin') {
+      apiJson('/api/directory/teachers').then(teachers => {
+        const sel = document.getElementById('ttEditTeacher');
+        if (sel) {
+          sel.innerHTML = '<option value="">Select Teacher</option>' + teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+          sel.value = item.teacher_id || '';
+        }
+      }).catch(e => console.error('Failed to load teachers for modal', e));
+    }
+
     document.getElementById('ttEditDayOfWeek').value     = item.day_of_week;
     document.getElementById('ttEditStartTime').value     = item.start_time;
     document.getElementById('ttEditEndTime').value       = item.end_time;
