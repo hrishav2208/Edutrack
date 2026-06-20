@@ -1,6 +1,6 @@
 /* EduTrack Service Worker — enables PWA install and offline caching */
 
-const CACHE_NAME = 'edutrack-v3';
+const CACHE_NAME = 'edutrack-v4';
 const STATIC_ASSETS = [
   '/',
   '/static/css/style.css',
