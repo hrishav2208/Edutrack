@@ -3261,8 +3261,15 @@ window.submitDeptTransfer = async function() {
       return;
     }
     
-    const filtered = window.allTimetableTeachers.filter(t => (t.department || '').toLowerCase().trim() === (dept || '').toLowerCase().trim());
-    if (filtered.length === 0) {
+    const cleanDept = (dept || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const filtered = window.allTimetableTeachers.filter(t => {
+      const cleanTDept = (t.department || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return cleanTDept === cleanDept || cleanTDept.includes(cleanDept) || cleanDept.includes(cleanTDept);
+    });
+    
+    if (!window.allTimetableTeachers || window.allTimetableTeachers.length === 0) {
+      tSel.innerHTML = '<option value="">(API Error: No teachers loaded)</option>';
+    } else if (filtered.length === 0) {
       tSel.innerHTML = '<option value="">No teachers in this dept</option>';
     } else {
       tSel.innerHTML = '<option value="">Select Teacher</option>' + filtered.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
