@@ -183,6 +183,9 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from app.extensions import limiter
+    limiter.init_app(app)
+
     # Import and register blueprints
     from app.auth import auth_bp
     from app.attendance import attendance_bp

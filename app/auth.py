@@ -9,6 +9,7 @@ from flask import Blueprint, jsonify, request, session
 from werkzeug.security import check_password_hash
 
 from app.models import User, db, CampusSettings
+from app.extensions import limiter
 import json
 
 auth_bp = Blueprint("auth", __name__)
@@ -43,6 +44,7 @@ def _user_dict(user):
 
 
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("10 per minute")
 def login():
     data = request.get_json(silent=True) or {}
     # Accept 'identifier' (uid or email) or legacy 'email' field
@@ -130,6 +132,7 @@ from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
 @auth_bp.route("/request-otp", methods=["POST"])
+@limiter.limit("5 per minute")
 def request_otp():
     data = request.get_json(silent=True) or {}
     identifier = (data.get("identifier") or "").strip().lower()
