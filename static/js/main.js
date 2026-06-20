@@ -2909,8 +2909,8 @@ window.viewDeptDetails = async function(deptName) {
             apiJson('/api/directory/students')
         ]);
         
-        const deptTeachers = teachers.filter(t => t.department === deptName);
-        const deptStudents = students.filter(s => s.department === deptName);
+        const deptTeachers = teachers.filter(t => (t.department || '').toLowerCase().trim() === (deptName || '').toLowerCase().trim());
+        const deptStudents = students.filter(s => (s.department || '').toLowerCase().trim() === (deptName || '').toLowerCase().trim());
         
         let html = `
         <div id="tempDeptModal" class="modal-backdrop" style="display:flex; position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
@@ -3261,7 +3261,7 @@ window.submitDeptTransfer = async function() {
       return;
     }
     
-    const filtered = window.allTimetableTeachers.filter(t => t.department === dept);
+    const filtered = window.allTimetableTeachers.filter(t => (t.department || '').toLowerCase().trim() === (dept || '').toLowerCase().trim());
     if (filtered.length === 0) {
       tSel.innerHTML = '<option value="">No teachers in this dept</option>';
     } else {
