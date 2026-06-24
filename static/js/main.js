@@ -3024,9 +3024,8 @@ window.submitDeptTransfer = async function() {
     }
 };
 // ============================================================
-})();
 
-(function initLoginParticles() {
+function initLoginParticles() {
   const canvas = document.getElementById('loginParticleCanvas');
   if (!canvas) return;
 
@@ -3122,6 +3121,8 @@ window.submitDeptTransfer = async function() {
     init();
     draw();
   }
+}
+initLoginParticles();
   
   // ===================================================================
   // TIMETABLE LOGIC
