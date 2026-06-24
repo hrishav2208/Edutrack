@@ -3211,11 +3211,12 @@ window.submitDeptTransfer = async function() {
 
     // Always load departments fresh so "Loading..." never sticks
     try {
-      if (!window.activeDepartments || !window.activeDepartments.length) await window.loadDepartments();
-      window.populateDeptDropdowns(window.activeDepartments.length ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      await window.loadDepartments();
     } catch (e) {
-      window.populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      console.error('Failed to load departments for teacher view', e);
     }
+    const depts = (window.activeDepartments && window.activeDepartments.length) ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    window.populateDeptDropdowns(depts);
 
     try {
       const res = await apiJson('/api/timetable/');
@@ -3293,13 +3294,7 @@ window.submitDeptTransfer = async function() {
     if (currentTeacherId) tSel.value = currentTeacherId;
   };
 
-  // Add event listener to the admin add form department dropdown once
-  document.addEventListener('DOMContentLoaded', () => {
-    const mainDeptSel = document.getElementById('ttDepartment');
-    if (mainDeptSel) {
-      mainDeptSel.addEventListener('change', () => window.updateTeacherDropdown('ttDepartment', 'ttTeacher'));
-    }
-  });
+  // NOTE: Department→Teacher change listener is attached inside loadTimetableAdmin() after teachers are loaded
 
   async function loadTimetableAdmin() {
     if (state.role !== 'admin') return;
@@ -3308,23 +3303,30 @@ window.submitDeptTransfer = async function() {
 
     showTableSkeleton('adminTimetableBody', 8, 4);
 
+    // Step 1: Load departments (best-effort)
     try {
-      // Ensure departments are loaded before teachers
-      if (!window.activeDepartments || !window.activeDepartments.length) await window.loadDepartments();
+      await window.loadDepartments();
+    } catch (e) {
+      console.error('Failed to load departments, using defaults', e);
+    }
+    const depts = (window.activeDepartments && window.activeDepartments.length) ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+    window.populateDeptDropdowns(depts);
+
+    // Step 2: Load teachers (best-effort, separate from departments)
+    try {
       const teachers = await apiJson('/api/directory/teachers');
       window.allTimetableTeachers = teachers;
-      window.populateDeptDropdowns(window.activeDepartments.length ? window.activeDepartments : ['CSE', 'ECE', 'ME', 'CE', 'EEE']);
-      window.updateTeacherDropdown('ttDepartment', 'ttTeacher');
-      
-      // Ensure change listener is attached only once
-      const mainDeptSel = document.getElementById('ttDepartment');
-      if (mainDeptSel && !mainDeptSel.hasAttribute('data-teacher-listener')) {
-        mainDeptSel.addEventListener('change', () => window.updateTeacherDropdown('ttDepartment', 'ttTeacher'));
-        mainDeptSel.setAttribute('data-teacher-listener', 'true');
-      }
     } catch (e) {
-      console.error('Failed to load dropdowns', e);
-      window.populateDeptDropdowns(['CSE', 'ECE', 'ME', 'CE', 'EEE']);
+      console.error('Failed to load teachers', e);
+      if (!window.allTimetableTeachers) window.allTimetableTeachers = [];
+    }
+
+    // Step 3: Wire up department → teacher dropdown
+    window.updateTeacherDropdown('ttDepartment', 'ttTeacher');
+    const mainDeptSel = document.getElementById('ttDepartment');
+    if (mainDeptSel && !mainDeptSel.hasAttribute('data-teacher-listener')) {
+      mainDeptSel.addEventListener('change', () => window.updateTeacherDropdown('ttDepartment', 'ttTeacher'));
+      mainDeptSel.setAttribute('data-teacher-listener', 'true');
     }
 
     try {
