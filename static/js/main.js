@@ -80,7 +80,7 @@
       headers['Content-Type'] = 'application/json';
       opts = { ...opts, body: JSON.stringify(opts.body) };
     }
-    const r = await fetch(path, { credentials: 'same-origin', ...opts, headers });
+    const r = await fetch(path, { credentials: 'same-origin', cache: 'no-store', ...opts, headers });
     state.apiOnline = true;
     setApiBanner('');
     return r;
