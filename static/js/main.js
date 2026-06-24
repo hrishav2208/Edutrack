@@ -3260,11 +3260,27 @@ window.submitDeptTransfer = async function() {
       tSel.innerHTML = '<option value="">Select Dept First</option>';
       return;
     }
-    
-    const cleanDept = (dept || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Canonical alias map: map all known variants to a single key
+    const DEPT_ALIASES = {
+      'cse': 'cse', 'cs': 'cse', 'computerscience': 'cse', 'computerscienceengineering': 'cse', 'computerscience&engineering': 'cse',
+      'ece': 'ece', 'electronics': 'ece', 'electronicscommunication': 'ece', 'electronicsandcommunication': 'ece', 'electronicscommunicationengineering': 'ece',
+      'me': 'me', 'mech': 'me', 'mechanical': 'me', 'mechanicalengineering': 'me',
+      'ce': 'ce', 'civil': 'ce', 'civilengineering': 'ce',
+      'eee': 'eee', 'electrical': 'eee', 'electricalengineering': 'eee', 'electricalelectronics': 'eee', 'ee': 'eee',
+      'it': 'it', 'informationtechnology': 'it',
+      'aiml': 'aiml', 'ai': 'aiml', 'artificialintelligence': 'aiml', 'aimachinelearning': 'aiml', 'artificialintelligenceandmachinelearning': 'aiml', 'artificialintelligencemachinelearning': 'aiml',
+      'ecs': 'ecs', 'gen': 'gen', 'general': 'gen',
+    };
+
+    function canonicalDept(raw) {
+      const cleaned = (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return DEPT_ALIASES[cleaned] || cleaned;
+    }
+
+    const selectedCanonical = canonicalDept(dept);
     const filtered = window.allTimetableTeachers.filter(t => {
-      const cleanTDept = (t.department || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      return cleanTDept === cleanDept || cleanTDept.includes(cleanDept) || cleanDept.includes(cleanTDept);
+      return canonicalDept(t.department) === selectedCanonical;
     });
     
     if (!window.allTimetableTeachers || window.allTimetableTeachers.length === 0) {
