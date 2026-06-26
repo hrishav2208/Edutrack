@@ -1,6 +1,8 @@
 """CRUD for teachers, students, parents (admin). Auto-generates Portal UIDs and User accounts."""
 
 import re
+import secrets
+import string
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
@@ -15,6 +17,11 @@ from app.models import (
 directory_bp = Blueprint("directory", __name__)
 
 DEFAULT_PASSWORD = "Welcome@123"
+
+def generate_secure_password(length=12):
+    """Generate a random secure password."""
+    chars = string.ascii_letters + string.digits + "!@#$%^&*"
+    return ''.join(secrets.choice(chars) for _ in range(length))
 
 
 # ─────────────────────────────────────────────
@@ -125,7 +132,7 @@ def add_teacher():
     email = (data.get("email") or "").strip().lower()
     department = (data.get("department") or "General").strip()
     monthly_salary = float(data.get("monthly_salary") or 0)
-    password = (data.get("password") or DEFAULT_PASSWORD).strip()
+    password = (data.get("password") or generate_secure_password()).strip()
     primary_phone = (data.get("primary_phone") or "").strip()
     secondary_phone = (data.get("secondary_phone") or "").strip()
     guardian_phone = (data.get("guardian_phone") or "").strip()
@@ -163,7 +170,7 @@ def add_teacher():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({"ok": True, "id": t.id, "uid": uid, "email": email})
+    return jsonify({"ok": True, "id": t.id, "uid": uid, "email": email, "password": password})
 
 
 # ─────────────────────────────────────────────
@@ -201,7 +208,7 @@ def add_parent():
     name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip().lower()
     phone = (data.get("phone") or "").strip()
-    password = (data.get("password") or DEFAULT_PASSWORD).strip()
+    password = (data.get("password") or generate_secure_password()).strip()
     primary_phone = (data.get("primary_phone") or "").strip()
     secondary_phone = (data.get("secondary_phone") or "").strip()
     guardian_phone = (data.get("guardian_phone") or "").strip()
@@ -237,7 +244,7 @@ def add_parent():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({"ok": True, "id": p.id, "uid": uid, "email": email})
+    return jsonify({"ok": True, "id": p.id, "uid": uid, "email": email, "password": password})
 
 
 # ─────────────────────────────────────────────
@@ -280,7 +287,7 @@ def add_student():
     department = (data.get("department") or "CSE").strip()
     parent_id = data.get("parent_id")
     parent_id = int(parent_id) if parent_id else None
-    password = (data.get("password") or DEFAULT_PASSWORD).strip()
+    password = (data.get("password") or generate_secure_password()).strip()
     primary_phone = (data.get("primary_phone") or "").strip()
     secondary_phone = (data.get("secondary_phone") or "").strip()
     guardian_phone = (data.get("guardian_phone") or "").strip()
@@ -319,7 +326,7 @@ def add_student():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({"ok": True, "id": s.id, "uid": uid, "email": email})
+    return jsonify({"ok": True, "id": s.id, "uid": uid, "email": email, "password": password})
 
 
 @directory_bp.route("/generate-missing-credentials", methods=["POST"])

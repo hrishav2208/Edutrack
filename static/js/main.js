@@ -1502,7 +1502,7 @@
         });
         loadDirectoryAdmin();
         document.getElementById('addTeacherForm').reset();
-        alert(`✅ Teacher saved! Portal ID: ${data.uid}`);
+        alert(`✅ Teacher saved!\nPortal ID: ${data.uid}\nPassword: ${data.password}`);
       } catch (e) {
         alert(e.message);
       }
@@ -1523,7 +1523,7 @@
         });
         loadDirectoryAdmin();
         document.getElementById('addParentForm').reset();
-        alert(`✅ Parent saved! Portal ID: ${data.uid}`);
+        alert(`✅ Parent saved!\nPortal ID: ${data.uid}\nPassword: ${data.password}`);
       } catch (e) {
         alert(e.message);
       }
@@ -1547,7 +1547,7 @@
         loadDirectoryAdmin();
         renderStudentTableFromApi('all');
         document.getElementById('addStudentForm').reset();
-        alert(`✅ Student saved! Portal ID: ${data.uid}`);
+        alert(`✅ Student saved!\nPortal ID: ${data.uid}\nPassword: ${data.password}`);
       } catch (e) {
         alert(e.message);
       }
