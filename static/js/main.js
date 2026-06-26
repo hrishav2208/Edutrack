@@ -756,12 +756,41 @@
     const rn = document.getElementById('sessionRoomName');
     if (cc) cc.value = courseCode;
     if (rn && roomName) rn.value = roomName;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  async function loadTeacherDashboard(isPolling = false) {
+  window.markAttendanceFromSchedule = function(courseCode) {
+    navigate('teacher', 'teacher-view-attendance');
+    const mcc = document.getElementById('manualCourseCode');
+    if (mcc) mcc.value = courseCode;
+    const btn = document.getElementById('btnLoadManualAttendance');
+    if (btn) btn.click();
+    setTimeout(() => {
+        const manualBtn = document.getElementById('btnLoadManualAttendance');
+        if (manualBtn) manualBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  window.loadTeacherDashboard = async function(isPolling = false) {
     if (!isPolling) showTableSkeleton('studentTableBody', 7, 5);
     const tb = document.getElementById('teacherTodayScheduleBody');
     if (tb && !isPolling) tb.innerHTML = '<tr><td colspan="5">Loading schedule...</td></tr>';
+
+    const dayFilterElem = document.getElementById('dashboardDayFilter');
+    let dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    if (dayFilterElem) {
+      if (!dayFilterElem.value) {
+          dayFilterElem.value = dayName;
+      } else {
+          dayName = dayFilterElem.value;
+      }
+    }
+    
+    const titleElem = document.getElementById('dailyScheduleTitle');
+    if (titleElem) {
+       const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+       titleElem.textContent = (dayName === todayName) ? "Today's Schedule" : `${dayName}'s Schedule`;
+    }
 
     if (!state.apiOnline) return;
     try {
@@ -790,11 +819,10 @@
     }
 
     try {
-      const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
       const sched = await apiJson(`/api/timetable/?day=${dayName}`);
       if (tb && sched && sched.timetable) {
         if (sched.timetable.length === 0) {
-          tb.innerHTML = '<tr><td colspan="5">No classes scheduled for today.</td></tr>';
+          tb.innerHTML = '<tr><td colspan="5">No classes scheduled for this day.</td></tr>';
         } else {
           tb.innerHTML = sched.timetable.map(t => `
             <tr>
@@ -803,9 +831,14 @@
               <td>${escapeHtml(t.department)}</td>
               <td>${escapeHtml(t.room_name || '')}</td>
               <td>
-                <button type="button" class="btn btn-sm btn-primary" onclick="startLectureFromSchedule('${escapeHtml(t.course_code)}', '${escapeHtml(t.room_name || '').replace(/'/g, "\\'")}')">
-                  Start Lecture
-                </button>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="btn btn-sm btn-primary" onclick="startLectureFromSchedule('${escapeHtml(t.course_code)}', '${escapeHtml(t.room_name || '').replace(/'/g, "\\'")}')">
+                    Start GPS Session
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="markAttendanceFromSchedule('${escapeHtml(t.course_code)}')">
+                    Take Attendance
+                  </button>
+                </div>
               </td>
             </tr>
           `).join('');
@@ -818,7 +851,7 @@
 
     refreshIcons();
     if (!isPolling && !window.teacherDashboardInterval) {
-      window.teacherDashboardInterval = setInterval(() => loadTeacherDashboard(true), 15000);
+      window.teacherDashboardInterval = setInterval(() => window.loadTeacherDashboard(true), 15000);
     }
   }
 

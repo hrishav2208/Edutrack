@@ -1320,9 +1320,20 @@
                             </button>
                         </div>
 
-                        <!-- Today's Schedule -->
+                        <!-- Daily Schedule -->
                         <div class="card" style="margin-bottom: 2rem;">
-                            <h3 class="card-title">Today's Schedule</h3>
+                            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                                <h3 class="card-title" id="dailyScheduleTitle">Today's Schedule</h3>
+                                <select id="dashboardDayFilter" class="select" style="max-width:200px;" onchange="window.loadTeacherDashboard()">
+                                    <option value="Monday">Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday">Sunday</option>
+                                </select>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table">
                                     <thead>
