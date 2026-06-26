@@ -322,6 +322,8 @@
 
   function navigate(role, sectionId, pushHistory = true) {
     if (sessionPollInterval) { clearInterval(sessionPollInterval); sessionPollInterval = null; }
+    if (window.teacherDashboardInterval) { clearInterval(window.teacherDashboardInterval); window.teacherDashboardInterval = null; }
+    if (window.teacherTimetableInterval) { clearInterval(window.teacherTimetableInterval); window.teacherTimetableInterval = null; }
     showSection(role, sectionId);
 
     // Determine the home section for this role
@@ -756,10 +758,10 @@
     if (rn && roomName) rn.value = roomName;
   };
 
-  async function loadTeacherDashboard() {
-    showTableSkeleton('studentTableBody', 7, 5);
+  async function loadTeacherDashboard(isPolling = false) {
+    if (!isPolling) showTableSkeleton('studentTableBody', 7, 5);
     const tb = document.getElementById('teacherTodayScheduleBody');
-    if (tb) tb.innerHTML = '<tr><td colspan="5">Loading schedule...</td></tr>';
+    if (tb && !isPolling) tb.innerHTML = '<tr><td colspan="5">Loading schedule...</td></tr>';
 
     if (!state.apiOnline) return;
     try {
@@ -811,10 +813,13 @@
       }
     } catch (e) {
       console.error(e);
-      if (tb) tb.innerHTML = `<tr><td colspan="5">Error loading schedule: ${e.message}</td></tr>`;
+      if (tb && !isPolling) tb.innerHTML = `<tr><td colspan="5">Error loading schedule: ${e.message}</td></tr>`;
     }
 
     refreshIcons();
+    if (!isPolling && !window.teacherDashboardInterval) {
+      window.teacherDashboardInterval = setInterval(() => loadTeacherDashboard(true), 15000);
+    }
   }
 
   function escapeHtml(s) {
@@ -3242,12 +3247,12 @@ initLoginParticles();
   }
 
   // ── Teacher Timetable ────────────────────────────────────────────────
-  async function loadTimetableTeacher() {
+  async function loadTimetableTeacher(isPolling = false) {
     if (state.role !== 'teacher') return;
     const tb = document.getElementById('teacherTimetableBody');
     if (!tb) return;
 
-    showTableSkeleton('teacherTimetableBody', 7, 3);
+    if (!isPolling) showTableSkeleton('teacherTimetableBody', 7, 3);
 
     // Always load departments fresh so "Loading..." never sticks
     try {
@@ -3285,7 +3290,11 @@ initLoginParticles();
       `).join('');
       refreshIcons();
     } catch (e) {
-      tb.innerHTML = `<tr><td colspan="7" style="color:var(--danger);">${escapeHtml(e.message)}</td></tr>`;
+      if (!isPolling) tb.innerHTML = `<tr><td colspan="7" style="color:var(--danger);">${escapeHtml(e.message)}</td></tr>`;
+    }
+
+    if (!isPolling && !window.teacherTimetableInterval) {
+      window.teacherTimetableInterval = setInterval(() => loadTimetableTeacher(true), 15000);
     }
   }
 
@@ -3312,7 +3321,8 @@ initLoginParticles();
     Object.keys(groups).sort().forEach(d => {
       html += `<optgroup label="${escapeHtml(d)}">`;
       groups[d].sort((a, b) => a.name.localeCompare(b.name)).forEach(t => {
-        html += `<option value="${t.id}">${escapeHtml(t.name)}</option>`;
+        const uidText = t.uid ? ` (${t.uid})` : '';
+        html += `<option value="${t.id}">${escapeHtml(t.name)}${escapeHtml(uidText)}</option>`;
       });
       html += `</optgroup>`;
     });
