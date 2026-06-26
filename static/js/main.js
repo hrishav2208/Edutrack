@@ -748,8 +748,19 @@
     }
   };
 
+  window.startLectureFromSchedule = function(courseCode, roomName) {
+    navigate('teacher', 'teacher-view-attendance');
+    const cc = document.getElementById('sessionCourseCode');
+    const rn = document.getElementById('sessionRoomName');
+    if (cc) cc.value = courseCode;
+    if (rn && roomName) rn.value = roomName;
+  };
+
   async function loadTeacherDashboard() {
     showTableSkeleton('studentTableBody', 7, 5);
+    const tb = document.getElementById('teacherTodayScheduleBody');
+    if (tb) tb.innerHTML = '<tr><td colspan="5">Loading schedule...</td></tr>';
+
     if (!state.apiOnline) return;
     try {
       const data = await apiJson('/api/reports/teacher/analytics');
@@ -775,6 +786,34 @@
       const tbody = document.getElementById('studentTableBody');
       if (tbody) tbody.innerHTML = `<tr><td colspan="7">${e.message}</td></tr>`;
     }
+
+    try {
+      const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      const sched = await apiJson(`/api/timetable/?day=${dayName}`);
+      if (tb && sched && sched.timetable) {
+        if (sched.timetable.length === 0) {
+          tb.innerHTML = '<tr><td colspan="5">No classes scheduled for today.</td></tr>';
+        } else {
+          tb.innerHTML = sched.timetable.map(t => `
+            <tr>
+              <td>${escapeHtml(t.start_time)} - ${escapeHtml(t.end_time)}</td>
+              <td>${escapeHtml(t.course_code)}</td>
+              <td>${escapeHtml(t.department)}</td>
+              <td>${escapeHtml(t.room_name || '')}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-primary" onclick="startLectureFromSchedule('${escapeHtml(t.course_code)}', '${escapeHtml(t.room_name || '').replace(/'/g, "\\'")}')">
+                  Start Lecture
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      if (tb) tb.innerHTML = `<tr><td colspan="5">Error loading schedule: ${e.message}</td></tr>`;
+    }
+
     refreshIcons();
   }
 
