@@ -85,6 +85,15 @@ def generate_teacher_uid(name: str, department: str) -> str:
     seq = _next_sequence(prefix)
     return f"{prefix}{seq}"
 
+def generate_student_roll_no(department: str) -> str:
+    """<DEPT><YY><SEQ> e.g. CSE26001"""
+    dept = _dept_code(department)
+    yr = _year_suffix()
+    prefix = f"{dept}{yr}"
+    existing = Student.query.filter(Student.roll_no.like(prefix + "%")).count()
+    seq = str(existing + 1).zfill(3)
+    return f"{prefix}{seq}"
+
 
 def generate_parent_uid(name: str) -> str:
     """PAR-<YY><NAME3><SEQ> e.g. PAR-26RAJ001"""
@@ -294,8 +303,9 @@ def add_student():
 
     if not name:
         return jsonify({"error": "name is required"}), 400
+    
     if not roll:
-        return jsonify({"error": "roll_no is required"}), 400
+        roll = generate_student_roll_no(department)
 
     if Student.query.filter_by(roll_no=roll).first():
         return jsonify({"error": "Roll number already exists"}), 400
