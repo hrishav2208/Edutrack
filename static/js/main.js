@@ -3254,44 +3254,31 @@ initLoginParticles();
   window.allTimetableTeachers = [];
 
   window.updateTeacherDropdown = function(deptSelectId, teacherSelectId, currentTeacherId = null) {
-    const dept = document.getElementById(deptSelectId)?.value;
     const tSel = document.getElementById(teacherSelectId);
     if (!tSel || !window.allTimetableTeachers) return;
-    
-    if (!dept) {
-      tSel.innerHTML = '<option value="">Select Dept First</option>';
+
+    if (!window.allTimetableTeachers || window.allTimetableTeachers.length === 0) {
+      tSel.innerHTML = '<option value="">(API Error: No teachers loaded)</option>';
       return;
     }
 
-    // Canonical alias map: map all known variants to a single key
-    const DEPT_ALIASES = {
-      'cse': 'cse', 'cs': 'cse', 'computerscience': 'cse', 'computerscienceengineering': 'cse', 'computerscience&engineering': 'cse',
-      'ece': 'ece', 'electronics': 'ece', 'electronicscommunication': 'ece', 'electronicsandcommunication': 'ece', 'electronicscommunicationengineering': 'ece',
-      'me': 'me', 'mech': 'me', 'mechanical': 'me', 'mechanicalengineering': 'me',
-      'ce': 'ce', 'civil': 'ce', 'civilengineering': 'ce',
-      'eee': 'eee', 'electrical': 'eee', 'electricalengineering': 'eee', 'electricalelectronics': 'eee', 'ee': 'eee',
-      'it': 'it', 'informationtechnology': 'it',
-      'aiml': 'aiml', 'ai': 'aiml', 'artificialintelligence': 'aiml', 'aimachinelearning': 'aiml', 'artificialintelligenceandmachinelearning': 'aiml', 'artificialintelligencemachinelearning': 'aiml',
-      'ecs': 'ecs', 'gen': 'gen', 'general': 'gen',
-    };
-
-    function canonicalDept(raw) {
-      const cleaned = (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      return DEPT_ALIASES[cleaned] || cleaned;
-    }
-
-    const selectedCanonical = canonicalDept(dept);
-    const filtered = window.allTimetableTeachers.filter(t => {
-      return canonicalDept(t.department) === selectedCanonical;
+    const groups = {};
+    window.allTimetableTeachers.forEach(t => {
+      const d = (t.department || 'General').toUpperCase();
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(t);
     });
-    
-    if (!window.allTimetableTeachers || window.allTimetableTeachers.length === 0) {
-      tSel.innerHTML = '<option value="">(API Error: No teachers loaded)</option>';
-    } else if (filtered.length === 0) {
-      tSel.innerHTML = '<option value="">No teachers in this dept</option>';
-    } else {
-      tSel.innerHTML = '<option value="">Select Teacher</option>' + filtered.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
-    }
+
+    let html = '<option value="">Select Teacher</option>';
+    Object.keys(groups).sort().forEach(d => {
+      html += `<optgroup label="${escapeHtml(d)}">`;
+      groups[d].sort((a, b) => a.name.localeCompare(b.name)).forEach(t => {
+        html += `<option value="${t.id}">${escapeHtml(t.name)}</option>`;
+      });
+      html += `</optgroup>`;
+    });
+
+    tSel.innerHTML = html;
     if (currentTeacherId) tSel.value = currentTeacherId;
   };
 
