@@ -447,6 +447,31 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Early Warning Alerts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i data-lucide="alert-triangle" style="color:var(--danger-color)"></i> Early Warning Alerts</h3>
+                        <button id="triggerEwsChecksBtn" class="btn btn-secondary btn-sm" style="display:none;">Run EWS Engine</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Roll No.</th>
+                                    <th>Risk Type</th>
+                                    <th>Risk Level</th>
+                                    <th>Trigger Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ewsTeacherAlertsBody">
+                                <tr><td colspan="6" style="text-align:center;">Loading alerts...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 </div>
                 <div id="teacher-view-attendance" class="app-section hidden">
                     <div class="page-header"><h1>Attendance</h1></div>
@@ -533,6 +558,15 @@
                             <span id="sessionBannerStatus" class="badge badge-warning" style="margin-top: 0.5rem; display: inline-block;">Not checked in</span>
                         </div>
                         <button id="btnSessionCheckin" class="btn btn-primary">Check In Now</button>
+                    </div>
+                </div>
+
+                <!-- EWS Warning Banner -->
+                <div id="ewsStudentBanner" class="hidden" style="margin-bottom: 2rem;">
+                    <div class="alert alert-danger" style="border-left: 4px solid var(--danger-color);">
+                        <h4 style="margin: 0; color: var(--danger-color);"><i data-lucide="alert-triangle" style="vertical-align: middle; margin-right: 0.5rem;"></i> Important Academic Warning</h4>
+                        <p style="margin: 0.5rem 0 0 0;" id="ewsStudentMessage">Loading...</p>
+                        <p class="small" style="margin-top: 0.5rem;">Please check in with your instructor immediately.</p>
                     </div>
                 </div>
                 

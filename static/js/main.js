@@ -3619,5 +3619,111 @@ initLoginParticles();
     });
   }
 
+  // ── EWS Integration ──────────────────────────────────────────────────
+  async function loadTeacherEWS() {
+    const tbody = document.getElementById('ewsTeacherAlertsBody');
+    if (!tbody) return;
+    try {
+      const alerts = await apiJson('/api/ews/teacher');
+      if (alerts && Array.isArray(alerts)) {
+        if (alerts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No active alerts</td></tr>';
+          return;
+        }
+        tbody.innerHTML = '';
+        alerts.forEach(a => {
+          const tr = document.createElement('tr');
+          let color = a.risk_level === 'High' ? 'var(--danger-color)' : (a.risk_level === 'Medium' ? 'var(--warning-color)' : 'var(--text-color)');
+          tr.innerHTML = `
+            <td>${a.student_name}</td>
+            <td>${a.roll_no}</td>
+            <td>${a.risk_type}</td>
+            <td style="color:${color}; font-weight:bold;">${a.risk_level}</td>
+            <td>${a.trigger_reason}</td>
+            <td><button class="btn btn-sm btn-success ews-resolve-btn" data-id="${a.id}">Mark Resolved</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+        
+        document.querySelectorAll('.ews-resolve-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = e.target.getAttribute('data-id');
+            const res = await apiJson(`/api/ews/resolve/${id}`, { method: 'POST' });
+            if (res.success) {
+              loadTeacherEWS();
+            } else {
+              alert(res.error || 'Failed to resolve');
+            }
+          });
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load EWS', e);
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load alerts</td></tr>';
+    }
+  }
+
+  async function loadStudentEWS() {
+    const banner = document.getElementById('ewsStudentBanner');
+    const msg = document.getElementById('ewsStudentMessage');
+    if (!banner || !msg) return;
+    try {
+      const alerts = await apiJson('/api/ews/student');
+      if (alerts && Array.isArray(alerts) && alerts.length > 0) {
+        banner.classList.remove('hidden');
+        const reasons = alerts.map(a => `[${a.risk_type}] ${a.trigger_reason}`).join('<br>');
+        msg.innerHTML = reasons;
+      } else {
+        banner.classList.add('hidden');
+      }
+    } catch (e) {
+      console.error('Failed to load student EWS', e);
+    }
+  }
+
+  // Hook into existing navigation to load EWS data when corresponding view is opened
+  document.addEventListener('click', (e) => {
+    // This is a naive hook. We check if the user clicked a nav button or login button
+    setTimeout(() => {
+      const activeAdmin = document.getElementById('adminDashboard') && !document.getElementById('adminDashboard').classList.contains('hidden');
+      const activeTeacher = document.getElementById('teacherDashboard') && !document.getElementById('teacherDashboard').classList.contains('hidden');
+      const activeStudent = document.getElementById('studentDashboard') && !document.getElementById('studentDashboard').classList.contains('hidden');
+      
+      if (activeTeacher || activeAdmin) {
+        loadTeacherEWS();
+      }
+      if (activeStudent) {
+        loadStudentEWS();
+      }
+    }, 500);
+  });
+
+  const triggerEwsChecksBtn = document.getElementById('triggerEwsChecksBtn');
+  if (triggerEwsChecksBtn) {
+    // Show only for admin
+    if (localStorage.getItem('userRole') === 'admin') {
+       triggerEwsChecksBtn.style.display = 'inline-block';
+    }
+    triggerEwsChecksBtn.addEventListener('click', async () => {
+       const btn = triggerEwsChecksBtn;
+       btn.disabled = true;
+       btn.innerText = 'Running...';
+       try {
+         const res = await apiJson('/api/ews/trigger-checks', { method: 'POST' });
+         if(res.success) {
+           alert('EWS Checks completed successfully.');
+           loadTeacherEWS();
+         } else {
+           alert(res.error || 'Failed');
+         }
+       } catch(err) {
+         alert(err.message);
+       } finally {
+         btn.disabled = false;
+         btn.innerText = 'Run EWS Engine';
+       }
+    });
+  }
+
 })();
 

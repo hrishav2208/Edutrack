@@ -198,6 +198,7 @@ def create_app(config_name=None):
     from app.profile import profile_bp
     from app.departments import departments_bp
     from app.timetable import timetable_bp
+    from app.ews_routes import ews_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(attendance_bp, url_prefix="/api/attendance")
@@ -210,6 +211,7 @@ def create_app(config_name=None):
     app.register_blueprint(profile_bp, url_prefix="/api/profile")
     app.register_blueprint(departments_bp, url_prefix="/api/departments")
     app.register_blueprint(timetable_bp, url_prefix="/api/timetable")
+    app.register_blueprint(ews_bp, url_prefix="/api/ews")
 
     @app.route("/api/admin/otp-logs", methods=["GET"])
     def legacy_otp_logs():

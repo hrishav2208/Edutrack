@@ -244,3 +244,14 @@ class TimetableEntry(db.Model):
     temporary_date = db.Column(db.Date, nullable=True) # Used if this is a one-off reschedule
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+class EarlyWarningAlert(db.Model):
+    __tablename__ = "early_warning_alerts"
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
+    risk_type = db.Column(db.String(40), nullable=False) # Attendance, Academics, Combined
+    risk_level = db.Column(db.String(20), nullable=False) # Low, Medium, High
+    trigger_reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default="Active") # Active, Resolved, Ignored
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    resolved_at = db.Column(db.DateTime, nullable=True)
