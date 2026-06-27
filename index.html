@@ -36,24 +36,33 @@
         </nav>
 
         <!-- Hero Section -->
-        <header class="landing-hero scroll-reveal">
-            <div class="hero-orb hero-orb-1"></div>
-            <div class="hero-orb hero-orb-2"></div>
-            <div class="hero-orb hero-orb-3"></div>
-            <h1>Empowering <span>Next-Gen</span> Campus Operations</h1>
-            <p class="tagline">
-                An all-in-one institutional workflow system. Seamlessly connect administrators, teachers, students, and
-                parents with advanced biometrics, real-time analytics, and instant notifications.
-            </p>
-            <div class="landing-cta-group">
-                <button class="btn-landing-primary" id="enterPortalBtn">
-                    Proceed to Login Portal
-                    <i data-lucide="chevron-right"></i>
-                </button>
-                <button class="btn-landing-secondary" id="scrollFeaturesBtn">
-                    Explore Platform Features
-                    <i data-lucide="arrow-down"></i>
-                </button>
+        <header class="landing-hero scroll-reveal mesh-bg" style="display:flex; flex-wrap:wrap; align-items:center; gap: 2rem;">
+            <div style="flex: 1; min-width: 300px;">
+                <div class="hero-orb hero-orb-1"></div>
+                <div class="hero-orb hero-orb-2"></div>
+                <div class="hero-orb hero-orb-3"></div>
+                <h1>Empowering <span>Next-Gen</span> Campus Operations</h1>
+                <p class="tagline">
+                    An all-in-one institutional workflow system. Seamlessly connect administrators, teachers, students, and
+                    parents with advanced biometrics, real-time analytics, and instant notifications.
+                </p>
+                <div class="landing-cta-group">
+                    <button class="btn-landing-primary" id="enterPortalBtn">
+                        Proceed to Login Portal
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+                    <button class="btn-landing-secondary" id="scrollFeaturesBtn">
+                        Explore Platform Features
+                        <i data-lucide="arrow-down"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Dynamic Scroll-Triggered Mockup -->
+            <div class="glass-panel" style="flex: 1; min-width: 320px; height: 350px; border-radius: var(--radius-lg); position: relative; overflow: hidden; padding: var(--space-3);">
+                <div id="heroMockup" style="transition: opacity 0.3s ease-in-out;">
+                    <!-- JS will inject skeletons here -->
+                </div>
             </div>
         </header>
 
@@ -2376,6 +2385,28 @@
         <i data-lucide="check-circle" style="width:18px;height:18px; color:#4ade80; flex-shrink:0;"></i>
         <span id="toastNotifText"></span>
     </div>
+
+    <!-- Command Palette Modal -->
+    <div id="cmdPaletteOverlay">
+        <div class="cmd-palette-modal glass-panel">
+            <div class="cmd-palette-input-wrap">
+                <i data-lucide="search"></i>
+                <input type="text" id="cmdPaletteInput" class="cmd-palette-input" placeholder="Search commands, students, or actions... (Esc to close)" autocomplete="off">
+            </div>
+            <div class="cmd-palette-list" id="cmdPaletteList">
+                <!-- JS Populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State Template -->
+    <template id="emptyStateTemplate">
+        <div class="empty-state">
+            <i data-lucide="inbox"></i>
+            <h4>No data available</h4>
+            <p class="small">There is currently no information to display here.</p>
+        </div>
+    </template>
 
 </body>
 

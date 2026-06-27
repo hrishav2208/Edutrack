@@ -3725,5 +3725,161 @@ initLoginParticles();
     });
   }
 
+  /* ===================================
+     PRO UI/UX ENHANCEMENTS
+     =================================== */
+
+  // 1. Universal Empty State Utility
+  window.renderEmptyState = function(message = 'No data available', iconName = 'inbox') {
+    const template = document.getElementById('emptyStateTemplate');
+    if (!template) return `<div style="text-align:center; padding:2rem;">${message}</div>`;
+    const clone = template.content.cloneNode(true);
+    clone.querySelector('h4').textContent = message;
+    clone.querySelector('i').setAttribute('data-lucide', iconName);
+    const div = document.createElement('div');
+    div.appendChild(clone);
+    return div.innerHTML;
+  };
+
+  // 2. Command Palette (Ctrl+K)
+  const cmdPaletteOverlay = document.getElementById('cmdPaletteOverlay');
+  const cmdPaletteInput = document.getElementById('cmdPaletteInput');
+  const cmdPaletteList = document.getElementById('cmdPaletteList');
+  
+  if (cmdPaletteOverlay && cmdPaletteInput && cmdPaletteList) {
+    const commands = [
+      { id: 'attendance', label: 'Take Attendance', icon: 'camera', role: 'teacher' },
+      { id: 'ews', label: 'View Early Warning Alerts', icon: 'alert-triangle', role: 'teacher' },
+      { id: 'timetable', label: 'View Timetable', icon: 'calendar', role: 'any' },
+      { id: 'fees', label: 'Manage Fees', icon: 'wallet', role: 'admin' },
+      { id: 'logout', label: 'Logout', icon: 'log-out', role: 'any' }
+    ];
+
+    function renderCommands(query = '') {
+      const q = query.toLowerCase();
+      const role = localStorage.getItem('userRole') || 'any';
+      const filtered = commands.filter(c => 
+        (c.role === 'any' || c.role === role || role === 'admin') && 
+        c.label.toLowerCase().includes(q)
+      );
+      
+      if (filtered.length === 0) {
+        cmdPaletteList.innerHTML = window.renderEmptyState('No commands found', 'search');
+        if (window.lucide) window.lucide.createIcons();
+        return;
+      }
+
+      cmdPaletteList.innerHTML = filtered.map((c, idx) => `
+        <div class="cmd-palette-item ${idx === 0 ? 'selected' : ''}" data-cmd="${c.id}">
+          <i data-lucide="${c.icon}"></i>
+          <span>${c.label}</span>
+        </div>
+      `).join('');
+      if (window.lucide) window.lucide.createIcons();
+      
+      // Bind clicks
+      document.querySelectorAll('.cmd-palette-item').forEach(item => {
+        item.addEventListener('click', () => executeCommand(item.getAttribute('data-cmd')));
+      });
+    }
+
+    function executeCommand(cmdId) {
+      cmdPaletteOverlay.classList.remove('active');
+      if (cmdId === 'logout') {
+        const btn = document.getElementById('btnLogout');
+        if (btn) btn.click();
+      } else if (cmdId === 'attendance') {
+        const btn = document.getElementById('admin-view-campus') || document.querySelector('[data-view="teacher-view-attendance"]');
+        if (btn) btn.click();
+      } else if (cmdId === 'ews') {
+        const btn = document.querySelector('[data-view="teacher-view-home"]');
+        if (btn) {
+          btn.click();
+          setTimeout(() => {
+            const ewsCard = document.getElementById('ewsTeacherAlertsBody');
+            if (ewsCard) ewsCard.scrollIntoView({behavior: 'smooth'});
+          }, 300);
+        }
+      } else if (cmdId === 'timetable') {
+        const btn = document.querySelector('[data-view="admin-view-timetable"]');
+        if (btn) btn.click();
+      }
+    }
+
+    // Toggle logic
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        cmdPaletteOverlay.classList.add('active');
+        cmdPaletteInput.value = '';
+        renderCommands();
+        setTimeout(() => cmdPaletteInput.focus(), 100);
+      }
+      if (e.key === 'Escape' && cmdPaletteOverlay.classList.contains('active')) {
+        cmdPaletteOverlay.classList.remove('active');
+      }
+      if (e.key === 'Enter' && cmdPaletteOverlay.classList.contains('active')) {
+        const selected = cmdPaletteList.querySelector('.cmd-palette-item.selected');
+        if (selected) executeCommand(selected.getAttribute('data-cmd'));
+      }
+    });
+
+    cmdPaletteOverlay.addEventListener('click', (e) => {
+      if (e.target === cmdPaletteOverlay) cmdPaletteOverlay.classList.remove('active');
+    });
+
+    cmdPaletteInput.addEventListener('input', (e) => renderCommands(e.target.value));
+  }
+
+  // 3. Landing Page Intersection Observer for Mockup
+  const heroMockup = document.getElementById('heroMockup');
+  if (heroMockup) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Initialize skeletons
+          heroMockup.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <div class="skeleton skeleton-avatar"></div>
+              <div class="skeleton skeleton-text short" style="margin:0;"></div>
+            </div>
+            <div class="skeleton skeleton-card" style="height:150px;"></div>
+            <div class="skeleton skeleton-text long"></div>
+            <div class="skeleton skeleton-text short"></div>
+          `;
+          
+          // Simulate data load after 1.5s
+          setTimeout(() => {
+            heroMockup.style.opacity = '0';
+            setTimeout(() => {
+              heroMockup.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                  <div style="width:48px;height:48px;border-radius:50%;background:var(--primary-100);display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="user" style="color:var(--primary-600);"></i>
+                  </div>
+                  <div><span class="badge badge-success" style="background:var(--success-50);color:var(--success-600);">Live Session</span></div>
+                </div>
+                <div class="card" style="box-shadow:none; border:1px solid var(--gray-200);">
+                  <h4 style="margin-bottom:0.5rem;"><i data-lucide="map-pin" style="width:16px;height:16px;color:var(--primary-500);"></i> GPS Attendance</h4>
+                  <p class="small">Radius: 20m • Room 204</p>
+                  <div style="width:100%; height:8px; background:var(--gray-200); border-radius:4px; margin-top:1rem; overflow:hidden;">
+                    <div style="width:75%; height:100%; background:var(--success-500);"></div>
+                  </div>
+                  <p class="small" style="margin-top:0.5rem;">42/45 Students Present</p>
+                </div>
+              `;
+              if (window.lucide) window.lucide.createIcons();
+              heroMockup.style.opacity = '1';
+            }, 300);
+          }, 1500);
+          
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    observer.observe(heroMockup);
+  }
+
 })();
 
