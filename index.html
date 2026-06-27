@@ -1391,33 +1391,29 @@
                             </div>
                         </div>
 
-                        <!-- Today's Schedule -->
-                        <div class="card">
-                            <h3 class="card-title">Today's Schedule</h3>
-                            <div class="schedule-list">
-                                <div class="schedule-item completed">
-                                    <div class="schedule-content">
-                                        <h4>Computer Science 101</h4>
-                                        <p>9:00 AM - 10:30 AM • Room 204 • 45 students</p>
-                                        <p class="schedule-status">
-                                            <i data-lucide="check-circle"></i>
-                                            Attendance: 42/45 students (93.3%)
-                                        </p>
-                                    </div>
-                                    <button class="btn btn-secondary">View Details</button>
-                                </div>
 
-                                <div class="schedule-item upcoming">
-                                    <div class="schedule-content">
-                                        <h4>Data Structures Lab</h4>
-                                        <p>2:00 PM - 4:00 PM • Lab 301 • 30 students</p>
-                                        <p class="schedule-status">
-                                            <i data-lucide="clock"></i>
-                                            Upcoming class
-                                        </p>
-                                    </div>
-                                    <button class="btn btn-secondary">Prepare</button>
-                                </div>
+                        <!-- Early Warning Alerts -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="alert-triangle" style="color:var(--danger-color)"></i> Early Warning Alerts</h3>
+                                <button id="triggerEwsChecksBtn" class="btn btn-secondary btn-sm" style="display:none;">Run EWS Engine</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student Name</th>
+                                            <th>Roll No.</th>
+                                            <th>Risk Type</th>
+                                            <th>Risk Level</th>
+                                            <th>Trigger Reason</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ewsTeacherAlertsBody">
+                                        <tr><td colspan="6" style="text-align:center;">Loading alerts...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -1707,6 +1703,16 @@
                                         Mark Attendance
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <!-- EWS Warning Banner -->
+                        <div id="ewsStudentBanner" class="hidden" style="margin-bottom: 2rem;">
+                            <div class="alert alert-danger" style="border-left: 4px solid var(--danger-color);">
+                                <h4 style="margin: 0; color: var(--danger-color);"><i data-lucide="alert-triangle" style="vertical-align: middle; margin-right: 0.5rem;"></i> Important Academic Warning</h4>
+                                <p style="margin: 0.5rem 0 0 0;" id="ewsStudentMessage">Loading...</p>
+                                <p class="small" style="margin-top: 0.5rem;">Please check in with your instructor immediately.</p>
                             </div>
                         </div>
 
