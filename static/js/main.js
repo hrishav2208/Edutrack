@@ -3831,55 +3831,6 @@ initLoginParticles();
     cmdPaletteInput.addEventListener('input', (e) => renderCommands(e.target.value));
   }
 
-  // 3. Landing Page Intersection Observer for Mockup
-  const heroMockup = document.getElementById('heroMockup');
-  if (heroMockup) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          // Initialize skeletons
-          heroMockup.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-              <div class="skeleton skeleton-avatar"></div>
-              <div class="skeleton skeleton-text short" style="margin:0;"></div>
-            </div>
-            <div class="skeleton skeleton-card" style="height:150px;"></div>
-            <div class="skeleton skeleton-text long"></div>
-            <div class="skeleton skeleton-text short"></div>
-          `;
-          
-          // Simulate data load after 1.5s
-          setTimeout(() => {
-            heroMockup.style.opacity = '0';
-            setTimeout(() => {
-              heroMockup.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                  <div style="width:48px;height:48px;border-radius:50%;background:var(--primary-100);display:flex;align-items:center;justify-content:center;">
-                    <i data-lucide="user" style="color:var(--primary-600);"></i>
-                  </div>
-                  <div><span class="badge badge-success" style="background:var(--success-50);color:var(--success-600);">Live Session</span></div>
-                </div>
-                <div class="card" style="box-shadow:none; border:1px solid var(--gray-200);">
-                  <h4 style="margin-bottom:0.5rem;"><i data-lucide="map-pin" style="width:16px;height:16px;color:var(--primary-500);"></i> GPS Attendance</h4>
-                  <p class="small">Radius: 20m • Room 204</p>
-                  <div style="width:100%; height:8px; background:var(--gray-200); border-radius:4px; margin-top:1rem; overflow:hidden;">
-                    <div style="width:75%; height:100%; background:var(--success-500);"></div>
-                  </div>
-                  <p class="small" style="margin-top:0.5rem;">42/45 Students Present</p>
-                </div>
-              `;
-              if (window.lucide) window.lucide.createIcons();
-              heroMockup.style.opacity = '1';
-            }, 300);
-          }, 1500);
-          
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    
-    observer.observe(heroMockup);
-  }
 
 })();
 
